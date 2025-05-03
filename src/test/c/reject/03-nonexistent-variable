@@ -1,0 +1,3 @@
+d1 = dist(p1);
+// Nota: en el stage II, aún no podemos detectar el error de variable no existente.
+// En el stage III (Backend), se detecta el error de variable no existente.
