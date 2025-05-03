@@ -22,6 +22,10 @@
  * @see https://westes.github.io/flex/manual/Matching.html
  * @see https://westes.github.io/flex/manual/Patterns.html
  */
+string          \"([^\\\"]|\\.)*\"  
+digit              [0-9]
+char               [a-zA-Z_]
+identifier         {char}({char}|{digit})*
 
 %%
 
@@ -31,10 +35,53 @@
 <MULTILINE_COMMENT>[^*]+			{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>.				{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
+{"//".} {IgnoredLexemeAction(createLexicalAnalyzerContext());}
+
 "-"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), SUB); }
 "*"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), MUL); }
 "/"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), DIV); }
 "+"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), ADD); }
+
+/*
+
+"%"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), MOD); }
+
+">="                                { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), GEQ); }
+"<="                                { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), LEQ); }                        
+">"                                 { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), GT); }
+"<"                                 { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), LT); }
+"=="                                { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), EQ); }
+"!="                                { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), NEQ); }
+"and"                               { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), AND); }
+"or"                                { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), OR); }
+"not"                               { return UnaryOperatorLexemeAction(createLexicalAnalyzerContext(), NOT); }
+
+"="                                 { return AssignmentLexemeAction(createLexicalAnalyzerContext()); }
+"+="                                { return PlusEqualsLexemeAction(createLexicalAnalyzerContext()); }
+"-="                                { return MinusEqualsLexemeAction(createLexicalAnalyzerContext()); }
+"*="                                { return TimesEqualsLexemeAction(createLexicalAnalyzerContext()); }
+"/="                                { return DivEqualsLexemeAction(createLexicalAnalyzerContext()); }
+"%="                                { return ModEqualsLexemeAction(createLexicalAnalyzerContext()); }
+
+","                                 { return CommaLexemeAction(createLexicalAnalyzerContext()); }
+";"                                 { return SemicolonLexemeAction(createLexicalAnalyzerContext()); }
+"."                                 { return DotLexemeAction(createLexicalAnalyzerContext()); }
+":"                                 { return ColonLexemeAction(createLexicalAnalyzerContext()); }
+
+"import"                            { return ImportLexemeAction(); }
+"if"                                { return IfLexemeAction(); }
+"else"                              { return ElseLexemeAction(); }
+"in"                                { return InLexemeAction(); }
+"for"                               { return ForLexemeAction(); }
+
+"{"									{ return BracesLexemeAction(createLexicalAnalyzerContext(), OPEN_BRACES); }
+"}"									{ return BracesLexemeAction(createLexicalAnalyzerContext(), CLOSE_BRACES); }
+"["									{ return BracketsLexemeAction(createLexicalAnalyzerContext(), OPEN_BRACKETS); }
+"]"									{ return BracketsLexemeAction(createLexicalAnalyzerContext(), CLOSE_BRACKETS); }
+
+{identifier}                        { return IdentifierLexemeAction(yytext, yyleng); }
+{string}                            { return StringLexemeAction(yytext, yyleng); }
+*/
 
 "("									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext(), OPEN_PARENTHESIS); }
 ")"									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext(), CLOSE_PARENTHESIS); }
