@@ -31,4 +31,22 @@ Token ParenthesisLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, T
 
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
+// NUESTRO
+
+Token BinaryOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
+Token UnaryOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
+Token AssignmentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token CommaLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token SemicolonLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token DotLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token ColonLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token ImportLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token IfLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token ElseLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token InLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token ForLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token BracesLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
+Token BracketsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
+
+
 #endif

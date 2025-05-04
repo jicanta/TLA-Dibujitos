@@ -35,14 +35,13 @@ identifier         {char}({char}|{digit})*
 <MULTILINE_COMMENT>[^*]+			{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>.				{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
-{"//".} {IgnoredLexemeAction(createLexicalAnalyzerContext());}
-
 "-"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), SUB); }
 "*"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), MUL); }
 "/"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), DIV); }
 "+"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), ADD); }
 
-/*
+
+
 
 "%"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), MOD); }
 
@@ -57,31 +56,25 @@ identifier         {char}({char}|{digit})*
 "not"                               { return UnaryOperatorLexemeAction(createLexicalAnalyzerContext(), NOT); }
 
 "="                                 { return AssignmentLexemeAction(createLexicalAnalyzerContext()); }
-"+="                                { return PlusEqualsLexemeAction(createLexicalAnalyzerContext()); }
-"-="                                { return MinusEqualsLexemeAction(createLexicalAnalyzerContext()); }
-"*="                                { return TimesEqualsLexemeAction(createLexicalAnalyzerContext()); }
-"/="                                { return DivEqualsLexemeAction(createLexicalAnalyzerContext()); }
-"%="                                { return ModEqualsLexemeAction(createLexicalAnalyzerContext()); }
+
 
 ","                                 { return CommaLexemeAction(createLexicalAnalyzerContext()); }
 ";"                                 { return SemicolonLexemeAction(createLexicalAnalyzerContext()); }
 "."                                 { return DotLexemeAction(createLexicalAnalyzerContext()); }
 ":"                                 { return ColonLexemeAction(createLexicalAnalyzerContext()); }
 
-"import"                            { return ImportLexemeAction(); }
-"if"                                { return IfLexemeAction(); }
-"else"                              { return ElseLexemeAction(); }
-"in"                                { return InLexemeAction(); }
-"for"                               { return ForLexemeAction(); }
+"import"                            { return ImportLexemeAction(createLexicalAnalyzerContext()); }
+"if"                                { return IfLexemeAction(createLexicalAnalyzerContext()); }
+"else"                              { return ElseLexemeAction(createLexicalAnalyzerContext()); }
+"in"                                { return InLexemeAction(createLexicalAnalyzerContext()); }
+"for"                               { return ForLexemeAction(createLexicalAnalyzerContext()); }
 
 "{"									{ return BracesLexemeAction(createLexicalAnalyzerContext(), OPEN_BRACES); }
 "}"									{ return BracesLexemeAction(createLexicalAnalyzerContext(), CLOSE_BRACES); }
 "["									{ return BracketsLexemeAction(createLexicalAnalyzerContext(), OPEN_BRACKETS); }
 "]"									{ return BracketsLexemeAction(createLexicalAnalyzerContext(), CLOSE_BRACKETS); }
 
-{identifier}                        { return IdentifierLexemeAction(yytext, yyleng); }
-{string}                            { return StringLexemeAction(yytext, yyleng); }
-*/
+
 
 "("									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext(), OPEN_PARENTHESIS); }
 ")"									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext(), CLOSE_PARENTHESIS); }
@@ -89,8 +82,31 @@ identifier         {char}({char}|{digit})*
 [[:digit:]]+						{ return IntegerLexemeAction(createLexicalAnalyzerContext()); }
 
 [[:space:]]+						{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+
+
+
+
 .									{ return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 
 %%
 
 #include "FlexExport.h"
+
+
+/**
+ * Moví lo que pensaba que no tenía sentido
+ * 
+ * Esto no sigue el formato:
+ * {"//".} {IgnoredLexemeAction(createLexicalAnalyzerContext());}
+ * 
+ * NOOOOO ESTO NOOOO PLZ:
+ * "+="                                { return PlusEqualsLexemeAction(createLexicalAnalyzerContext()); }
+ * "-="                                { return MinusEqualsLexemeAction(createLexicalAnalyzerContext()); }
+ * "*="                                { return TimesEqualsLexemeAction(createLexicalAnalyzerContext()); }
+ * "/="                                { return DivEqualsLexemeAction(createLexicalAnalyzerContext()); }
+ * "%="                                { return ModEqualsLexemeAction(createLexicalAnalyzerContext()); }
+ * 
+ * NI IDEA CÓMO HACER ESTO D:
+ * {identifier}                        { return IdentifierLexemeAction(yytext, yyleng); }
+ * {string}                            { return StringLexemeAction(yytext, yyleng); }
+ */

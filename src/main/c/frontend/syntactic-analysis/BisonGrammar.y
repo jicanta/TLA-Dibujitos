@@ -42,6 +42,46 @@
 %token <token> OPEN_PARENTHESIS
 %token <token> SUB
 
+/** NUESTROS TERMINALES */
+%token <token> MOD
+
+%token <token> GEQ
+%token <token> LEQ
+%token <token> GT
+%token <token> LT
+%token <token> EQ
+%token <token> NEQ
+%token <token> AND
+%token <token> OR
+%token <token> NOT
+
+%token <token> OPEN_BRACES
+%token <token> CLOSE_BRACES
+%token <token> OPEN_BRACKETS
+%token <token> CLOSE_BRACKETS
+
+%token <token> COMMA
+%token <token> SEMICOLON
+%token <token> DOT
+%token <token> COLON
+
+%token <token> IMPORT
+
+%token <token> ASSIGN
+
+%token <token> IF
+%token <token> ELSE
+%token <token> IN
+%token <token> FOR
+
+
+
+
+
+
+
+
+
 %token <token> UNKNOWN
 
 /** Non-terminals. */
