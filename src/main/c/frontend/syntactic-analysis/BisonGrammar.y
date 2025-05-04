@@ -12,6 +12,7 @@
 
 	int integer;
 	Token token;
+	char * string;
 
 	/** Non-terminals. */
 
@@ -19,6 +20,18 @@
 	Expression * expression;
 	Factor * factor;
 	Program * program;
+	// TODO: Descomentar una vez que esté todo en el AbstractSyntaxTree
+
+	// Sentences * sentences;
+	// Sentence * sentence;
+	// IfSentence * if_sentence;
+	// IfElseSentence * if_else_sentence;
+	// ForSentence * for_sentence;
+	// AssignSentence * assign_sentence;
+	// Block * block;
+	// Interval * interval;
+	// BoolExpression * bool_expression;
+	// BoolFactor * bool_factor;
 }
 
 /**
@@ -74,6 +87,10 @@
 %token <token> IN
 %token <token> FOR
 
+%token <token> STRING
+%token <token> IDENTIFIER
+
+
 
 
 
@@ -90,6 +107,24 @@
 %type <factor> factor
 %type <program> program
 
+/** NUESTROS NO-TERMINALES */
+
+/* %type <sentences> sentences
+%type <sentence> sentence
+%type <if_sentence> if_sentence
+%type <if_else_sentence> if_else_sentence
+%type <for_sentence> for_sentence
+%type <assign_sentence> assign_sentence
+%type <block> block
+%type <interval> interval
+%type <bool_expression> bool_expression
+%type <bool_factor> bool_factor */
+
+
+
+
+
+
 /**
  * Precedence and associativity.
  *
@@ -105,6 +140,60 @@
 program: expression													{ $$ = ExpressionProgramSemanticAction(currentCompilerState(), $1); }
 	;
 
+/* TODO: cambiar a program: sentences 
+   TODO: descomentar. Ojo que todavía faltan funcionalidades como los vectores y los floats
+   TODO: Manejar lógica en el AbstractSyntaxTree.h
+*/
+
+/* 
+sentences: sentences sentence SEMICOLON
+	;
+
+sentence: assign_sentence
+	| if_sentence
+	| for_sentence	
+	| if_else_sentence
+	;
+
+if_sentence: IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block
+	;
+
+if_else_sentence: IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block
+	;
+
+for_sentence: FOR IDENTIFIER IN interval
+	;
+
+assign_sentence: IDENTIFIER ASSIGN expression
+	;
+
+block: OPEN_BRACES sentences CLOSE_BRACES
+	;
+
+interval: OPEN_BRACKETS expression SEMICOLON expression CLOSE_BRACKETS
+	;
+
+bool_expression: expression GEQ expression
+	| expression LEQ expression
+	| expression GT expression
+	| expression LT expression
+	| expression EQ expression
+	| expression NEQ expression
+	| bool_expression AND bool_expression
+	| bool_expression OR bool_expression
+	| NOT bool_expression
+	| bool_factor
+	;
+
+bool_factor: OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS
+	;
+ */
+
+
+
+
+
+/* Quizás conviene cambiar EXPRESSION por INTEGER o algo así */
 expression: expression[left] ADD expression[right]					{ $$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION); }
 	| expression[left] DIV expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION); }
 	| expression[left] MUL expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }

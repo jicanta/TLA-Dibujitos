@@ -84,6 +84,8 @@ identifier         {char}({char}|{digit})*
 [[:space:]]+						{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
 
+{identifier}                        { return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
+{string}                            { return StringLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
 
 
 .									{ return UnknownLexemeAction(createLexicalAnalyzerContext()); }
@@ -106,7 +108,5 @@ identifier         {char}({char}|{digit})*
  * "/="                                { return DivEqualsLexemeAction(createLexicalAnalyzerContext()); }
  * "%="                                { return ModEqualsLexemeAction(createLexicalAnalyzerContext()); }
  * 
- * NI IDEA CÓMO HACER ESTO D:
- * {identifier}                        { return IdentifierLexemeAction(yytext, yyleng); }
- * {string}                            { return StringLexemeAction(yytext, yyleng); }
+ * TODO: Ojo que faltan parsear los floats
  */

@@ -48,5 +48,8 @@ Token ForLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token BracesLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 Token BracketsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 
+Token IdentifierLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length);
+Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length);
+
 
 #endif

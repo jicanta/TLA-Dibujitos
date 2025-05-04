@@ -175,3 +175,44 @@ Token BracketsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Toke
 	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return token;
 }
+
+Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+
+	// Strip the surrounding quotes (assuming they are present)
+	if (text_length >= 2 && text_pointer[0] == '"' && text_pointer[text_length - 1] == '"') {
+		char * unquoted = malloc(text_length - 1); // yyleng - 2 for quotes + 1 for '\0'
+		if (!unquoted) {
+			exit(EXIT_FAILURE); // Handle malloc failure gracefully if needed
+		}
+		strncpy(unquoted, text_pointer + 1, text_length - 2);
+		unquoted[text_length - 2] = '\0';
+
+		lexicalAnalyzerContext->semanticValue->string = unquoted;
+	} else {
+		// Fallback if string is malformed
+		lexicalAnalyzerContext->semanticValue->string = NULL;
+	}
+
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+	return STRING;
+}
+
+Token IdentifierLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+
+	char * identifier_name = malloc(text_length + 1); // yyleng + 1 for '\0'
+
+	if (!identifier_name) {
+		exit(EXIT_FAILURE); // Handle malloc failure gracefully if needed
+	}
+	strncpy(identifier_name, text_pointer, text_length);
+
+	identifier_name[text_length] = '\0';
+
+	lexicalAnalyzerContext->semanticValue->string = identifier_name;
+
+
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+	return IDENTIFIER;
+}
