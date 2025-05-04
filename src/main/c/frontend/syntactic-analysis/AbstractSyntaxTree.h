@@ -17,10 +17,24 @@ void shutdownAbstractSyntaxTreeModule();
 typedef enum ExpressionType ExpressionType;
 typedef enum FactorType FactorType;
 
+typedef enum BoolExpressionType BoolExpressionType;
+
+
 typedef struct Constant Constant;
 typedef struct Expression Expression;
 typedef struct Factor Factor;
 typedef struct Program Program;
+
+typedef struct Sentences Sentences;
+typedef struct Sentence Sentence;
+typedef struct IfSentence IfSentence;
+typedef struct IfElseSentence IfElseSentence;
+typedef struct ForSentence ForSentence;
+typedef struct AssignSentence AssignSentence;
+typedef struct Block Block;
+typedef struct Interval Interval;
+typedef struct BoolExpression BoolExpression;
+typedef struct BoolFactor BoolFactor;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
@@ -32,6 +46,20 @@ enum ExpressionType {
 	FACTOR,
 	MULTIPLICATION,
 	SUBTRACTION
+};
+
+enum BoolExpressionType {
+	GREATER_OR_EQUAL,
+	LESS_OR_EQUAL,
+	GREATER_THAN,
+	LESS_THAN,
+	EQUAL_TO,
+	NOT_EQUAL,
+	
+	AND_TYPE,
+	OR_TYPE,
+	NOT_TYPE,
+	BOOL_FACTOR
 };
 
 enum FactorType {
@@ -65,6 +93,63 @@ struct Expression {
 struct Program {
 	Expression * expression;
 };
+
+struct Sentences {
+	Sentences * sentences;
+	Sentence * sentence;
+};
+
+struct IfSentence {
+	BoolExpression * boolExpression;
+	Block * block;
+};
+
+struct IfElseSentence {
+	BoolExpression * boolExpression;
+	Block * leftBlock;
+	Block * rightBlock;
+};
+
+struct ForSentence {
+	Interval * interval;
+	Block * block;
+};
+
+struct AssignSentence {
+	Expression * expression;
+};
+
+struct Block {
+	Sentences * sentences;
+};
+
+struct Interval {
+	Expression * leftExpression;
+	Expression * rightExpression;
+};
+
+// TODO: Es muy probable que haya que separar esto en partes D:
+struct BoolExpression {
+	union {
+		BoolFactor * factor;
+		struct {
+			Expression * leftExpression;
+			Expression * rightExpression;
+		};
+		struct {
+			BoolExpression * leftBoolExpression;
+			BoolExpression * rightBoolExpression;
+		};
+		BoolExpression * boolExpression;
+
+	};
+	BoolExpressionType type;
+};
+
+struct BoolFactor {
+	BoolExpression * boolExpression;
+};
+
 
 /**
  * Node recursive destructors.

@@ -22,16 +22,16 @@
 	Program * program;
 	// TODO: Descomentar una vez que esté todo en el AbstractSyntaxTree
 
-	// Sentences * sentences;
-	// Sentence * sentence;
-	// IfSentence * if_sentence;
-	// IfElseSentence * if_else_sentence;
-	// ForSentence * for_sentence;
-	// AssignSentence * assign_sentence;
-	// Block * block;
-	// Interval * interval;
-	// BoolExpression * bool_expression;
-	// BoolFactor * bool_factor;
+	Sentences * sentences;
+	Sentence * sentence;
+	IfSentence * if_sentence;
+	IfElseSentence * if_else_sentence;
+	ForSentence * for_sentence;
+	AssignSentence * assign_sentence;
+	Block * block;
+	Interval * interval;
+	BoolExpression * bool_expression;
+	BoolFactor * bool_factor;
 }
 
 /**
@@ -109,7 +109,7 @@
 
 /** NUESTROS NO-TERMINALES */
 
-/* %type <sentences> sentences
+%type <sentences> sentences
 %type <sentence> sentence
 %type <if_sentence> if_sentence
 %type <if_else_sentence> if_else_sentence
@@ -118,7 +118,7 @@
 %type <block> block
 %type <interval> interval
 %type <bool_expression> bool_expression
-%type <bool_factor> bool_factor */
+%type <bool_factor> bool_factor
 
 
 
@@ -145,49 +145,51 @@ program: expression													{ $$ = ExpressionProgramSemanticAction(currentCo
    TODO: Manejar lógica en el AbstractSyntaxTree.h
 */
 
-/* 
-sentences: sentences sentence SEMICOLON
+
+sentences: sentences sentence SEMICOLON									{ $$ = SentencesSemanticAction($1, $2); }
 	;
 
-sentence: assign_sentence
-	| if_sentence
-	| for_sentence	
-	| if_else_sentence
+/* TODO: Obs: Se podrían eliminar las transiciones unitarias y evitar un montón de código de más */
+sentence: assign_sentence												{ $$ = TypeAssignSentenceSemanticAction($1); }
+	| if_sentence														{ $$ = TypeIfSentenceSemanticAction($1); }
+	| for_sentence														{ $$ = TypeForSentenceSemanticAction($1); }
+	| if_else_sentence													{ $$ = TypeIfElseSentenceSemanticAction($1); }
 	;
 
-if_sentence: IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block
+/* TODO: cambiar bool_expression por bool_factor */
+if_sentence: IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block		{ $$ = IfSentenceSemanticAction($3, $5); }
 	;
 
-if_else_sentence: IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block
+if_else_sentence: IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
 	;
 
-for_sentence: FOR IDENTIFIER IN interval
+for_sentence: FOR IDENTIFIER IN interval block							{ $$ = ForSentenceSemanticAction($2, $3, $4); }
 	;
 
-assign_sentence: IDENTIFIER ASSIGN expression
+assign_sentence: IDENTIFIER ASSIGN expression							{ $$ = AssignSentenceSemanticAction($1, $3); }
 	;
 
-block: OPEN_BRACES sentences CLOSE_BRACES
+block: OPEN_BRACES sentences CLOSE_BRACES								{ $$ = BlockSemanticAction($2); }
 	;
 
-interval: OPEN_BRACKETS expression SEMICOLON expression CLOSE_BRACKETS
+interval: OPEN_BRACKETS expression SEMICOLON expression CLOSE_BRACKETS	{ $$ = IntervalSemanticAction($2, $4); }
 	;
 
-bool_expression: expression GEQ expression
-	| expression LEQ expression
-	| expression GT expression
-	| expression LT expression
-	| expression EQ expression
-	| expression NEQ expression
-	| bool_expression AND bool_expression
-	| bool_expression OR bool_expression
-	| NOT bool_expression
-	| bool_factor
+bool_expression: expression GEQ expression								{ $$ = BoolExpressionSemanticAction($1, $3, GREATER_OR_EQUAL); }
+	| expression LEQ expression											{ $$ = BoolExpressionSemanticAction($1, $3, LESS_OR_EQUAL); }
+	| expression GT expression											{ $$ = BoolExpressionSemanticAction($1, $3, GREATER_THAN); }
+	| expression LT expression											{ $$ = BoolExpressionSemanticAction($1, $3, LESS_THAN); }
+	| expression EQ expression											{ $$ = BoolExpressionSemanticAction($1, $3, EQUAL_TO); }
+	| expression NEQ expression											{ $$ = BoolExpressionSemanticAction($1, $3, NOT_EQUAL); }
+	| bool_expression AND bool_expression								{ $$ = BoolBinaryExpressionSemanticAction($1, $3, AND_TYPE); }
+	| bool_expression OR bool_expression								{ $$ = BoolBinaryExpressionSemanticAction($1, $3, OR_TYPE); }
+	| NOT bool_expression												{ $$ = BoolUnaryExpressionSemanticAction($2, NOT_TYPE); }
+	| bool_factor														{ $$ = BoolFactorExpressionSemanticAction($1); }
 	;
 
-bool_factor: OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS
+bool_factor: OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS			{ $$ = BoolExpressionFactorSemanticAction($2); }
 	;
- */
+
 
 
 
