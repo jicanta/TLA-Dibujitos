@@ -16,6 +16,8 @@ void shutdownAbstractSyntaxTreeModule();
 
 typedef enum ExpressionType ExpressionType;
 typedef enum FactorType FactorType;
+typedef enum SentenceType SentenceType;
+
 
 typedef enum BoolExpressionType BoolExpressionType;
 
@@ -67,6 +69,13 @@ enum FactorType {
 	EXPRESSION
 };
 
+enum SentenceType {
+	IF_SENTENCE,
+	IF_ELSE_SENTENCE,
+	ASSIGN_SENTENCE,
+	FOR_SENTENCE,
+};
+
 struct Constant {
 	int value;
 };
@@ -91,12 +100,36 @@ struct Expression {
 };
 
 struct Program {
-	Expression * expression;
+	Sentences * sentences;
 };
 
 struct Sentences {
 	Sentences * sentences;
 	Sentence * sentence;
+};
+
+struct Sentence {
+	union {
+		struct {
+			char * assignIdentifier;
+			Expression * assignExpression;
+		};
+		struct {
+			BoolExpression * ifBoolExpression;
+			Block * ifBlock;
+		};
+		struct {
+			BoolExpression * ifElseBoolExpression;
+			Block * leftIfElseBlock;
+			Block * rightIfElseBlock;
+		};
+		struct {
+			char * forIdentifier;
+			Interval * forInterval;
+			Block * forBlock;
+		};
+		SentenceType type;
+	};
 };
 
 struct IfSentence {
@@ -131,7 +164,7 @@ struct Interval {
 // TODO: Es muy probable que haya que separar esto en partes D:
 struct BoolExpression {
 	union {
-		BoolFactor * factor;
+		BoolFactor * boolFactor;
 		struct {
 			Expression * leftExpression;
 			Expression * rightExpression;
@@ -141,7 +174,6 @@ struct BoolExpression {
 			BoolExpression * rightBoolExpression;
 		};
 		BoolExpression * boolExpression;
-
 	};
 	BoolExpressionType type;
 };
@@ -153,6 +185,7 @@ struct BoolFactor {
 
 /**
  * Node recursive destructors.
+ * TODO: seguir haciendo estos "Node Recursive Destructors"
  */
 void releaseConstant(Constant * constant);
 void releaseExpression(Expression * expression);

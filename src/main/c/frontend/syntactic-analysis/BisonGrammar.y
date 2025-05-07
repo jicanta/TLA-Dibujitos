@@ -24,10 +24,7 @@
 
 	Sentences * sentences;
 	Sentence * sentence;
-	IfSentence * if_sentence;
-	IfElseSentence * if_else_sentence;
-	ForSentence * for_sentence;
-	AssignSentence * assign_sentence;
+
 	Block * block;
 	Interval * interval;
 	BoolExpression * bool_expression;
@@ -111,10 +108,7 @@
 
 %type <sentences> sentences
 %type <sentence> sentence
-%type <if_sentence> if_sentence
-%type <if_else_sentence> if_else_sentence
-%type <for_sentence> for_sentence
-%type <assign_sentence> assign_sentence
+
 %type <block> block
 %type <interval> interval
 %type <bool_expression> bool_expression
@@ -137,36 +131,22 @@
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
-program: expression													{ $$ = ExpressionProgramSemanticAction(currentCompilerState(), $1); }
+program: sentences													{ $$ = SentencesProgramSemanticAction(currentCompilerState(), $1); }
 	;
 
-/* TODO: cambiar a program: sentences 
-   TODO: descomentar. Ojo que todavía faltan funcionalidades como los vectores y los floats
-   TODO: Manejar lógica en el AbstractSyntaxTree.h
+/* TODO: Faltan todas las funciones release
+ * TODO: Faltan muchas reglas/producciones, especialmente las de los vectores y las
 */
 
 
 sentences: sentences sentence SEMICOLON									{ $$ = SentencesSemanticAction($1, $2); }
+	| %empty
 	;
 
-/* TODO: Obs: Se podrían eliminar las transiciones unitarias y evitar un montón de código de más */
-sentence: assign_sentence												{ $$ = TypeAssignSentenceSemanticAction($1); }
-	| if_sentence														{ $$ = TypeIfSentenceSemanticAction($1); }
-	| for_sentence														{ $$ = TypeForSentenceSemanticAction($1); }
-	| if_else_sentence													{ $$ = TypeIfElseSentenceSemanticAction($1); }
-	;
-
-/* TODO: cambiar bool_expression por bool_factor */
-if_sentence: IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block		{ $$ = IfSentenceSemanticAction($3, $5); }
-	;
-
-if_else_sentence: IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
-	;
-
-for_sentence: FOR IDENTIFIER IN interval block							{ $$ = ForSentenceSemanticAction($2, $3, $4); }
-	;
-
-assign_sentence: IDENTIFIER ASSIGN expression							{ $$ = AssignSentenceSemanticAction($1, $3); }
+sentence: IDENTIFIER ASSIGN expression									{ $$ = AssignSentenceSemanticAction($1, $3); }
+	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block		{ $$ = IfSentenceSemanticAction($3, $5); }
+	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
+	| FOR IDENTIFIER IN interval block									{ $$ = ForSentenceSemanticAction($2, $3, $4); }
 	;
 
 block: OPEN_BRACES sentences CLOSE_BRACES								{ $$ = BlockSemanticAction($2); }

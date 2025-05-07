@@ -71,10 +71,10 @@ Factor * ExpressionFactorSemanticAction(Expression * expression) {
 	return factor;
 }
 
-Program * ExpressionProgramSemanticAction(CompilerState * compilerState, Expression * expression) {
+Program * SentencesProgramSemanticAction(CompilerState * compilerState, Sentences * sentences) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Program * program = calloc(1, sizeof(Program));
-	program->expression = expression;
+	program->sentences = sentences;
 	compilerState->abstractSyntaxtTree = program;
 	if (0 < flexCurrentContext()) {
 		logError(_logger, "The final context is not the default (0): %d", flexCurrentContext());
@@ -85,3 +85,122 @@ Program * ExpressionProgramSemanticAction(CompilerState * compilerState, Express
 	}
 	return program;
 }
+
+
+// NUESTRAS:
+
+Sentences * SentencesSemanticAction(Sentences * sentences, Sentence * sentence) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Sentences * sentences_ret = calloc(1, sizeof(Sentences));
+	sentences_ret->sentences = sentences;
+	sentences_ret->sentence = sentence;
+	return sentences_ret;
+}
+
+Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Sentence * sentence = calloc(1, sizeof(Sentence));
+	sentence->assignIdentifier = identifier;
+	sentence->assignExpression = expression;
+	sentence->type = ASSIGN_SENTENCE;
+	return sentence;
+}
+
+Sentence * IfSentenceSemanticAction(BoolExpression * boolExpression, Block * block) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Sentence * sentence = calloc(1, sizeof(Sentence));
+	sentence->ifBoolExpression = boolExpression;
+	sentence->ifBlock = block;
+	sentence->type = IF_SENTENCE;
+	return sentence;
+}
+
+Sentence * ForSentenceSemanticAction(char * identifier, Interval * interval, Block * block) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Sentence * sentence = calloc(1, sizeof(Sentence));
+	sentence->forIdentifier = identifier;
+	sentence->forInterval = interval;
+	sentence->forBlock = block;
+	sentence->type = FOR_SENTENCE;
+	return sentence;
+}
+
+Sentence * IfElseSentenceSemanticAction(BoolExpression * boolExpression, Block * leftBlock, Block * rightBlock) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Sentence * sentence = calloc(1, sizeof(Sentence));
+	sentence->ifElseBoolExpression = boolExpression;
+	sentence->leftIfElseBlock = leftBlock;
+	sentence->rightIfElseBlock = rightBlock;
+	sentence->type = IF_ELSE_SENTENCE;
+	return sentence;
+}
+
+Block * BlockSemanticAction(Sentences * sentences) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Block * block = calloc(1, sizeof(Block));
+	block->sentences = sentences;
+	return block;
+}
+
+Interval * IntervalSemanticAction(Expression * leftExpression, Expression * rightExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Interval * interval = calloc(1, sizeof(Interval));
+	interval->leftExpression = leftExpression;
+	interval->rightExpression = leftExpression;
+	return interval;
+}
+
+BoolExpression * BoolExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, BoolExpressionType type) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	BoolExpression * boolExpression = calloc(1, sizeof(BoolExpression));
+	boolExpression->leftExpression = leftExpression;
+	boolExpression->rightExpression = rightExpression;
+	boolExpression->type = type;
+	return boolExpression;
+}
+
+BoolExpression * BoolBinaryExpressionSemanticAction(BoolExpression * leftBoolExpression, BoolExpression * rightBoolExpression, BoolExpressionType type) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	BoolExpression * boolExpression = calloc(1, sizeof(BoolExpression));
+	boolExpression->leftBoolExpression = leftBoolExpression;
+	boolExpression->rightBoolExpression = rightBoolExpression;
+	boolExpression->type = type;
+	return boolExpression;
+}
+
+
+BoolExpression * BoolUnaryExpressionSemanticAction(BoolExpression * boolExpression, BoolExpressionType type) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	BoolExpression * boolExpression_ret = calloc(1, sizeof(BoolExpression));
+	boolExpression_ret->boolExpression = boolExpression;
+	boolExpression_ret->type = type;
+	return boolExpression_ret;
+}
+
+BoolExpression * BoolFactorExpressionSemanticAction(BoolFactor * boolFactor) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	BoolExpression * boolExpression = calloc(1, sizeof(BoolExpression));
+	boolExpression->boolFactor = boolFactor;
+	return boolExpression;
+}
+
+BoolFactor * BoolExpressionFactorSemanticAction(BoolExpression * boolExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	BoolFactor * boolFactor = calloc(1, sizeof(BoolFactor));
+	boolFactor->boolExpression = boolExpression;
+	return boolFactor;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -60,7 +60,9 @@ void releaseFactor(Factor * factor) {
 void releaseProgram(Program * program) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (program != NULL) {
-		releaseExpression(program->expression);
+		releaseSentences(program->sentences);
 		free(program);
 	}
 }
+
+// TODO: Crear todas las funciones RELEASE
