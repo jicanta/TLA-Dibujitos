@@ -23,6 +23,19 @@ Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Exp
 Expression * FactorExpressionSemanticAction(Factor * factor);
 Factor * ConstantFactorSemanticAction(Constant * constant);
 Factor * ExpressionFactorSemanticAction(Expression * expression);
-Program * ExpressionProgramSemanticAction(CompilerState * compilerState, Expression * expression);
+Program * SentencesProgramSemanticAction(CompilerState * compilerState, Sentences * sentences);
+Sentences * SentencesSemanticAction(Sentences * sentences, Sentence * sentence);
+Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expression);
+Sentence * IfSentenceSemanticAction(BoolExpression * boolExpression, Block * block);
+Sentence * ForSentenceSemanticAction(char * identifier, Interval * interval, Block * block);
+Sentence * IfElseSentenceSemanticAction(BoolExpression * boolExpression, Block * leftBlock, Block * rightBlock);
+Block * BlockSemanticAction(Sentences * sentences);
+Interval * IntervalSemanticAction(Expression * leftExpression, Expression * rightExpression);
+BoolExpression * BoolExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, BoolExpressionType type);
+BoolExpression * BoolBinaryExpressionSemanticAction(BoolExpression * leftBoolExpression, BoolExpression * rightBoolExpression, BoolExpressionType type);
+BoolExpression * BoolUnaryExpressionSemanticAction(BoolExpression * boolExpression, BoolExpressionType type);
+BoolExpression * BoolFactorExpressionSemanticAction(BoolFactor * boolFactor);
+BoolFactor * BoolExpressionFactorSemanticAction(BoolExpression * boolExpression);
+
 
 #endif

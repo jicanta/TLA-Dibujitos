@@ -84,8 +84,8 @@
 %token <token> IN
 %token <token> FOR
 
-%token <token> STRING
-%token <token> IDENTIFIER
+%token <string> STRING
+%token <string> IDENTIFIER
 
 
 
@@ -127,6 +127,10 @@
 %left ADD SUB
 %left MUL DIV
 
+%left AND OR
+
+%left NOT
+
 %%
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
@@ -146,7 +150,7 @@ sentences: sentences sentence SEMICOLON									{ $$ = SentencesSemanticAction($
 sentence: IDENTIFIER ASSIGN expression									{ $$ = AssignSentenceSemanticAction($1, $3); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block		{ $$ = IfSentenceSemanticAction($3, $5); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
-	| FOR IDENTIFIER IN interval block									{ $$ = ForSentenceSemanticAction($2, $3, $4); }
+	| FOR IDENTIFIER IN interval block									{ $$ = ForSentenceSemanticAction($2, $4, $5); }
 	;
 
 block: OPEN_BRACES sentences CLOSE_BRACES								{ $$ = BlockSemanticAction($2); }

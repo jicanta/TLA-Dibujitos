@@ -191,5 +191,13 @@ void releaseConstant(Constant * constant);
 void releaseExpression(Expression * expression);
 void releaseFactor(Factor * factor);
 void releaseProgram(Program * program);
+void releaseSentences(Sentences * sentences);
+void releaseSentence(Sentence * sentence);
+void releaseBlock(Block * block);
+void releaseInterval(Interval * interval);
+void releaseBoolExpression(BoolExpression * boolExpression);
+void releaseBoolFactor(BoolFactor * boolFactor);
+
+
 
 #endif
