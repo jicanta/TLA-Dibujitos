@@ -128,8 +128,8 @@ struct Sentence {
 			Interval * forInterval;
 			Block * forBlock;
 		};
-		SentenceType type;
 	};
+	SentenceType type;
 };
 
 struct IfSentence {

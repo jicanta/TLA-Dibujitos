@@ -81,11 +81,12 @@ identifier         {char}({char}|{digit})*
 
 [[:digit:]]+						{ return IntegerLexemeAction(createLexicalAnalyzerContext()); }
 
-[[:space:]]+						{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
 
 {identifier}                        { return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
 {string}                            { return StringLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
+
+[[:space:]]+						{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
 
 .									{ return UnknownLexemeAction(createLexicalAnalyzerContext()); }

@@ -144,7 +144,7 @@ program: sentences													{ $$ = SentencesProgramSemanticAction(currentComp
 
 
 sentences: sentences sentence SEMICOLON									{ $$ = SentencesSemanticAction($1, $2); }
-	| %empty
+	| %empty                                                            { $$ = EmptySentencesSemanticAction(); }
 	;
 
 sentence: IDENTIFIER ASSIGN expression									{ $$ = AssignSentenceSemanticAction($1, $3); }

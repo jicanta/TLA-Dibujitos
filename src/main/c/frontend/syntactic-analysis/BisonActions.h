@@ -18,12 +18,15 @@ void shutdownBisonActionsModule();
  * Bison semantic actions.
  */
 
+
 Constant * IntegerConstantSemanticAction(const int value);
 Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type);
 Expression * FactorExpressionSemanticAction(Factor * factor);
 Factor * ConstantFactorSemanticAction(Constant * constant);
 Factor * ExpressionFactorSemanticAction(Expression * expression);
+
 Program * SentencesProgramSemanticAction(CompilerState * compilerState, Sentences * sentences);
+Sentences * EmptySentencesSemanticAction();
 Sentences * SentencesSemanticAction(Sentences * sentences, Sentence * sentence);
 Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expression);
 Sentence * IfSentenceSemanticAction(BoolExpression * boolExpression, Block * block);

@@ -89,6 +89,13 @@ Program * SentencesProgramSemanticAction(CompilerState * compilerState, Sentence
 
 // NUESTRAS:
 
+Sentences * EmptySentencesSemanticAction() {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Sentences * sentences = calloc(1, sizeof(Sentences));
+    // Initialize fields to represent an empty state, if necessary.
+    return sentences;
+}
+
 Sentences * SentencesSemanticAction(Sentences * sentences, Sentence * sentence) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Sentences * sentences_ret = calloc(1, sizeof(Sentences));
@@ -146,7 +153,7 @@ Interval * IntervalSemanticAction(Expression * leftExpression, Expression * righ
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Interval * interval = calloc(1, sizeof(Interval));
 	interval->leftExpression = leftExpression;
-	interval->rightExpression = leftExpression;
+	interval->rightExpression = rightExpression;
 	return interval;
 }
 
