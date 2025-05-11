@@ -31,10 +31,19 @@ static void _logSyntacticAnalyzerAction(const char * functionName) {
 
 /* PUBLIC FUNCTIONS */
 
-Constant * IntegerConstantSemanticAction(const int value) {
+Constant * IntegerConstantSemanticAction(const int integer) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Constant * constant = calloc(1, sizeof(Constant));
-	constant->value = value;
+	constant->integer = integer;
+	constant->type = INTEGER;
+	return constant;
+}
+
+Constant * DecimalConstantSemanticAction(const float decimal) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Constant * constant = calloc(1, sizeof(Constant));
+	constant->decimal = decimal;
+	constant->type = DECIMAL;
 	return constant;
 }
 
@@ -69,6 +78,22 @@ Factor * ExpressionFactorSemanticAction(Expression * expression) {
 	factor->expression = expression;
 	factor->type = EXPRESSION;
 	return factor;
+}
+
+Factor * VectorFactorSemanticAction(Vector * vector) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Factor * factor = calloc(1, sizeof(Vector));
+	factor->vector = vector;
+	factor->type = VECTOR;
+	return factor;
+}
+
+Vector * VectorSemanticAction(Constant * left, Constant * right) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Vector * vector = calloc(1, sizeof(Vector));
+	vector->left = left;
+	vector->right = right;
+	return vector;
 }
 
 Program * SentencesProgramSemanticAction(CompilerState * compilerState, Sentences * sentences) {

@@ -24,6 +24,7 @@
  */
 string          \"([^\\\"]|\\.)*\"  
 digit              [0-9]
+decimal            [+-]?(([0-9]+\.[0-9]*)|(\.[0-9]+))
 char               [a-zA-Z_]
 identifier         {char}({char}|{digit})*
 
@@ -80,6 +81,7 @@ identifier         {char}({char}|{digit})*
 ")"									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext(), CLOSE_PARENTHESIS); }
 
 [[:digit:]]+						{ return IntegerLexemeAction(createLexicalAnalyzerContext()); }
+{decimal}				    		{ return DecimalLexemeAction(createLexicalAnalyzerContext()); }
 
 
 

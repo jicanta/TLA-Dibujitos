@@ -27,6 +27,7 @@ void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 Token ArithmeticOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 Token IntegerLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token DecimalLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token ParenthesisLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);

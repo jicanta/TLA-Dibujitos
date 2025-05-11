@@ -20,11 +20,13 @@ typedef enum SentenceType SentenceType;
 
 
 typedef enum BoolExpressionType BoolExpressionType;
+typedef enum ConstantType ConstantType;
 
 
 typedef struct Constant Constant;
 typedef struct Expression Expression;
 typedef struct Factor Factor;
+typedef struct Vector Vector;
 typedef struct Program Program;
 
 typedef struct Sentences Sentences;
@@ -66,7 +68,8 @@ enum BoolExpressionType {
 
 enum FactorType {
 	CONSTANT,
-	EXPRESSION
+	EXPRESSION,
+	VECTOR,
 };
 
 enum SentenceType {
@@ -76,16 +79,31 @@ enum SentenceType {
 	FOR_SENTENCE,
 };
 
+enum ConstantType {
+	INTEGER,
+	DECIMAL,
+};
+
 struct Constant {
-	int value;
+	union {
+		int integer;
+		float decimal;
+	};
+	ConstantType type;
 };
 
 struct Factor {
 	union {
 		Constant * constant;
 		Expression * expression;
+		Vector * vector;
 	};
 	FactorType type;
+};
+
+struct Vector {
+	Constant * left;
+	Constant * right;
 };
 
 struct Expression {

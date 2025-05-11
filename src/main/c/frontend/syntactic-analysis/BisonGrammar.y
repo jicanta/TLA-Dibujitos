@@ -11,6 +11,7 @@
 	/** Terminals. */
 
 	int integer;
+	float decimal;
 	Token token;
 	char * string;
 
@@ -19,6 +20,7 @@
 	Constant * constant;
 	Expression * expression;
 	Factor * factor;
+	Vector * vector;
 	Program * program;
 	// TODO: Descomentar una vez que esté todo en el AbstractSyntaxTree
 
@@ -33,7 +35,7 @@
 
 /**
  * Destructors. This functions are executed after the parsing ends, so if the
- * AST must be used in the following phases of the compiler you shouldn't used
+ * AST must be used in the following phases of the compiler you shouldnt used
  * this approach for the AST root node ("program" non-terminal, in this
  * grammar), or it will drop the entire tree even if the parse succeeds.
  *
@@ -45,6 +47,7 @@
 
 /** Terminals. */
 %token <integer> INTEGER
+%token <decimal> DECIMAL
 %token <token> ADD
 %token <token> CLOSE_PARENTHESIS
 %token <token> DIV
@@ -102,6 +105,7 @@
 %type <constant> constant
 %type <expression> expression
 %type <factor> factor
+%type <vector> vector
 %type <program> program
 
 /** NUESTROS NO-TERMINALES */
@@ -189,9 +193,14 @@ expression: expression[left] ADD expression[right]					{ $$ = ArithmeticExpressi
 
 factor: OPEN_PARENTHESIS expression CLOSE_PARENTHESIS				{ $$ = ExpressionFactorSemanticAction($2); }
 	| constant														{ $$ = ConstantFactorSemanticAction($1); }
+	| vector														{ $$ = VectorFactorSemanticAction($1); }
 	;
 
 constant: INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
+	| DECIMAL													{ $$ = DecimalConstantSemanticAction($1); }
 	;
+
+vector: OPEN_PARENTHESIS constant[left] COMMA constant[right] CLOSE_PARENTHESIS	{ $$ = VectorSemanticAction($left, $right); }
+	; 
 
 %%

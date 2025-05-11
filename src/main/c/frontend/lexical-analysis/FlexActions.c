@@ -71,6 +71,16 @@ Token IntegerLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	return INTEGER;
 }
 
+Token DecimalLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+    _logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+
+    // Convert the lexeme string to a float (single precision)
+    lexicalAnalyzerContext->semanticValue->decimal = strtof(lexicalAnalyzerContext->lexeme, NULL);
+
+    destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+    return DECIMAL;
+}
+
 Token ParenthesisLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	lexicalAnalyzerContext->semanticValue->token = token;
