@@ -80,8 +80,8 @@ identifier         {char}({char}|{digit})*
 "("									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext(), OPEN_PARENTHESIS); }
 ")"									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext(), CLOSE_PARENTHESIS); }
 
-[[:digit:]]+						{ return IntegerLexemeAction(createLexicalAnalyzerContext()); }
 {decimal}				    		{ return DecimalLexemeAction(createLexicalAnalyzerContext()); }
+[[:digit:]]+						{ return IntegerLexemeAction(createLexicalAnalyzerContext()); }
 
 
 

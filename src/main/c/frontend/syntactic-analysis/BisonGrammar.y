@@ -181,9 +181,24 @@ bool_factor: OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS			{ $$ = BoolExp
 
 
 
+/* 
+	Comentarios para seguir con el trabajo:
+	TODO: Renombrar:
+		expression -> numeric_expression (de floats y integers)
+		factor -> numeric_factor
+		constant -> numeric_constant (o directamente "number")
 
+	TODO: Las operaciones con vectores NO deberían ser compatibles con las operaciones numéricas
 
-/* Quizás conviene cambiar EXPRESSION por INTEGER o algo así */
+	TODO: Si queremos aceptar operaciones EXCLUSIVAS para integers (/, %), deberíamos tener un
+		"integer_expression" y un "numeric_expression" (o algo así) y no mezclar tipos.
+
+	TODO: Para que los vectores puedan tener cualquier expresión numérica, hay que poner 
+		"expression" en vez de "constant"
+	
+	TODO: Hay que sacar "vector" de "factor" porque esto hace que floats y vectores sean compatibles (pero no lo son)
+ */
+
 expression: expression[left] ADD expression[right]					{ $$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION); }
 	| expression[left] DIV expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION); }
 	| expression[left] MUL expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
@@ -201,6 +216,6 @@ constant: INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
 	;
 
 vector: OPEN_PARENTHESIS constant[left] COMMA constant[right] CLOSE_PARENTHESIS	{ $$ = VectorSemanticAction($left, $right); }
-	; 
+	;
 
 %%
