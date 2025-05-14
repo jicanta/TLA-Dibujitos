@@ -19,6 +19,7 @@ void shutdownBisonActionsModule();
  */
 
 Constant * DecimalConstantSemanticAction(const float decimal);
+Constant * IdentifierConstantSemanticAction(const char * identifier);
 Constant * IntegerConstantSemanticAction(const int value);
 Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type);
 Expression * FactorExpressionSemanticAction(Factor * factor);

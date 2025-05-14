@@ -19,6 +19,17 @@ void shutdownAbstractSyntaxTreeModule() {
 void releaseConstant(Constant * constant) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (constant != NULL) {
+		switch (constant->type) {
+			case INTEGER_CONSTANT:
+				// No need to free anything for integer constants
+				break;
+			case DECIMAL_CONSTANT:
+				// No need to free anything for decimal constants
+				break;
+			case IDENTIFIER_CONSTANT:
+				free((char *) constant->identifier); // Cast to char* to free the string
+				break;
+		}
 		free(constant);
 	}
 }
@@ -52,6 +63,9 @@ void releaseFactor(Factor * factor) {
 			case EXPRESSION:
 				releaseExpression(factor->expression);
 				break;
+			case VECTOR:
+				releaseVector(factor->vector);
+				break;
 		}
 		free(factor);
 	}
@@ -62,6 +76,15 @@ void releaseProgram(Program * program) {
 	if (program != NULL) {
 		releaseSentences(program->sentences);
 		free(program);
+	}
+}
+
+void releaseVector(Vector * vector) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (vector != NULL) {
+		releaseConstant(vector->left);
+		releaseConstant(vector->right);
+		free(vector);
 	}
 }
 

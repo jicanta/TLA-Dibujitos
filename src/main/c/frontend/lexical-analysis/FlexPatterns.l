@@ -27,7 +27,7 @@ digit              [0-9]
 decimal            [+-]?(([0-9]+\.[0-9]*)|(\.[0-9]+))
 char               [a-zA-Z_]
 identifier         {char}({char}|{digit})*
-
+comment           \/\/[^\n]*
 %%
 
 "/*"								{ BEGIN(MULTILINE_COMMENT); BeginMultilineCommentLexemeAction(createLexicalAnalyzerContext()); }
@@ -35,7 +35,7 @@ identifier         {char}({char}|{digit})*
 <MULTILINE_COMMENT>[[:space:]]+		{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>[^*]+			{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>.				{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-
+{comment} {IgnoredLexemeAction(createLexicalAnalyzerContext());}
 "-"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), SUB); }
 "*"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), MUL); }
 "/"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), DIV); }
@@ -102,7 +102,7 @@ identifier         {char}({char}|{digit})*
  * Moví lo que pensaba que no tenía sentido
  * 
  * Esto no sigue el formato:
- * {"//".} {IgnoredLexemeAction(createLexicalAnalyzerContext());}
+ * 
  * 
  * NOOOOO ESTO NOOOO PLZ:
  * "+="                                { return PlusEqualsLexemeAction(createLexicalAnalyzerContext()); }

@@ -80,14 +80,16 @@ enum SentenceType {
 };
 
 enum ConstantType {
-	INTEGER,
-	DECIMAL,
+	INTEGER_CONSTANT,
+	DECIMAL_CONSTANT,
+	IDENTIFIER_CONSTANT,
 };
 
 struct Constant {
 	union {
 		int integer;
 		float decimal;
+		const char * identifier;
 	};
 	ConstantType type;
 };
@@ -215,6 +217,8 @@ void releaseBlock(Block * block);
 void releaseInterval(Interval * interval);
 void releaseBoolExpression(BoolExpression * boolExpression);
 void releaseBoolFactor(BoolFactor * boolFactor);
+void releaseVector(Vector * vector);
+
 
 
 

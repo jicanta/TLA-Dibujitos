@@ -213,6 +213,7 @@ factor: OPEN_PARENTHESIS expression CLOSE_PARENTHESIS				{ $$ = ExpressionFactor
 
 constant: INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
 	| DECIMAL													{ $$ = DecimalConstantSemanticAction($1); }
+	| IDENTIFIER												{ $$ = IdentifierConstantSemanticAction($1); }
 	;
 
 vector: OPEN_PARENTHESIS constant[left] COMMA constant[right] CLOSE_PARENTHESIS	{ $$ = VectorSemanticAction($left, $right); }

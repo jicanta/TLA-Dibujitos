@@ -35,15 +35,24 @@ Constant * IntegerConstantSemanticAction(const int integer) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Constant * constant = calloc(1, sizeof(Constant));
 	constant->integer = integer;
-	constant->type = INTEGER;
+	constant->type = INTEGER_CONSTANT;
 	return constant;
 }
+
+Constant * IdentifierConstantSemanticAction(const char * identifier) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Constant * constant = calloc(1, sizeof(Constant));
+	constant->identifier = identifier;
+	constant->type = IDENTIFIER_CONSTANT;
+	return constant;
+}
+
 
 Constant * DecimalConstantSemanticAction(const float decimal) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Constant * constant = calloc(1, sizeof(Constant));
 	constant->decimal = decimal;
-	constant->type = DECIMAL;
+	constant->type = DECIMAL_CONSTANT;
 	return constant;
 }
 
