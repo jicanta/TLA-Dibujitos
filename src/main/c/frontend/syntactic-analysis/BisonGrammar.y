@@ -18,8 +18,8 @@
 	/** Non-terminals. */
 
 	Constant * constant;
-	Expression * expression;
-	Factor * factor;
+	FloatExpression * float_expression;
+	FloatFactor * float_factor;
 	Vector * vector;
 	Program * program;
 	// TODO: Descomentar una vez que esté todo en el AbstractSyntaxTree
@@ -42,8 +42,16 @@
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
 %destructor { releaseConstant($$); } <constant>
-%destructor { releaseExpression($$); } <expression>
-%destructor { releaseFactor($$); } <factor>
+%destructor { releaseFloatExpression($$); } <float_expression>
+%destructor { releaseFloatFactor($$); } <float_factor>
+%destructor { releaseSentences($$); } <sentences>
+%destructor { releaseSentence($$); } <sentence>
+%destructor { releaseBlock($$); } <block>
+%destructor { releaseInterval($$); } <interval>
+%destructor { releaseBoolExpression($$); } <bool_expression>
+%destructor { releaseBoolFactor($$); } <bool_factor>
+
+
 
 /** Terminals. */
 %token <integer> INTEGER
@@ -103,8 +111,8 @@
 
 /** Non-terminals. */
 %type <constant> constant
-%type <expression> expression
-%type <factor> factor
+%type <float_expression> float_expression
+%type <float_factor> float_factor
 %type <vector> vector
 %type <program> program
 
@@ -147,11 +155,12 @@ program: sentences													{ $$ = SentencesProgramSemanticAction(currentComp
 */
 
 
-sentences: sentences sentence SEMICOLON									{ $$ = SentencesSemanticAction($1, $2); }
+sentences: sentences sentence											{ $$ = SentencesSemanticAction($1, $2); }
 	| %empty                                                            { $$ = EmptySentencesSemanticAction(); }
 	;
 
-sentence: IDENTIFIER ASSIGN expression									{ $$ = AssignSentenceSemanticAction($1, $3); }
+sentence: IDENTIFIER ASSIGN float_expression SEMICOLON					{ $$ = AssignSentenceSemanticAction($1, $3); }
+	/* | IDENTIFIER ASSIGN vector											// TODO: VECTOR */
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block		{ $$ = IfSentenceSemanticAction($3, $5); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
 	| FOR IDENTIFIER IN interval block									{ $$ = ForSentenceSemanticAction($2, $4, $5); }
@@ -160,15 +169,15 @@ sentence: IDENTIFIER ASSIGN expression									{ $$ = AssignSentenceSemanticActi
 block: OPEN_BRACES sentences CLOSE_BRACES								{ $$ = BlockSemanticAction($2); }
 	;
 
-interval: OPEN_BRACKETS expression SEMICOLON expression CLOSE_BRACKETS	{ $$ = IntervalSemanticAction($2, $4); }
+interval: OPEN_BRACKETS float_expression COLON float_expression CLOSE_BRACKETS	{ $$ = IntervalSemanticAction($2, $4); }
 	;
 
-bool_expression: expression GEQ expression								{ $$ = BoolExpressionSemanticAction($1, $3, GREATER_OR_EQUAL); }
-	| expression LEQ expression											{ $$ = BoolExpressionSemanticAction($1, $3, LESS_OR_EQUAL); }
-	| expression GT expression											{ $$ = BoolExpressionSemanticAction($1, $3, GREATER_THAN); }
-	| expression LT expression											{ $$ = BoolExpressionSemanticAction($1, $3, LESS_THAN); }
-	| expression EQ expression											{ $$ = BoolExpressionSemanticAction($1, $3, EQUAL_TO); }
-	| expression NEQ expression											{ $$ = BoolExpressionSemanticAction($1, $3, NOT_EQUAL); }
+bool_expression: float_expression GEQ float_expression								{ $$ = BoolExpressionSemanticAction($1, $3, GREATER_OR_EQUAL); }
+	| float_expression LEQ float_expression											{ $$ = BoolExpressionSemanticAction($1, $3, LESS_OR_EQUAL); }
+	| float_expression GT float_expression											{ $$ = BoolExpressionSemanticAction($1, $3, GREATER_THAN); }
+	| float_expression LT float_expression											{ $$ = BoolExpressionSemanticAction($1, $3, LESS_THAN); }
+	| float_expression EQ float_expression											{ $$ = BoolExpressionSemanticAction($1, $3, EQUAL_TO); }
+	| float_expression NEQ float_expression											{ $$ = BoolExpressionSemanticAction($1, $3, NOT_EQUAL); }
 	| bool_expression AND bool_expression								{ $$ = BoolBinaryExpressionSemanticAction($1, $3, AND_TYPE); }
 	| bool_expression OR bool_expression								{ $$ = BoolBinaryExpressionSemanticAction($1, $3, OR_TYPE); }
 	| NOT bool_expression												{ $$ = BoolUnaryExpressionSemanticAction($2, NOT_TYPE); }
@@ -183,32 +192,25 @@ bool_factor: OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS			{ $$ = BoolExp
 
 /* 
 	Comentarios para seguir con el trabajo:
-	TODO: Renombrar:
-		expression -> numeric_expression (de floats y integers)
-		factor -> numeric_factor
-		constant -> numeric_constant (o directamente "number")
-
 	TODO: Las operaciones con vectores NO deberían ser compatibles con las operaciones numéricas
 
 	TODO: Si queremos aceptar operaciones EXCLUSIVAS para integers (/, %), deberíamos tener un
 		"integer_expression" y un "numeric_expression" (o algo así) y no mezclar tipos.
 
-	TODO: Para que los vectores puedan tener cualquier expresión numérica, hay que poner 
-		"expression" en vez de "constant"
-	
-	TODO: Hay que sacar "vector" de "factor" porque esto hace que floats y vectores sean compatibles (pero no lo son)
  */
 
-expression: expression[left] ADD expression[right]					{ $$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION); }
-	| expression[left] DIV expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION); }
-	| expression[left] MUL expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
-	| expression[left] SUB expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
-	| factor														{ $$ = FactorExpressionSemanticAction($1); }
+float_expression: float_expression[left] ADD float_expression[right]					{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, ADDITION); }
+	| float_expression[left] DIV float_expression[right]						{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, DIVISION); }
+	| float_expression[left] MUL float_expression[right]						{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
+	| float_expression[left] SUB float_expression[right]						{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
+	| float_factor														{ $$ = FloatFactorExpressionSemanticAction($1); }
+
 	;
 
-factor: OPEN_PARENTHESIS expression CLOSE_PARENTHESIS				{ $$ = ExpressionFactorSemanticAction($2); }
-	| constant														{ $$ = ConstantFactorSemanticAction($1); }
+float_factor: OPEN_PARENTHESIS float_expression CLOSE_PARENTHESIS				{ $$ = FloatExpressionFactorSemanticAction($2); }
+	| constant														{ $$ = FloatConstantFactorSemanticAction($1); }
 	| vector														{ $$ = VectorFactorSemanticAction($1); }
+// El vector no debería ser un float_factor. Debería tener su propia categoría de vector_expression
 	;
 
 constant: INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
@@ -216,7 +218,15 @@ constant: INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
 	| IDENTIFIER												{ $$ = IdentifierConstantSemanticAction($1); }
 	;
 
+
+
+
 vector: OPEN_PARENTHESIS constant[left] COMMA constant[right] CLOSE_PARENTHESIS	{ $$ = VectorSemanticAction($left, $right); }
 	;
+
+// Deberíamos reemplazar la anterior por esta
+/* vector: OPEN_PARENTHESIS float_expression[left] COMMA float_expression[right] CLOSE_PARENTHESIS	{ $$ = VectorSemanticAction($left, $right); }
+	; */
+	
 
 %%
