@@ -130,6 +130,30 @@ Sentences * EmptySentencesSemanticAction() {
     return sentences;
 }
 
+ExpressionList * ExpressionListSemanticAction(ExpressionList * expressionList, FloatExpression * expression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	ExpressionList * expressionList_ret = calloc(1, sizeof(ExpressionList));
+	expressionList_ret->expression = expression;
+	expressionList_ret->next = expressionList;
+	return expressionList_ret;
+}
+
+ExpressionList * EmptyExpressionListSemanticAction() {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    ExpressionList * expressionList = calloc(1, sizeof(ExpressionList));
+    // Initialize fields to represent an empty state, if necessary.
+    return expressionList;
+}
+
+Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * functionArguments) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Sentence * sentence = calloc(1, sizeof(Sentence));
+	sentence->functionIdentifier = identifier;
+	sentence->functionArguments = functionArguments;
+	sentence->type = FUNCTION_SENTENCE;
+	return sentence;
+}
+
 Sentences * SentencesSemanticAction(Sentences * sentences, Sentence * sentence) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Sentences * sentences_ret = calloc(1, sizeof(Sentences));
@@ -144,6 +168,15 @@ Sentence * AssignSentenceSemanticAction(char * identifier, FloatExpression * flo
 	sentence->assignIdentifier = identifier;
 	sentence->assignFloatExpression = floatExpression;
 	sentence->type = ASSIGN_SENTENCE;
+	return sentence;
+}
+
+Sentence * AssignArraySentenceSemanticAction(char * identifier, ExpressionList * expressionList) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Sentence * sentence = calloc(1, sizeof(Sentence));
+	sentence->assignArrayIdentifier = identifier;
+	sentence->arrayExpressionList = expressionList;
+	sentence->type = ASSIGN_ARRAY_SENTENCE;
 	return sentence;
 }
 
@@ -188,6 +221,15 @@ Interval * IntervalSemanticAction(FloatExpression * leftFloatExpression, FloatEx
 	Interval * interval = calloc(1, sizeof(Interval));
 	interval->leftFloatExpression = leftFloatExpression;
 	interval->rightFloatExpression = rightFloatExpression;
+	interval->type = RANGE_INTERVAL;
+	return interval;
+}
+
+Interval * IntervalIdentifierSemanticAction(char * identifier) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Interval * interval = calloc(1, sizeof(Interval));
+	interval->identifier = identifier;
+	interval->type = IDENTIFIER_INTERVAL;
 	return interval;
 }
 

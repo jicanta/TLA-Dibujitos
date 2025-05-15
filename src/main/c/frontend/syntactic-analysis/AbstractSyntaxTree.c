@@ -119,8 +119,25 @@ void releaseSentence(Sentence * sentence){
 				releaseInterval(sentence->forInterval);
 				releaseBlock(sentence->forBlock);
 				break;
+			case FUNCTION_SENTENCE:
+				free(sentence->functionIdentifier);
+				releaseExpressionList(sentence->functionArguments);
+				break;
+			case ASSIGN_ARRAY_SENTENCE:
+				free(sentence->assignArrayIdentifier);
+				releaseExpressionList(sentence->arrayExpressionList);
+				break;
 		}
 		free(sentence);
+	}
+}
+
+void releaseExpressionList(ExpressionList * expressionList) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (expressionList != NULL) {
+		releaseFloatExpression(expressionList->expression);
+		releaseExpressionList(expressionList->next);
+		free(expressionList);
 	}
 }
 
@@ -135,8 +152,15 @@ void releaseBlock(Block * block) {
 void releaseInterval(Interval * interval) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (interval != NULL) {
-		releaseFloatExpression(interval->leftFloatExpression);
-		releaseFloatExpression(interval->rightFloatExpression);
+		switch (interval->type) {
+			case IDENTIFIER_INTERVAL:
+				free(interval->identifier);
+				break;
+			case RANGE_INTERVAL:
+				releaseFloatExpression(interval->leftFloatExpression);
+				releaseFloatExpression(interval->rightFloatExpression);
+				break; 
+		}
 		free(interval);
 	}
 }

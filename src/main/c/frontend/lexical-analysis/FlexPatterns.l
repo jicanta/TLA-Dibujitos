@@ -36,6 +36,9 @@ comment           \/\/[^\n]*
 <MULTILINE_COMMENT>[^*]+			{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>.				{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 {comment} {IgnoredLexemeAction(createLexicalAnalyzerContext());}
+{decimal}				    		{ return DecimalLexemeAction(createLexicalAnalyzerContext()); }
+[+-]?[[:digit:]]+						{ return IntegerLexemeAction(createLexicalAnalyzerContext()); }
+
 "-"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), SUB); }
 "*"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), MUL); }
 "/"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), DIV); }
@@ -80,8 +83,6 @@ comment           \/\/[^\n]*
 "("									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext(), OPEN_PARENTHESIS); }
 ")"									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext(), CLOSE_PARENTHESIS); }
 
-{decimal}				    		{ return DecimalLexemeAction(createLexicalAnalyzerContext()); }
-[[:digit:]]+						{ return IntegerLexemeAction(createLexicalAnalyzerContext()); }
 
 
 

@@ -21,6 +21,7 @@ typedef enum SentenceType SentenceType;
 
 typedef enum BoolExpressionType BoolExpressionType;
 typedef enum ConstantType ConstantType;
+typedef enum IntervalType IntervalType;
 
 
 typedef struct Constant Constant;
@@ -39,6 +40,7 @@ typedef struct Block Block;
 typedef struct Interval Interval;
 typedef struct BoolExpression BoolExpression;
 typedef struct BoolFactor BoolFactor;
+typedef struct ExpressionList ExpressionList;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
@@ -72,11 +74,18 @@ enum FloatFactorType {
 	VECTOR,
 };
 
+enum IntervalType {
+	RANGE_INTERVAL,
+	IDENTIFIER_INTERVAL,
+};
+
 enum SentenceType {
 	IF_SENTENCE,
 	IF_ELSE_SENTENCE,
 	ASSIGN_SENTENCE,
 	FOR_SENTENCE,
+	FUNCTION_SENTENCE,
+	ASSIGN_ARRAY_SENTENCE,
 };
 
 enum ConstantType {
@@ -135,6 +144,10 @@ struct Sentence {
 			FloatExpression * assignFloatExpression;
 		};
 		struct {
+			char * assignArrayIdentifier;
+			ExpressionList * arrayExpressionList;
+		};
+		struct {
 			BoolExpression * ifBoolExpression;
 			Block * ifBlock;
 		};
@@ -148,9 +161,19 @@ struct Sentence {
 			Interval * forInterval;
 			Block * forBlock;
 		};
+		struct {
+			char * functionIdentifier;
+			ExpressionList * functionArguments;
+		};
 	};
 	SentenceType type;
 };
+
+struct ExpressionList {
+	FloatExpression * expression;
+	ExpressionList * next;
+};
+
 
 struct IfSentence {
 	BoolExpression * boolExpression;
@@ -177,8 +200,16 @@ struct Block {
 };
 
 struct Interval {
-	FloatExpression * leftFloatExpression;
-	FloatExpression * rightFloatExpression;
+	union {
+		struct {
+			FloatExpression * leftFloatExpression;
+			FloatExpression * rightFloatExpression;
+		};
+		struct {
+			char * identifier;
+		};
+	};
+	IntervalType type;
 };
 
 // TODO: Es muy probable que haya que separar esto en partes D:
@@ -218,7 +249,7 @@ void releaseInterval(Interval * interval);
 void releaseBoolExpression(BoolExpression * boolExpression);
 void releaseBoolFactor(BoolFactor * boolFactor);
 void releaseVector(Vector * vector);
-
+void releaseExpressionList(ExpressionList * expressionList);
 
 
 

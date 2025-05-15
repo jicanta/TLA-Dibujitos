@@ -36,13 +36,18 @@ Sentence * AssignSentenceSemanticAction(char * identifier, FloatExpression * exp
 Sentence * IfSentenceSemanticAction(BoolExpression * boolExpression, Block * block);
 Sentence * ForSentenceSemanticAction(char * identifier, Interval * interval, Block * block);
 Sentence * IfElseSentenceSemanticAction(BoolExpression * boolExpression, Block * leftBlock, Block * rightBlock);
+Sentence * AssignArraySentenceSemanticAction(char * identifier, ExpressionList * expressionList);
 Block * BlockSemanticAction(Sentences * sentences);
 Interval * IntervalSemanticAction(FloatExpression * leftFloatExpression, FloatExpression * rightFloatExpression);
+Interval * IntervalIdentifierSemanticAction(char * identifier);
 BoolExpression * BoolExpressionSemanticAction(FloatExpression * leftFloatExpression, FloatExpression * rightFloatExpression, BoolExpressionType type);
 BoolExpression * BoolBinaryExpressionSemanticAction(BoolExpression * leftBoolExpression, BoolExpression * rightBoolExpression, BoolExpressionType type);
 BoolExpression * BoolUnaryExpressionSemanticAction(BoolExpression * boolExpression, BoolExpressionType type);
 BoolExpression * BoolFactorExpressionSemanticAction(BoolFactor * boolFactor);
 BoolFactor * BoolExpressionFactorSemanticAction(BoolExpression * boolExpression);
+Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * functionArguments);
+ExpressionList * ExpressionListSemanticAction(ExpressionList * expressionList, FloatExpression * expression);
+ExpressionList * EmptyExpressionListSemanticAction();
 
 
 #endif

@@ -16,7 +16,7 @@
 	char * string;
 
 	/** Non-terminals. */
-
+	ExpressionList * expression_list;
 	Constant * constant;
 	FloatExpression * float_expression;
 	FloatFactor * float_factor;
@@ -120,6 +120,7 @@
 
 %type <sentences> sentences
 %type <sentence> sentence
+%type <expression_list> expression_list
 
 %type <block> block
 %type <interval> interval
@@ -160,16 +161,19 @@ sentences: sentences sentence											{ $$ = SentencesSemanticAction($1, $2); 
 	;
 
 sentence: IDENTIFIER ASSIGN float_expression SEMICOLON					{ $$ = AssignSentenceSemanticAction($1, $3); }
+	| IDENTIFIER ASSIGN OPEN_BRACKETS expression_list CLOSE_BRACKETS SEMICOLON { $$ = AssignArraySentenceSemanticAction($1, $4); }
 	/* | IDENTIFIER ASSIGN vector											// TODO: VECTOR */
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block		{ $$ = IfSentenceSemanticAction($3, $5); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
 	| FOR IDENTIFIER IN interval block									{ $$ = ForSentenceSemanticAction($2, $4, $5); }
+	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON	{ $$ = FunctionSentenceSemanticAction($1, $3); }
 	;
 
 block: OPEN_BRACES sentences CLOSE_BRACES								{ $$ = BlockSemanticAction($2); }
 	;
 
 interval: OPEN_BRACKETS float_expression COLON float_expression CLOSE_BRACKETS	{ $$ = IntervalSemanticAction($2, $4); }
+	| IDENTIFIER 											{ $$ = IntervalIdentifierSemanticAction($1); }
 	;
 
 bool_expression: float_expression GEQ float_expression								{ $$ = BoolExpressionSemanticAction($1, $3, GREATER_OR_EQUAL); }
@@ -198,6 +202,11 @@ bool_factor: OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS			{ $$ = BoolExp
 		"integer_expression" y un "numeric_expression" (o algo así) y no mezclar tipos.
 
  */
+
+expression_list: expression_list[left] COMMA float_expression[right]				{ $$ = ExpressionListSemanticAction($left, $right); }
+	| float_expression[right]				{ $$ = ExpressionListSemanticAction(NULL, $right); }
+	| %empty													{ $$ = EmptyExpressionListSemanticAction(); }
+	;
 
 float_expression: float_expression[left] ADD float_expression[right]					{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, ADDITION); }
 	| float_expression[left] DIV float_expression[right]						{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, DIVISION); }
