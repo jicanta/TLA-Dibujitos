@@ -23,37 +23,37 @@ void releaseConstant(Constant * constant) {
 	}
 }
 
-void releaseExpression(Expression * expression) {
+void releaseFloatExpression(FloatExpression * floatExpression) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (expression != NULL) {
-		switch (expression->type) {
+	if (floatExpression != NULL) {
+		switch (floatExpression->type) {
 			case ADDITION:
 			case DIVISION:
 			case MULTIPLICATION:
 			case SUBTRACTION:
-				releaseExpression(expression->leftExpression);
-				releaseExpression(expression->rightExpression);
+				releaseFloatExpression(floatExpression->leftFloatExpression);
+				releaseFloatExpression(floatExpression->rightFloatExpression);
 				break;
 			case FACTOR:
-				releaseFactor(expression->factor);
+				releaseFloatFactor(floatExpression->floatFactor);
 				break;
 		}
-		free(expression);
+		free(floatExpression);
 	}
 }
 
-void releaseFactor(Factor * factor) {
+void releaseFloatFactor(FloatFactor * floatFactor) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (factor != NULL) {
-		switch (factor->type) {
+	if (floatFactor != NULL) {
+		switch (floatFactor->type) {
 			case CONSTANT:
-				releaseConstant(factor->constant);
+				releaseConstant(floatFactor->constant);
 				break;
 			case EXPRESSION:
-				releaseExpression(factor->expression);
+				releaseFloatExpression(floatFactor->floatExpression);
 				break;
 		}
-		free(factor);
+		free(floatFactor);
 	}
 }
 
@@ -84,7 +84,7 @@ void releaseSentence(Sentence * sentence){
 				break;
 			case ASSIGN_SENTENCE:
 				free(sentence->assignIdentifier);
-				releaseExpression(sentence->assignExpression);
+				releaseFloatExpression(sentence->assignFloatExpression);
 				break;
 			case IF_ELSE_SENTENCE:
 				releaseBoolExpression(sentence->ifBoolExpression);
@@ -112,8 +112,8 @@ void releaseBlock(Block * block) {
 void releaseInterval(Interval * interval) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (interval != NULL) {
-		releaseExpression(interval->leftExpression);
-		releaseExpression(interval->rightExpression);
+		releaseFloatExpression(interval->leftFloatExpression);
+		releaseFloatExpression(interval->rightFloatExpression);
 		free(interval);
 	}
 }
@@ -128,8 +128,8 @@ void releaseBoolExpression(BoolExpression * boolExpression) {
 			case GREATER_OR_EQUAL: case LESS_OR_EQUAL:
 			case GREATER_THAN: case LESS_THAN:
 			case EQUAL_TO: case NOT_EQUAL:
-				releaseExpression(boolExpression->leftExpression);
-				releaseExpression(boolExpression->rightExpression);
+				releaseFloatExpression(boolExpression->leftFloatExpression);
+				releaseFloatExpression(boolExpression->rightFloatExpression);
 				break;
 			case AND_TYPE: case OR_TYPE:
 				releaseBoolExpression(boolExpression->leftBoolExpression);

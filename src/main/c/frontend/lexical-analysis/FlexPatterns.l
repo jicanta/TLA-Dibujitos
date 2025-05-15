@@ -93,6 +93,8 @@ identifier         {char}({char}|{digit})*
 
 .									{ return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 
+
+
 %%
 
 #include "FlexExport.h"

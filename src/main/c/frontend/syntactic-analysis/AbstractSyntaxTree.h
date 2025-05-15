@@ -14,8 +14,8 @@ void shutdownAbstractSyntaxTreeModule();
  * This typedefs allows self-referencing types.
  */
 
-typedef enum ExpressionType ExpressionType;
-typedef enum FactorType FactorType;
+typedef enum FloatExpressionType FloatExpressionType;
+typedef enum FloatFactorType FloatFactorType;
 typedef enum SentenceType SentenceType;
 
 
@@ -24,8 +24,8 @@ typedef enum ConstantType ConstantType;
 
 
 typedef struct Constant Constant;
-typedef struct Expression Expression;
-typedef struct Factor Factor;
+typedef struct FloatExpression FloatExpression;
+typedef struct FloatFactor FloatFactor;
 typedef struct Vector Vector;
 typedef struct Program Program;
 
@@ -44,7 +44,7 @@ typedef struct BoolFactor BoolFactor;
  * Node types for the Abstract Syntax Tree (AST).
  */
 
-enum ExpressionType {
+enum FloatExpressionType {
 	ADDITION,
 	DIVISION,
 	FACTOR,
@@ -66,7 +66,7 @@ enum BoolExpressionType {
 	BOOL_FACTOR
 };
 
-enum FactorType {
+enum FloatFactorType {
 	CONSTANT,
 	EXPRESSION,
 	VECTOR,
@@ -80,8 +80,8 @@ enum SentenceType {
 };
 
 enum ConstantType {
-	INTEGER,
-	DECIMAL,
+	INTEGER_CONSTANT,
+	DECIMAL_CONSTANT,
 };
 
 struct Constant {
@@ -92,13 +92,13 @@ struct Constant {
 	ConstantType type;
 };
 
-struct Factor {
+struct FloatFactor {
 	union {
 		Constant * constant;
-		Expression * expression;
+		FloatExpression * floatExpression;
 		Vector * vector;
 	};
-	FactorType type;
+	FloatFactorType type;
 };
 
 struct Vector {
@@ -106,15 +106,15 @@ struct Vector {
 	Constant * right;
 };
 
-struct Expression {
+struct FloatExpression {
 	union {
-		Factor * factor;
+		FloatFactor * floatFactor;
 		struct {
-			Expression * leftExpression;
-			Expression * rightExpression;
+			FloatExpression * leftFloatExpression;
+			FloatExpression * rightFloatExpression;
 		};
 	};
-	ExpressionType type;
+	FloatExpressionType type;
 };
 
 struct Program {
@@ -130,7 +130,7 @@ struct Sentence {
 	union {
 		struct {
 			char * assignIdentifier;
-			Expression * assignExpression;
+			FloatExpression * assignFloatExpression;
 		};
 		struct {
 			BoolExpression * ifBoolExpression;
@@ -167,7 +167,7 @@ struct ForSentence {
 };
 
 struct AssignSentence {
-	Expression * expression;
+	FloatExpression * floatExpression;
 };
 
 struct Block {
@@ -175,8 +175,8 @@ struct Block {
 };
 
 struct Interval {
-	Expression * leftExpression;
-	Expression * rightExpression;
+	FloatExpression * leftFloatExpression;
+	FloatExpression * rightFloatExpression;
 };
 
 // TODO: Es muy probable que haya que separar esto en partes D:
@@ -184,8 +184,8 @@ struct BoolExpression {
 	union {
 		BoolFactor * boolFactor;
 		struct {
-			Expression * leftExpression;
-			Expression * rightExpression;
+			FloatExpression * leftFloatExpression;
+			FloatExpression * rightFloatExpression;
 		};
 		struct {
 			BoolExpression * leftBoolExpression;
@@ -206,8 +206,8 @@ struct BoolFactor {
  * TODO: seguir haciendo estos "Node Recursive Destructors"
  */
 void releaseConstant(Constant * constant);
-void releaseExpression(Expression * expression);
-void releaseFactor(Factor * factor);
+void releaseFloatExpression(FloatExpression * floatExpression);
+void releaseFloatFactor(FloatFactor * floatFactor);
 void releaseProgram(Program * program);
 void releaseSentences(Sentences * sentences);
 void releaseSentence(Sentence * sentence);
