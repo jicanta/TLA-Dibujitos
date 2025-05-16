@@ -130,6 +130,22 @@ Token SemicolonLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	return SEMICOLON;
 }
 
+void BeginInterpolatedStringLexemeAction(LexicalAnalyzerContext * ctx) {
+    if (_logIgnoredLexemes) { _logLexicalAnalyzerContext(__FUNCTION__, ctx); }
+    destroyLexicalAnalyzerContext(ctx);          
+}
+
+void EndInterpolatedStringLexemeAction(LexicalAnalyzerContext * ctx) {
+    if (_logIgnoredLexemes) { _logLexicalAnalyzerContext(__FUNCTION__, ctx); }
+    destroyLexicalAnalyzerContext(ctx);         
+}
+
+ Token LogLexemeAction(LexicalAnalyzerContext * ctx) {
+     _logLexicalAnalyzerContext(__FUNCTION__, ctx);
+     destroyLexicalAnalyzerContext(ctx);
+     return LOG;
+ }
+
 Token DotLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);

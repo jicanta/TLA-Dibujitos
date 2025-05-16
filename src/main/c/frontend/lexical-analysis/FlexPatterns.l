@@ -15,6 +15,7 @@
  * @see https://westes.github.io/flex/manual/Start-Conditions.html
  */
 %x MULTILINE_COMMENT
+%x INTERP_STRING
 
 /**
  * Reusable patterns.
@@ -22,13 +23,25 @@
  * @see https://westes.github.io/flex/manual/Matching.html
  * @see https://westes.github.io/flex/manual/Patterns.html
  */
-string          \"([^\\\"]|\\.)*\"  
+string            \"([^\\\"{}]|\\.)*\"
 digit              [0-9]
 decimal            [+-]?(([0-9]+\.[0-9]*)|(\.[0-9]+))
 char               [a-zA-Z_]
 identifier         {char}({char}|{digit})*
 comment           \/\/[^\n]*
 %%
+
+\"                              { BEGIN(INTERP_STRING); BeginInterpolatedStringLexemeAction(createLexicalAnalyzerContext()); }
+
+<INTERP_STRING>[^\\"{}]+        { return StringLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
+<INTERP_STRING>\\.              { return StringLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
+
+<INTERP_STRING>"{"              { return BracesLexemeAction(createLexicalAnalyzerContext(), OPEN_BRACES); }
+<INTERP_STRING>"}"              { return BracesLexemeAction(createLexicalAnalyzerContext(), CLOSE_BRACES); }
+
+<INTERP_STRING>{identifier}     { return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
+
+<INTERP_STRING>\"               { EndInterpolatedStringLexemeAction(createLexicalAnalyzerContext());                                   BEGIN(INITIAL); }
 
 "/*"								{ BEGIN(MULTILINE_COMMENT); BeginMultilineCommentLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>"*/"				{ EndMultilineCommentLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
@@ -60,10 +73,10 @@ comment           \/\/[^\n]*
 "not"                               { return UnaryOperatorLexemeAction(createLexicalAnalyzerContext(), NOT); }
 
 "="                                 { return AssignmentLexemeAction(createLexicalAnalyzerContext()); }
-
+"log"                               { return LogLexemeAction(createLexicalAnalyzerContext()); }
 
 ","                                 { return CommaLexemeAction(createLexicalAnalyzerContext()); }
-";"                                 { return SemicolonLexemeAction(createLexicalAnalyzerContext()); }
+";"                                  { return SemicolonLexemeAction(createLexicalAnalyzerContext()); }
 "."                                 { return DotLexemeAction(createLexicalAnalyzerContext()); }
 ":"                                 { return ColonLexemeAction(createLexicalAnalyzerContext()); }
 

@@ -85,6 +85,7 @@
 %token <token> SEMICOLON
 %token <token> DOT
 %token <token> COLON
+%token <token> LOG
 
 %token <token> IMPORT
 
