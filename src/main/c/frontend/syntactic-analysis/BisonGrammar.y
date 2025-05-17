@@ -194,7 +194,6 @@ bool_factor: OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS			{ $$ = BoolExp
 
 
 
-
 /* 
 	Comentarios para seguir con el trabajo:
 	TODO: Las operaciones con vectores NO deberían ser compatibles con las operaciones numéricas
@@ -214,7 +213,10 @@ float_expression: float_expression[left] ADD float_expression[right]					{ $$ = 
 	| float_expression[left] MUL float_expression[right]						{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
 	| float_expression[left] SUB float_expression[right]						{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
 	| float_factor														{ $$ = FloatFactorExpressionSemanticAction($1); }
-
+/*	| vector_expression DOT X
+	| vector_expression DOT Y	falta en el flex
+	| integer_expression
+*/
 	;
 
 float_factor: OPEN_PARENTHESIS float_expression CLOSE_PARENTHESIS				{ $$ = FloatExpressionFactorSemanticAction($2); }
@@ -222,6 +224,25 @@ float_factor: OPEN_PARENTHESIS float_expression CLOSE_PARENTHESIS				{ $$ = Floa
 	| vector														{ $$ = VectorFactorSemanticAction($1); }
 // El vector no debería ser un float_factor. Debería tener su propia categoría de vector_expression
 	;
+
+
+/* integer_expression: integer_expression[left] ADD integer_expression[right]					{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, ADDITION); }
+	| integer_expression[left] DIV integer_expression[right]						{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, DIVISION); }
+	| integer_expression[left] MOD integer_expression[right]						{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, MODULUS); }
+	| integer_expression[left] MUL integer_expression[right]						{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
+	| integer_expression[left] SUB integer_expression[right]						{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
+	| float_factor														{ $$ = FloatFactorExpressionSemanticAction($1); }
+	;
+*/
+/*
+vector_expression: vector_expression[left] ADD vector_expression[right]					{ $$ = VectorArithmeticExpressionSemanticAction($left, $right, ADDITION); }
+	| vector_expression[left] DIV float_expression[right]						{ $$ = VectorArithmeticExpressionSemanticAction($left, $right, DIVISION); }
+	| vector_expression[left] MUL float_expression[right]						{ $$ = VectorArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
+	| vector_expression[left] SUB vector_expression[right]						{ $$ = VectorArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
+	| float_factor														{ $$ = FloatFactorExpressionSemanticAction($1); }
+	; */
+
+	
 
 constant: INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
 	| DECIMAL													{ $$ = DecimalConstantSemanticAction($1); }

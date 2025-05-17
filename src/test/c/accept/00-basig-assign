@@ -1,3 +1,12 @@
-for a in [1 : 2] {
-    x = 5;
+for i in [1 : 2] {
+    a = 5;
 }
+if ((a == 1) and (b == 2)) {
+    a = 5;
+} else {
+    a = 6;
+}
+
+float = (2, 3).x ;
+float2 = (2, 3).y ;
+
