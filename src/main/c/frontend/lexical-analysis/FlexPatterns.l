@@ -17,6 +17,10 @@
 %x MULTILINE_COMMENT
 %x INTERP_STRING
 
+%x INT_ASSIGNMENT
+%x FLOAT_ASSIGNMENT
+%x VECTOR_ASSIGNMENT
+
 /**
  * Reusable patterns.
  *
@@ -39,7 +43,7 @@ comment           \/\/[^\n]*
 <INTERP_STRING>"{"              { return BracesLexemeAction(createLexicalAnalyzerContext(), OPEN_BRACES); }
 <INTERP_STRING>"}"              { return BracesLexemeAction(createLexicalAnalyzerContext(), CLOSE_BRACES); }
 
-<INTERP_STRING>{identifier}     { return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
+<INTERP_STRING>{identifier}     { return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng, IDENTIFIER); }
 
 <INTERP_STRING>\"               { EndInterpolatedStringLexemeAction(createLexicalAnalyzerContext());                                   BEGIN(INITIAL); }
 
@@ -50,7 +54,7 @@ comment           \/\/[^\n]*
 <MULTILINE_COMMENT>.				{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 {comment} {IgnoredLexemeAction(createLexicalAnalyzerContext());}
 {decimal}				    		{ return DecimalLexemeAction(createLexicalAnalyzerContext()); }
-[+-]?[[:digit:]]+						{ return IntegerLexemeAction(createLexicalAnalyzerContext()); }
+[+-]?[[:digit:]]+					{ return IntegerLexemeAction(createLexicalAnalyzerContext()); }
 
 "-"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), SUB); }
 "*"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), MUL); }
@@ -59,6 +63,14 @@ comment           \/\/[^\n]*
 
 "float"                             { return FloatKeywordLexemeAction(createLexicalAnalyzerContext()); }
 
+"int"                               { BEGIN(INT_ASSIGNMENT); return IntKeywordLexemeAction(createLexicalAnalyzerContext()); }
+<INT_ASSIGNMENT>{identifier}        { return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng, INT_ID);  BEGIN(INITIAL); }
+<INT_ASSIGNMENT>[[:space:]]+		{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<INT_ASSIGNMENT>.					{ return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+
+
+
+"vector"                            { return VectorKeywordLexemeAction(createLexicalAnalyzerContext()); }
 
 "%"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), MOD); }
 
@@ -78,6 +90,8 @@ comment           \/\/[^\n]*
 ","                                 { return CommaLexemeAction(createLexicalAnalyzerContext()); }
 ";"                                  { return SemicolonLexemeAction(createLexicalAnalyzerContext()); }
 "."                                 { return DotLexemeAction(createLexicalAnalyzerContext()); }
+"x"                                 { return XParamLexemeAction(createLexicalAnalyzerContext()); }
+"y"                                 { return YParamLexemeAction(createLexicalAnalyzerContext()); }
 ":"                                 { return ColonLexemeAction(createLexicalAnalyzerContext()); }
 
 "import"                            { return ImportLexemeAction(createLexicalAnalyzerContext()); }
@@ -99,7 +113,7 @@ comment           \/\/[^\n]*
 
 
 
-{identifier}                        { return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
+{identifier}                        { return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng, IDENTIFIER); }
 {string}                            { return StringLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
 
 [[:space:]]+						{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
@@ -116,8 +130,6 @@ comment           \/\/[^\n]*
 
 /**
  * Moví lo que pensaba que no tenía sentido
- * 
- * Esto no sigue el formato:
  * 
  * 
  * NOOOOO ESTO NOOOO PLZ:

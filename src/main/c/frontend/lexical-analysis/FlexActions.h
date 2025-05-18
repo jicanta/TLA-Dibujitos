@@ -51,9 +51,13 @@ Token BracketsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Toke
 Token LogLexemeAction(LexicalAnalyzerContext *);
 void BeginInterpolatedStringLexemeAction(LexicalAnalyzerContext *);
 void EndInterpolatedStringLexemeAction(LexicalAnalyzerContext *);
-Token IdentifierLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length);
+Token IdentifierLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length, Token token);
 Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length);
 Token FloatKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token IntKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token VectorKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
+Token XParamLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token YParamLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 #endif

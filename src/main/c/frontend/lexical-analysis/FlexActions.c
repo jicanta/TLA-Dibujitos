@@ -208,6 +208,30 @@ Token FloatKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) 
 	return FLOAT_KEYWORD;
 }
 
+Token IntKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+	return INT_KEYWORD;
+}
+
+Token VectorKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+	return VECTOR_KEYWORD;
+}
+
+Token XParamLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+	return X_PARAM;
+}
+
+Token YParamLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+	return Y_PARAM;
+}
+
 Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 
@@ -230,7 +254,7 @@ Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char *
 	return STRING;
 }
 
-Token IdentifierLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length) {
+Token IdentifierLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length, Token token) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 
 	char * identifier_name = malloc(text_length + 1); // yyleng + 1 for '\0'
@@ -246,5 +270,5 @@ Token IdentifierLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, ch
 
 
 	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
-	return IDENTIFIER;
+	return token;
 }

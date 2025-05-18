@@ -23,7 +23,7 @@ Constant * IdentifierConstantSemanticAction(const char * identifier);
 Constant * IntegerConstantSemanticAction(const int value);
 FloatExpression * FloatArithmeticExpressionSemanticAction(FloatExpression * leftFloatExpression, FloatExpression * rightFloatExpression, FloatExpressionType type);
 FloatExpression * FloatFactorExpressionSemanticAction(FloatFactor * factor);
-FloatFactor * VectorFactorSemanticAction(Vector * vector);
+FloatExpression * VectorDotExpressionSemanticAction(VectorExpression * vectorExpression, FloatExpressionType type);
 FloatFactor * FloatConstantFactorSemanticAction(Constant * constant);
 FloatFactor * FloatExpressionFactorSemanticAction(FloatExpression * expression);
 Vector * VectorSemanticAction(Constant * left, Constant * right);
@@ -32,7 +32,10 @@ Vector * VectorSemanticAction(Constant * left, Constant * right);
 Program * SentencesProgramSemanticAction(CompilerState * compilerState, Sentences * sentences);
 Sentences * EmptySentencesSemanticAction();
 Sentences * SentencesSemanticAction(Sentences * sentences, Sentence * sentence);
-Sentence * AssignSentenceSemanticAction(char * identifier, FloatExpression * expression);
+Sentence * AssignFloatSentenceSemanticAction(char * identifier, FloatExpression * expression);
+Sentence * AssignIntegerSentenceSemanticAction(char * identifier, IntegerExpression * expression);
+Sentence * AssignVectorSentenceSemanticAction(char * identifier, VectorExpression * vectorExpression);
+
 Sentence * IfSentenceSemanticAction(BoolExpression * boolExpression, Block * block);
 Sentence * ForSentenceSemanticAction(char * identifier, Interval * interval, Block * block);
 Sentence * IfElseSentenceSemanticAction(BoolExpression * boolExpression, Block * leftBlock, Block * rightBlock);
@@ -57,5 +60,12 @@ IntegerFactor * IntegerConstantFactorSemanticAction(int integer);
 IntegerFactor * IntegerIdentifierFactorSemanticAction(char * identifier);
 
 IntegerExpression * IntegerFactorExpressionSemanticAction(IntegerFactor * integerFactor);
+
+VectorExpression * VectorArithmeticExpressionSemanticAction(VectorExpression * leftVectorExpression, VectorExpression * rightVectorExpression, VectorExpressionType type);
+VectorExpression * VectorFloatArithmeticExpressionSemanticAction(VectorExpression * leftVectorExpression, FloatExpression * rightFloatExpression, VectorExpressionType type);
+VectorExpression * VectorFactorExpressionSemanticAction(VectorFactor * vectorFactor);
+VectorFactor * VectorExpressionFactorSemanticAction(VectorExpression * vectorExpression);
+VectorFactor * VectorIdentifierFactorSemanticAction( char * identifier);
+VectorFactor * VectorFactorSemanticAction(Vector * vector);
 
 #endif

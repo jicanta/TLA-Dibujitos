@@ -73,6 +73,14 @@ FloatExpression * FloatFactorExpressionSemanticAction(FloatFactor * floatFactor)
 	return floatExpression;
 }
 
+FloatExpression * VectorDotExpressionSemanticAction(VectorExpression * vectorExpression, FloatExpressionType type) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FloatExpression * floatExpression = calloc(1, sizeof(FloatExpression));
+	floatExpression->vectorExpression = vectorExpression;
+	floatExpression->type = type;
+	return floatExpression;
+}
+
 FloatFactor * FloatConstantFactorSemanticAction(Constant * constant) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	FloatFactor * floatFactor = calloc(1, sizeof(FloatFactor));
@@ -89,13 +97,6 @@ FloatFactor * FloatExpressionFactorSemanticAction(FloatExpression * floatExpress
 	return floatFactor;
 }
 
-FloatFactor * VectorFactorSemanticAction(Vector * vector) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	FloatFactor * floatFactor = calloc(1, sizeof(Vector));
-	floatFactor->vector = vector;
-	floatFactor->type = VECTOR;
-	return floatFactor;
-}
 
 Vector * VectorSemanticAction(Constant * left, Constant * right) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
@@ -162,12 +163,29 @@ Sentences * SentencesSemanticAction(Sentences * sentences, Sentence * sentence) 
 	return sentences_ret;
 }
 
-Sentence * AssignSentenceSemanticAction(char * identifier, FloatExpression * floatExpression) {
+Sentence * AssignFloatSentenceSemanticAction(char * identifier, FloatExpression * floatExpression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Sentence * sentence = calloc(1, sizeof(Sentence));
-	sentence->assignIdentifier = identifier;
+	sentence->assignFloatIdentifier = identifier;
 	sentence->assignFloatExpression = floatExpression;
 	sentence->type = ASSIGN_SENTENCE;
+	return sentence;
+}
+
+Sentence * AssignIntegerSentenceSemanticAction(char * identifier, IntegerExpression * integerExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Sentence * sentence = calloc(1, sizeof(Sentence));
+	sentence->assignIntegerIdentifier = identifier;
+	sentence->assignIntegerExpression = integerExpression;
+	sentence->type = ASSIGN_INT_SENTENCE;
+	return sentence;
+}
+Sentence * AssignVectorSentenceSemanticAction(char * identifier, VectorExpression * vectorExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Sentence * sentence = calloc(1, sizeof(Sentence));
+	sentence->assignVectorIdentifier = identifier;
+	sentence->assignVectorExpression = vectorExpression;
+	sentence->type = ASSIGN_VECTOR_SENTENCE;
 	return sentence;
 }
 
@@ -323,17 +341,50 @@ IntegerFactor * IntegerIdentifierFactorSemanticAction(char * identifier) {
 	return integerFactor;
 }
 
+VectorExpression * VectorArithmeticExpressionSemanticAction(VectorExpression * leftVectorExpression, VectorExpression * rightVectorExpression, VectorExpressionType type) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	VectorExpression * vectorExpression = calloc(1, sizeof(VectorExpression));
+	vectorExpression->leftVectorExpression = leftVectorExpression;
+	vectorExpression->rightVectorExpression = rightVectorExpression;
+	vectorExpression->type = type;
+	return vectorExpression;
+}
+VectorExpression * VectorFloatArithmeticExpressionSemanticAction(VectorExpression * leftVectorExpression, FloatExpression * rightFloatExpression, VectorExpressionType type) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	VectorExpression * vectorExpression = calloc(1, sizeof(VectorExpression));
+	vectorExpression->vectorExpression = leftVectorExpression;
+	vectorExpression->floatExpression = rightFloatExpression;
+	vectorExpression->type = type;
+	return vectorExpression;
+}
+VectorExpression * VectorFactorExpressionSemanticAction(VectorFactor * vectorFactor) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	VectorExpression * vectorExpression = calloc(1, sizeof(VectorExpression));
+	vectorExpression->vectorFactor = vectorFactor;
+	vectorExpression->type = VEC_FACTOR;
+	return vectorExpression;
+}
 
+VectorFactor * VectorExpressionFactorSemanticAction(VectorExpression * vectorExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	VectorFactor * vectorFactor = calloc(1, sizeof(VectorFactor));
+	vectorFactor->vectorExpression = vectorExpression;
+	vectorFactor->type = VEC_EXPRESSION;
+	return vectorFactor;
+}
 
+VectorFactor * VectorIdentifierFactorSemanticAction(char * identifier) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	VectorFactor * vectorFactor = calloc(1, sizeof(VectorFactor));
+	vectorFactor->identifier = identifier;
+	vectorFactor->type = VEC_IDENTIFIER;
+	return vectorFactor;
+}
 
-
-
-
-
-
-
-
-
-
-
-
+VectorFactor * VectorFactorSemanticAction(Vector * vector) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	VectorFactor * vectorFactor = calloc(1, sizeof(VectorFactor));
+	vectorFactor->vector = vector;
+	vectorFactor->type = VEC_VECTOR;
+	return vectorFactor;
+}

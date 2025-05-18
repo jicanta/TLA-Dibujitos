@@ -34,6 +34,8 @@
 
 	IntegerExpression * integer_expression;
 	IntegerFactor * integer_factor;
+	VectorExpression * vector_expression;
+	VectorFactor * vector_factor;
 }
 
 /**
@@ -56,6 +58,10 @@
 
 %destructor { releaseIntegerExpression($$); } <integer_expression>
 %destructor { releaseIntegerFactor($$); } <integer_factor>
+
+%destructor { releaseVectorExpression($$); } <vector_expression>
+%destructor { releaseVectorFactor($$); } <vector_factor>
+%destructor { releaseVector($$); } <vector>
 
 
 
@@ -92,6 +98,8 @@
 %token <token> COMMA
 %token <token> SEMICOLON
 %token <token> DOT
+%token <token> X_PARAM
+%token <token> Y_PARAM
 %token <token> COLON
 %token <token> LOG
 
@@ -107,16 +115,13 @@
 %token <string> STRING
 %token <string> IDENTIFIER
 
+%token <token> INT_ID
+%token <token> FLOAT_ID
+%token <token> VECTOR_ID
+
 %token <token> FLOAT_KEYWORD
-
-
-
-
-
-
-
-
-
+%token <token> INT_KEYWORD
+%token <token> VECTOR_KEYWORD
 
 %token <token> UNKNOWN
 
@@ -141,6 +146,8 @@
 
 %type <integer_expression> integer_expression
 %type <integer_factor> integer_factor
+%type <vector_expression> vector_expression
+%type <vector_factor> vector_factor
 
 
 
@@ -176,17 +183,16 @@ sentences: sentences sentence														{ $$ = SentencesSemanticAction($1, $2
 	| %empty                                                            			{ $$ = EmptySentencesSemanticAction(); }
 	;
 
-sentence: IDENTIFIER ASSIGN float_expression SEMICOLON								{ $$ = AssignSentenceSemanticAction($1, $3); }
-/* TODO: Agregar una INT_KEYWORD y hacer el assign. Copiar lógica para los vectores */
-	| IDENTIFIER ASSIGN OPEN_BRACKETS expression_list CLOSE_BRACKETS SEMICOLON { $$ = AssignArraySentenceSemanticAction($1, $4); }
-	/* | IDENTIFIER ASSIGN vector											// TODO: VECTOR */
+sentence: IDENTIFIER ASSIGN float_expression SEMICOLON								{ $$ = AssignFloatSentenceSemanticAction($1, $3); }
+	| FLOAT_KEYWORD IDENTIFIER ASSIGN float_expression SEMICOLON					{ $$ = AssignFloatSentenceSemanticAction($2, $4); }
+	| INT_KEYWORD IDENTIFIER ASSIGN integer_expression SEMICOLON					{ $$ = AssignIntegerSentenceSemanticAction($2, $4); }
+	| VECTOR_KEYWORD IDENTIFIER ASSIGN vector_expression SEMICOLON					{ $$ = AssignVectorSentenceSemanticAction($2, $4); }
+	| IDENTIFIER ASSIGN OPEN_BRACKETS expression_list CLOSE_BRACKETS SEMICOLON 		{ $$ = AssignArraySentenceSemanticAction($1, $4); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ $$ = IfSentenceSemanticAction($3, $5); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
 	| FOR IDENTIFIER IN interval block												{ $$ = ForSentenceSemanticAction($2, $4, $5); }
 	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ $$ = FunctionSentenceSemanticAction($1, $3); }
 	;
-
-
 
 block: OPEN_BRACES sentences CLOSE_BRACES											{ $$ = BlockSemanticAction($2); }
 	;
@@ -231,15 +237,14 @@ float_expression: float_expression[left] ADD float_expression[right]				{ $$ = F
 	| float_expression[left] MUL float_expression[right]							{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
 	| float_expression[left] SUB float_expression[right]							{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
 	| float_factor																	{ $$ = FloatFactorExpressionSemanticAction($1); }
-/*	| vector_expression DOT X
-	| vector_expression DOT Y	falta en el flex
-	| integer_expression
-*/
+	| vector_expression DOT X_PARAM													{ $$ = VectorDotExpressionSemanticAction($1, GET_X); }
+	| vector_expression DOT Y_PARAM													{ $$ = VectorDotExpressionSemanticAction($1, GET_Y); }
+
 	;
 
 float_factor: OPEN_PARENTHESIS float_expression CLOSE_PARENTHESIS					{ $$ = FloatExpressionFactorSemanticAction($2); }
 	| constant																		{ $$ = FloatConstantFactorSemanticAction($1); }
-	| vector																		{ $$ = VectorFactorSemanticAction($1); }
+	/* | vector																		{ $$ = VectorFactorSemanticAction($1); } */
 	| FLOAT_KEYWORD OPEN_PARENTHESIS integer_expression CLOSE_PARENTHESIS			{ $$ = IntegerToFloatFactorSemanticAction($3); }
 // El vector no debería ser un float_factor. Debería tener su propia categoría de vector_expression
 	;
@@ -258,18 +263,21 @@ integer_factor: OPEN_PARENTHESIS integer_expression CLOSE_PARENTHESIS				{ $$ = 
 	| IDENTIFIER																	{ $$ = IntegerIdentifierFactorSemanticAction($1); }
 	;
 
-/*
-vector_expression: vector_expression[left] ADD vector_expression[right]					{ $$ = VectorArithmeticExpressionSemanticAction($left, $right, ADDITION); }
-	| vector_expression[left] DIV float_expression[right]						{ $$ = VectorArithmeticExpressionSemanticAction($left, $right, DIVISION); }
-	| vector_expression[left] MUL float_expression[right]						{ $$ = VectorArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
-	| vector_expression[left] SUB vector_expression[right]						{ $$ = VectorArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
-	| float_factor														{ $$ = FloatFactorExpressionSemanticAction($1); }
-	; */
 
-	
+vector_expression: vector_expression[left] ADD vector_expression[right]			{ $$ = VectorArithmeticExpressionSemanticAction($left, $right, VEC_ADDITION); }
+	| vector_expression[left] SUB vector_expression[right]						{ $$ = VectorArithmeticExpressionSemanticAction($left, $right, VEC_SUBTRACTION); }
+	| vector_expression[left] DIV float_expression[right]						{ $$ = VectorFloatArithmeticExpressionSemanticAction($left, $right, VEC_DIVISION); }
+	| vector_expression[left] MUL float_expression[right]						{ $$ = VectorFloatArithmeticExpressionSemanticAction($left, $right, VEC_MULTIPLICATION); }
+	| vector_factor																{ $$ = VectorFactorExpressionSemanticAction($1); }
+	;
+
+vector_factor: OPEN_PARENTHESIS vector_expression CLOSE_PARENTHESIS				{ $$ = VectorExpressionFactorSemanticAction($2); }
+	| vector																	{ $$ = VectorFactorSemanticAction($1); }
+	| IDENTIFIER																{ $$ = VectorIdentifierFactorSemanticAction($1); }
+	;
 
 constant: DECIMAL													{ $$ = DecimalConstantSemanticAction($1); }
-	/* | INTEGER													{ $$ = IntegerConstantSemanticAction($1); } */
+	| INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
 	| IDENTIFIER												{ $$ = IdentifierConstantSemanticAction($1); }
 	;
 

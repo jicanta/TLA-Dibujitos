@@ -25,6 +25,9 @@ typedef enum IntervalType IntervalType;
 typedef enum IntegerExpressionType IntegerExpressionType;
 typedef enum IntegerFactorType IntegerFactorType;
 
+typedef enum VectorExpressionType VectorExpressionType;
+typedef enum VectorFactorType VectorFactorType;
+
 
 typedef struct Constant Constant;
 typedef struct FloatExpression FloatExpression;
@@ -47,6 +50,9 @@ typedef struct ExpressionList ExpressionList;
 typedef struct IntegerExpression IntegerExpression;
 typedef struct IntegerFactor IntegerFactor;
 
+typedef struct VectorExpression VectorExpression;
+typedef struct VectorFactor VectorFactor;
+
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
@@ -56,7 +62,9 @@ enum FloatExpressionType {
 	SUBTRACTION,
 	MULTIPLICATION,
 	DIVISION,
-	FACTOR
+	FACTOR,
+	GET_X,
+	GET_Y
 };
 
 enum IntegerExpressionType {
@@ -98,6 +106,8 @@ enum SentenceType {
 	IF_SENTENCE,
 	IF_ELSE_SENTENCE,
 	ASSIGN_SENTENCE,
+	ASSIGN_INT_SENTENCE,
+	ASSIGN_VECTOR_SENTENCE,
 	FOR_SENTENCE,
 	FUNCTION_SENTENCE,
 	ASSIGN_ARRAY_SENTENCE,
@@ -113,6 +123,19 @@ enum IntegerFactorType {
 	INT_CONSTANT,
 	INT_EXPRESSION,
 	INT_IDENTIFIER
+};
+
+enum VectorExpressionType {
+	VEC_ADDITION,
+	VEC_SUBTRACTION,
+	VEC_MULTIPLICATION,
+	VEC_DIVISION,
+	VEC_FACTOR
+};
+enum VectorFactorType {
+	VEC_VECTOR,
+	VEC_EXPRESSION,
+	VEC_IDENTIFIER
 };
 
 struct Constant {
@@ -148,8 +171,33 @@ struct FloatExpression {
 			FloatExpression * leftFloatExpression;
 			FloatExpression * rightFloatExpression;
 		};
+		VectorExpression * vectorExpression;
 	};
 	FloatExpressionType type;
+};
+
+struct VectorExpression {
+	union {
+		VectorFactor * vectorFactor;
+		struct {
+			VectorExpression * leftVectorExpression;
+			VectorExpression * rightVectorExpression;
+		};
+		struct {
+			VectorExpression * vectorExpression;
+			FloatExpression * floatExpression;
+		};
+	};
+	VectorExpressionType type;
+};
+
+struct VectorFactor {
+	union {
+		Vector * vector;
+		VectorExpression * vectorExpression;
+		char * identifier;
+	};
+	VectorFactorType type;
 };
 
 struct Program {
@@ -164,8 +212,16 @@ struct Sentences {
 struct Sentence {
 	union {
 		struct {
-			char * assignIdentifier;
+			char * assignFloatIdentifier;
 			FloatExpression * assignFloatExpression;
+		};
+		struct {
+			char * assignIntegerIdentifier;
+			IntegerExpression * assignIntegerExpression;
+		};
+		struct {
+			char * assignVectorIdentifier;
+			VectorExpression * assignVectorExpression;
 		};
 		struct {
 			char * assignArrayIdentifier;
@@ -298,6 +354,8 @@ void releaseVector(Vector * vector);
 void releaseExpressionList(ExpressionList * expressionList);
 void releaseIntegerExpression(IntegerExpression * integerExpression);
 void releaseIntegerFactor(IntegerFactor * integerFactor);
+void releaseVectorExpression(VectorExpression * vectorExpression);
+void releaseVectorFactor(VectorFactor * vectorFactor);
 
 
 

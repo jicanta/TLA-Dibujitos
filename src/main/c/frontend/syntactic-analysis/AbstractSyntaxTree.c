@@ -45,6 +45,10 @@ void releaseFloatExpression(FloatExpression * floatExpression) {
 				releaseFloatExpression(floatExpression->leftFloatExpression);
 				releaseFloatExpression(floatExpression->rightFloatExpression);
 				break;
+			case GET_X:
+			case GET_Y:
+				releaseVectorExpression(floatExpression->vectorExpression);
+				break;
 			case FACTOR:
 				releaseFloatFactor(floatExpression->floatFactor);
 				break;
@@ -109,11 +113,19 @@ void releaseSentence(Sentence * sentence){
 				releaseBlock(sentence->ifBlock);
 				break;
 			case ASSIGN_SENTENCE:
-				free(sentence->assignIdentifier);
+				free(sentence->assignFloatIdentifier);
 				releaseFloatExpression(sentence->assignFloatExpression);
 				break;
+			case ASSIGN_INT_SENTENCE:
+				free(sentence->assignIntegerIdentifier);
+				releaseIntegerExpression(sentence->assignIntegerExpression);
+				break;
+			case ASSIGN_VECTOR_SENTENCE:
+				free(sentence->assignVectorIdentifier);
+				releaseVectorExpression(sentence->assignVectorExpression);
+				break;
 			case IF_ELSE_SENTENCE:
-				releaseBoolExpression(sentence->ifBoolExpression);
+				releaseBoolExpression(sentence->ifElseBoolExpression);
 				releaseBlock(sentence->leftIfElseBlock);
 				releaseBlock(sentence->rightIfElseBlock);
 				break;
@@ -236,5 +248,44 @@ void releaseIntegerFactor(IntegerFactor * integerFactor) {
 				break;
 		}
 		free(integerFactor);
+	}
+}
+
+void releaseVectorExpression(VectorExpression * vectorExpression) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (vectorExpression != NULL) {
+		switch (vectorExpression->type) {
+			case VEC_FACTOR:
+				releaseVectorFactor(vectorExpression->vectorFactor);
+				break;
+			case VEC_ADDITION:
+			case VEC_SUBTRACTION:
+				releaseVectorExpression(vectorExpression->leftVectorExpression);
+				releaseVectorExpression(vectorExpression->rightVectorExpression);
+				break;
+			case VEC_MULTIPLICATION:
+			case VEC_DIVISION:
+				releaseVectorExpression(vectorExpression->vectorExpression);
+				releaseFloatExpression(vectorExpression->floatExpression);
+				break;
+		}
+		free(vectorExpression);
+	}
+}
+void releaseVectorFactor(VectorFactor * vectorFactor) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (vectorFactor != NULL) {
+		switch (vectorFactor->type) {
+			case VEC_VECTOR:
+				releaseVector(vectorFactor->vector);
+				break;
+			case VEC_EXPRESSION:
+				releaseVectorExpression(vectorFactor->vectorExpression);
+				break;
+			case VEC_IDENTIFIER:
+				free(vectorFactor->identifier);
+				break;
+		}
+		free(vectorFactor);
 	}
 }
