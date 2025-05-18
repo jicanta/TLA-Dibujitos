@@ -198,6 +198,42 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, ExpressionList *
 	return sentence;
 }
 
+Sentence * LogSentenceSemanticAction(StringPartList * stringPartList) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Sentence * logSentence = calloc(1, sizeof(Sentence));
+	logSentence->logString = stringPartList;
+	logSentence->type = LOG_SENTENCE;
+	return logSentence;
+}
+StringPartList * appendStringPartList(StringPartList * stringPartList, StringPart * stringPart) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	StringPartList * newStringPartList = calloc(1, sizeof(StringPartList));
+	newStringPartList->stringPart = stringPart;
+	newStringPartList->next = stringPartList;
+	return newStringPartList;
+}
+StringPartList * createStringPartList(StringPart * stringPart) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	StringPartList * stringPartList = calloc(1, sizeof(StringPartList));
+	stringPartList->stringPart = stringPart;
+	stringPartList->next = NULL;
+	return stringPartList;
+}
+StringPart * createStringSegment(char * string) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	StringPart * stringPart = calloc(1, sizeof(StringPart));
+	stringPart->string = string;
+	stringPart->type = STRING_SEGMENT;
+	return stringPart;
+}
+StringPart * createStringInterpolation(char * identifier) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	StringPart * stringPart = calloc(1, sizeof(StringPart));
+	stringPart->identifier = identifier;
+	stringPart->type = IDENTIFIER_SEGMENT;
+	return stringPart;
+}
+
 Sentence * IfSentenceSemanticAction(BoolExpression * boolExpression, Block * block) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Sentence * sentence = calloc(1, sizeof(Sentence));

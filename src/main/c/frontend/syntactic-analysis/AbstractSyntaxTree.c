@@ -142,8 +142,35 @@ void releaseSentence(Sentence * sentence){
 				free(sentence->assignArrayIdentifier);
 				releaseExpressionList(sentence->arrayExpressionList);
 				break;
+			case LOG_SENTENCE:
+				releaseStringPartList(sentence->logString);
+				break;
 		}
 		free(sentence);
+	}
+}
+
+void releaseStringPartList(StringPartList * stringPartList) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (stringPartList != NULL) {
+		releaseStringPart(stringPartList->stringPart);
+		releaseStringPartList(stringPartList->next);
+		free(stringPartList);
+	}
+}
+
+void releaseStringPart(StringPart * stringPart) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (stringPart != NULL) {
+		switch (stringPart->type) {
+			case STRING_SEGMENT:
+				free(stringPart->string);
+				break;
+			case IDENTIFIER_SEGMENT:
+				free(stringPart->identifier);
+				break;
+		}
+		free(stringPart);
 	}
 }
 

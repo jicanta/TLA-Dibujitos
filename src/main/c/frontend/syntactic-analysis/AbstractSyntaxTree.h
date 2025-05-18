@@ -27,6 +27,7 @@ typedef enum IntegerFactorType IntegerFactorType;
 
 typedef enum VectorExpressionType VectorExpressionType;
 typedef enum VectorFactorType VectorFactorType;
+typedef enum StringPartType StringPartType;
 
 
 typedef struct Constant Constant;
@@ -52,10 +53,8 @@ typedef struct IntegerFactor IntegerFactor;
 
 typedef struct VectorExpression VectorExpression;
 typedef struct VectorFactor VectorFactor;
-
-/**
- * Node types for the Abstract Syntax Tree (AST).
- */
+typedef struct StringPartList StringPartList;
+typedef struct StringPart StringPart;
 
 enum FloatExpressionType {
 	ADDITION,
@@ -75,6 +74,12 @@ enum IntegerExpressionType {
 	INT_MODULUS,
 	INT_FACTOR
 };
+
+enum StringPartType {
+	STRING_SEGMENT,
+	IDENTIFIER_SEGMENT,
+};
+
 
 enum BoolExpressionType {
 	GREATER_OR_EQUAL,
@@ -111,6 +116,7 @@ enum SentenceType {
 	FOR_SENTENCE,
 	FUNCTION_SENTENCE,
 	ASSIGN_ARRAY_SENTENCE,
+	LOG_SENTENCE,
 };
 
 enum ConstantType {
@@ -136,6 +142,19 @@ enum VectorFactorType {
 	VEC_VECTOR,
 	VEC_EXPRESSION,
 	VEC_IDENTIFIER
+};
+
+struct StringPart {
+	union {
+		char * string;
+		char * identifier;
+	};
+	StringPartType type;
+};
+
+struct StringPartList {
+	StringPart * stringPart;
+	StringPartList * next;
 };
 
 struct Constant {
@@ -244,6 +263,9 @@ struct Sentence {
 		struct {
 			char * functionIdentifier;
 			ExpressionList * functionArguments;
+		};
+		struct {
+			StringPartList * logString;
 		};
 	};
 	SentenceType type;
@@ -357,7 +379,8 @@ void releaseIntegerFactor(IntegerFactor * integerFactor);
 void releaseVectorExpression(VectorExpression * vectorExpression);
 void releaseVectorFactor(VectorFactor * vectorFactor);
 
-
+void releaseStringPartList(StringPartList * stringPartList);
+void releaseStringPart(StringPart * stringPart);
 
 
 #endif
