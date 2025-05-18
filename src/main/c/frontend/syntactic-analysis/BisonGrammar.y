@@ -22,7 +22,6 @@
 	FloatFactor * float_factor;
 	Vector * vector;
 	Program * program;
-	// TODO: Descomentar una vez que esté todo en el AbstractSyntaxTree
 
 	StringPartList * string_part_list;
 	StringPart * string_part;
