@@ -16,6 +16,7 @@
  */
 %x MULTILINE_COMMENT
 %x INTERP_STRING
+%x INTERP_EXPR
 
 /**
  * Reusable patterns.
@@ -32,16 +33,16 @@ comment           \/\/[^\n]*
 %%
 
 \"                              { BEGIN(INTERP_STRING); BeginInterpolatedStringLexemeAction(createLexicalAnalyzerContext()); }
-
+<INTERP_STRING>"{"              { BEGIN(INTERP_EXPR); return OPEN_BRACES; }
 <INTERP_STRING>[^\\"{}]+        { return StringLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
 <INTERP_STRING>\\.              { return StringLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
-
-<INTERP_STRING>"{"              { return BracesLexemeAction(createLexicalAnalyzerContext(), OPEN_BRACES); }
 <INTERP_STRING>"}"              { return BracesLexemeAction(createLexicalAnalyzerContext(), CLOSE_BRACES); }
+<INTERP_STRING>\"               { EndInterpolatedStringLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
-<INTERP_STRING>{identifier}     { return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
+<INTERP_EXPR>{identifier}       { BEGIN(INTERP_STRING); return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
+<INTERP_EXPR>"}"                { BEGIN(INTERP_STRING); return BracesLexemeAction(createLexicalAnalyzerContext(), CLOSE_BRACES); }
 
-<INTERP_STRING>\"               { EndInterpolatedStringLexemeAction(createLexicalAnalyzerContext());                                   BEGIN(INITIAL); }
+
 
 "/*"								{ BEGIN(MULTILINE_COMMENT); BeginMultilineCommentLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>"*/"				{ EndMultilineCommentLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }

@@ -22,6 +22,7 @@ typedef enum SentenceType SentenceType;
 typedef enum BoolExpressionType BoolExpressionType;
 typedef enum ConstantType ConstantType;
 typedef enum IntervalType IntervalType;
+typedef enum StringPartType StringPartType;
 
 
 typedef struct Constant Constant;
@@ -41,10 +42,8 @@ typedef struct Interval Interval;
 typedef struct BoolExpression BoolExpression;
 typedef struct BoolFactor BoolFactor;
 typedef struct ExpressionList ExpressionList;
-
-/**
- * Node types for the Abstract Syntax Tree (AST).
- */
+typedef struct StringPartList StringPartList;
+typedef struct StringPart StringPart;
 
 enum FloatExpressionType {
 	ADDITION,
@@ -52,6 +51,11 @@ enum FloatExpressionType {
 	FACTOR,
 	MULTIPLICATION,
 	SUBTRACTION
+};
+
+enum StringPartType {
+	STRING_SEGMENT,
+	IDENTIFIER_SEGMENT,
 };
 
 enum BoolExpressionType {
@@ -86,12 +90,26 @@ enum SentenceType {
 	FOR_SENTENCE,
 	FUNCTION_SENTENCE,
 	ASSIGN_ARRAY_SENTENCE,
+	LOG_SENTENCE,
 };
 
 enum ConstantType {
 	INTEGER_CONSTANT,
 	DECIMAL_CONSTANT,
 	IDENTIFIER_CONSTANT,
+};
+
+struct StringPart {
+	union {
+		char * string;
+		char * identifier;
+	};
+	StringPartType type;
+};
+
+struct StringPartList {
+	StringPart * stringPart;
+	StringPartList * next;
 };
 
 struct Constant {
@@ -164,6 +182,9 @@ struct Sentence {
 		struct {
 			char * functionIdentifier;
 			ExpressionList * functionArguments;
+		};
+		struct {
+			StringPartList * logString;
 		};
 	};
 	SentenceType type;
@@ -250,7 +271,8 @@ void releaseBoolExpression(BoolExpression * boolExpression);
 void releaseBoolFactor(BoolFactor * boolFactor);
 void releaseVector(Vector * vector);
 void releaseExpressionList(ExpressionList * expressionList);
-
+void releaseStringPartList(StringPartList * stringPartList);
+void releaseStringPart(StringPart * stringPart);
 
 
 #endif

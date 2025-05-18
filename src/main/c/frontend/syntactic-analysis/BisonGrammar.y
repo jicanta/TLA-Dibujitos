@@ -24,6 +24,8 @@
 	Program * program;
 	// TODO: Descomentar una vez que esté todo en el AbstractSyntaxTree
 
+	StringPartList * string_part_list;
+	StringPart * string_part;
 	Sentences * sentences;
 	Sentence * sentence;
 
@@ -122,6 +124,8 @@
 %type <sentences> sentences
 %type <sentence> sentence
 %type <expression_list> expression_list
+%type <string_part_list> string_part_list
+%type <string_part> string_part
 
 %type <block> block
 %type <interval> interval
@@ -168,7 +172,18 @@ sentence: IDENTIFIER ASSIGN float_expression SEMICOLON					{ $$ = AssignSentence
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
 	| FOR IDENTIFIER IN interval block									{ $$ = ForSentenceSemanticAction($2, $4, $5); }
 	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON	{ $$ = FunctionSentenceSemanticAction($1, $3); }
+	| LOG OPEN_PARENTHESIS string_part_list CLOSE_PARENTHESIS SEMICOLON		{ $$ = LogSentenceSemanticAction($3); }
 	;
+
+string_part_list
+    : string_part_list string_part		{ $$ = appendStringPartList($1, $2); }
+    | string_part						{ $$ = createStringPartList($1); }
+    ;
+
+string_part
+    : STRING								{ $$ = createStringSegment($1); }
+    | OPEN_BRACES IDENTIFIER CLOSE_BRACES	{ $$ = createStringInterpolation($2); }
+    ;
 
 block: OPEN_BRACES sentences CLOSE_BRACES								{ $$ = BlockSemanticAction($2); }
 	;

@@ -140,11 +140,11 @@ void EndInterpolatedStringLexemeAction(LexicalAnalyzerContext * ctx) {
     destroyLexicalAnalyzerContext(ctx);         
 }
 
- Token LogLexemeAction(LexicalAnalyzerContext * ctx) {
-     _logLexicalAnalyzerContext(__FUNCTION__, ctx);
-     destroyLexicalAnalyzerContext(ctx);
-     return LOG;
- }
+Token LogLexemeAction(LexicalAnalyzerContext * ctx) {
+	_logLexicalAnalyzerContext(__FUNCTION__, ctx);
+	destroyLexicalAnalyzerContext(ctx);
+	return LOG;
+}
 
 Token DotLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);

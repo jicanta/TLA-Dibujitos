@@ -48,6 +48,10 @@ BoolFactor * BoolExpressionFactorSemanticAction(BoolExpression * boolExpression)
 Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * functionArguments);
 ExpressionList * ExpressionListSemanticAction(ExpressionList * expressionList, FloatExpression * expression);
 ExpressionList * EmptyExpressionListSemanticAction();
-
+Sentence * LogSentenceSemanticAction(StringPartList * stringPartList);
+StringPartList * appendStringPartList(StringPartList * stringPartList, StringPart *stringPart);
+StringPartList * createStringPartList(StringPart * stringPart);
+StringPart * createStringSegment(char * string);
+StringPart * createStringInterpolation(char * identifier);
 
 #endif
