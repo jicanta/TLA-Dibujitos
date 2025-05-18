@@ -29,6 +29,8 @@ typedef enum VectorExpressionType VectorExpressionType;
 typedef enum VectorFactorType VectorFactorType;
 typedef enum StringPartType StringPartType;
 
+typedef enum GenericExpressionType GenericExpressionType;
+
 
 typedef struct Constant Constant;
 typedef struct FloatExpression FloatExpression;
@@ -55,6 +57,8 @@ typedef struct VectorExpression VectorExpression;
 typedef struct VectorFactor VectorFactor;
 typedef struct StringPartList StringPartList;
 typedef struct StringPart StringPart;
+
+typedef struct GenericExpression GenericExpression;
 
 enum FloatExpressionType {
 	ADDITION,
@@ -142,6 +146,12 @@ enum VectorFactorType {
 	VEC_VECTOR,
 	VEC_EXPRESSION,
 	VEC_IDENTIFIER
+};
+
+enum GenericExpressionType {
+	GENERIC_FLOAT,
+	GENERIC_INTEGER,
+	GENERIC_VECTOR
 };
 
 struct StringPart {
@@ -272,7 +282,7 @@ struct Sentence {
 };
 
 struct ExpressionList {
-	FloatExpression * expression;
+	GenericExpression * expression;
 	ExpressionList * next;
 };
 
@@ -304,8 +314,8 @@ struct Block {
 struct Interval {
 	union {
 		struct {
-			FloatExpression * leftFloatExpression;
-			FloatExpression * rightFloatExpression;
+			IntegerExpression * leftIntegerExpression;
+			IntegerExpression * rightIntegerExpression;
 		};
 		struct {
 			char * identifier;
@@ -313,8 +323,8 @@ struct Interval {
 	};
 	IntervalType type;
 };
+// TODO: quizás conviene sacar el IntervalType
 
-// TODO: Es muy probable que haya que separar esto en partes D:
 struct BoolExpression {
 	union {
 		BoolFactor * boolFactor;
@@ -355,6 +365,15 @@ struct IntegerFactor {
 	IntegerFactorType type;
 };
 
+struct GenericExpression {
+	union {
+		FloatExpression * floatExpression;
+		IntegerExpression * integerExpression;
+		VectorExpression * vectorExpression;
+	};
+	GenericExpressionType genericExpressionType;
+};
+
 
 
 
@@ -381,6 +400,8 @@ void releaseVectorFactor(VectorFactor * vectorFactor);
 
 void releaseStringPartList(StringPartList * stringPartList);
 void releaseStringPart(StringPart * stringPart);
+
+void releaseGenericExpression(GenericExpression * genericExpression);
 
 
 #endif

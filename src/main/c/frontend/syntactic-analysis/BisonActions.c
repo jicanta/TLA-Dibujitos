@@ -131,7 +131,7 @@ Sentences * EmptySentencesSemanticAction() {
     return sentences;
 }
 
-ExpressionList * ExpressionListSemanticAction(ExpressionList * expressionList, FloatExpression * expression) {
+ExpressionList * ExpressionListSemanticAction(ExpressionList * expressionList, GenericExpression * expression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ExpressionList * expressionList_ret = calloc(1, sizeof(ExpressionList));
 	expressionList_ret->expression = expression;
@@ -270,11 +270,11 @@ Block * BlockSemanticAction(Sentences * sentences) {
 	return block;
 }
 
-Interval * IntervalSemanticAction(FloatExpression * leftFloatExpression, FloatExpression * rightFloatExpression) {
+Interval * IntervalSemanticAction(IntegerExpression * leftIntegerExpression, IntegerExpression * rightIntegerExpression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Interval * interval = calloc(1, sizeof(Interval));
-	interval->leftFloatExpression = leftFloatExpression;
-	interval->rightFloatExpression = rightFloatExpression;
+	interval->leftIntegerExpression = leftIntegerExpression;
+	interval->rightIntegerExpression = rightIntegerExpression;
 	interval->type = RANGE_INTERVAL;
 	return interval;
 }
@@ -423,4 +423,26 @@ VectorFactor * VectorFactorSemanticAction(Vector * vector) {
 	vectorFactor->vector = vector;
 	vectorFactor->type = VEC_VECTOR;
 	return vectorFactor;
+}
+
+GenericExpression * FloatGenericExpressionSemanticAction(FloatExpression * floatExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	GenericExpression * genericExpression = calloc(1, sizeof(GenericExpression));
+	genericExpression->floatExpression = floatExpression;
+	genericExpression->genericExpressionType = GENERIC_FLOAT;
+	return genericExpression;
+}
+GenericExpression * IntegerGenericExpressionSemanticAction(IntegerExpression * integerExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	GenericExpression * genericExpression = calloc(1, sizeof(GenericExpression));
+	genericExpression->integerExpression = integerExpression;
+	genericExpression->genericExpressionType = GENERIC_INTEGER;
+	return genericExpression;
+}
+GenericExpression * VectorGenericExpressionSemanticAction(VectorExpression * vectorExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	GenericExpression * genericExpression = calloc(1, sizeof(GenericExpression));
+	genericExpression->vectorExpression = vectorExpression;
+	genericExpression->genericExpressionType = GENERIC_VECTOR;
+	return genericExpression;
 }

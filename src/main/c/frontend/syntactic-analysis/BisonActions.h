@@ -41,7 +41,7 @@ Sentence * ForSentenceSemanticAction(char * identifier, Interval * interval, Blo
 Sentence * IfElseSentenceSemanticAction(BoolExpression * boolExpression, Block * leftBlock, Block * rightBlock);
 Sentence * AssignArraySentenceSemanticAction(char * identifier, ExpressionList * expressionList);
 Block * BlockSemanticAction(Sentences * sentences);
-Interval * IntervalSemanticAction(FloatExpression * leftFloatExpression, FloatExpression * rightFloatExpression);
+Interval * IntervalSemanticAction(IntegerExpression * leftIntegerExpression, IntegerExpression * rightIntegerExpression);
 Interval * IntervalIdentifierSemanticAction(char * identifier);
 BoolExpression * BoolExpressionSemanticAction(FloatExpression * leftFloatExpression, FloatExpression * rightFloatExpression, BoolExpressionType type);
 BoolExpression * BoolBinaryExpressionSemanticAction(BoolExpression * leftBoolExpression, BoolExpression * rightBoolExpression, BoolExpressionType type);
@@ -49,7 +49,7 @@ BoolExpression * BoolUnaryExpressionSemanticAction(BoolExpression * boolExpressi
 BoolExpression * BoolFactorExpressionSemanticAction(BoolFactor * boolFactor);
 BoolFactor * BoolExpressionFactorSemanticAction(BoolExpression * boolExpression);
 Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * functionArguments);
-ExpressionList * ExpressionListSemanticAction(ExpressionList * expressionList, FloatExpression * expression);
+ExpressionList * ExpressionListSemanticAction(ExpressionList * expressionList, GenericExpression * expression);
 ExpressionList * EmptyExpressionListSemanticAction();
 Sentence * LogSentenceSemanticAction(StringPartList * stringPartList);
 StringPartList * appendStringPartList(StringPartList * stringPartList, StringPart *stringPart);
@@ -71,5 +71,9 @@ VectorExpression * VectorFactorExpressionSemanticAction(VectorFactor * vectorFac
 VectorFactor * VectorExpressionFactorSemanticAction(VectorExpression * vectorExpression);
 VectorFactor * VectorIdentifierFactorSemanticAction( char * identifier);
 VectorFactor * VectorFactorSemanticAction(Vector * vector);
+
+GenericExpression * FloatGenericExpressionSemanticAction(FloatExpression * floatExpression);
+GenericExpression * IntegerGenericExpressionSemanticAction(IntegerExpression * integerExpression); 
+GenericExpression * VectorGenericExpressionSemanticAction(VectorExpression * vectorExpression);
 
 #endif

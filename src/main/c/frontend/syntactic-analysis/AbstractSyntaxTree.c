@@ -177,7 +177,7 @@ void releaseStringPart(StringPart * stringPart) {
 void releaseExpressionList(ExpressionList * expressionList) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (expressionList != NULL) {
-		releaseFloatExpression(expressionList->expression);
+		releaseGenericExpression(expressionList->expression);
 		releaseExpressionList(expressionList->next);
 		free(expressionList);
 	}
@@ -199,8 +199,8 @@ void releaseInterval(Interval * interval) {
 				free(interval->identifier);
 				break;
 			case RANGE_INTERVAL:
-				releaseFloatExpression(interval->leftFloatExpression);
-				releaseFloatExpression(interval->rightFloatExpression);
+				releaseIntegerExpression(interval->leftIntegerExpression);
+				releaseIntegerExpression(interval->rightIntegerExpression);
 				break; 
 		}
 		free(interval);
@@ -314,5 +314,23 @@ void releaseVectorFactor(VectorFactor * vectorFactor) {
 				break;
 		}
 		free(vectorFactor);
+	}
+}
+
+void releaseGenericExpression(GenericExpression * genericExpression) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (genericExpression != NULL) {
+		switch (genericExpression->genericExpressionType) {
+			case GENERIC_FLOAT:
+				releaseFloatExpression(genericExpression->floatExpression);
+				break;
+			case GENERIC_INTEGER:
+				releaseIntegerExpression(genericExpression->integerExpression);
+				break;
+			case GENERIC_VECTOR:
+				releaseVectorExpression(genericExpression->vectorExpression);
+				break;
+		}
+		free(genericExpression);
 	}
 }

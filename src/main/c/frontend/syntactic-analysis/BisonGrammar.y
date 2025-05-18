@@ -30,9 +30,10 @@
 
 	Block * block;
 	Interval * interval;
+
+	GenericExpression * generic_expression;
 	BoolExpression * bool_expression;
 	BoolFactor * bool_factor;
-
 	IntegerExpression * integer_expression;
 	IntegerFactor * integer_factor;
 	VectorExpression * vector_expression;
@@ -63,6 +64,7 @@
 %destructor { releaseVectorExpression($$); } <vector_expression>
 %destructor { releaseVectorFactor($$); } <vector_factor>
 %destructor { releaseVector($$); } <vector>
+%destructor { releaseGenericExpression($$); } <generic_expression>
 
 
 
@@ -144,9 +146,11 @@
 
 %type <block> block
 %type <interval> interval
+
+%type <generic_expression> generic_expression
+
 %type <bool_expression> bool_expression
 %type <bool_factor> bool_factor
-
 %type <integer_expression> integer_expression
 %type <integer_factor> integer_factor
 %type <vector_expression> vector_expression
@@ -207,8 +211,7 @@ string_part
 block: OPEN_BRACES sentences CLOSE_BRACES											{ $$ = BlockSemanticAction($2); }
 	;
 
-interval: OPEN_BRACKETS float_expression COLON float_expression CLOSE_BRACKETS		{ $$ = IntervalSemanticAction($2, $4); }
-/* TODO: Cambiar float_expression por integer_expression */
+interval: OPEN_BRACKETS integer_expression COLON integer_expression CLOSE_BRACKETS		{ $$ = IntervalSemanticAction($2, $4); }
 	| IDENTIFIER 																	{ $$ = IntervalIdentifierSemanticAction($1); }
 	;
 
@@ -223,17 +226,21 @@ bool_expression: float_expression GEQ float_expression								{ $$ = BoolExpress
 	| NOT bool_expression															{ $$ = BoolUnaryExpressionSemanticAction($2, NOT_TYPE); }
 	| bool_factor																	{ $$ = BoolFactorExpressionSemanticAction($1); }
 	;
+	/* TODO: Hacer bool_expression para integers */
 
 bool_factor: OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS						{ $$ = BoolExpressionFactorSemanticAction($2); }
 	;
 
-expression_list: expression_list[left] COMMA float_expression[right]				{ $$ = ExpressionListSemanticAction($left, $right); }
+expression_list: expression_list[left] COMMA generic_expression[right]				{ $$ = ExpressionListSemanticAction($left, $right); }
 /* TODO: cambiar float_expression por generic_expression */
-	| float_expression[right]														{ $$ = ExpressionListSemanticAction(NULL, $right); }
+	| generic_expression[right]														{ $$ = ExpressionListSemanticAction(NULL, $right); }
 	| %empty																		{ $$ = EmptyExpressionListSemanticAction(); }
 	;
 
-/* TODO: Crear generic_expression */
+generic_expression: float_expression												{ $$ = FloatGenericExpressionSemanticAction($1); }
+	| integer_expression															{ $$ = IntegerGenericExpressionSemanticAction($1); }
+	| vector_expression																{ $$ = VectorGenericExpressionSemanticAction($1); }
+	;
 
 float_expression: float_expression[left] ADD float_expression[right]				{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, ADDITION); }
 	| float_expression[left] DIV float_expression[right]							{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, DIVISION); }
