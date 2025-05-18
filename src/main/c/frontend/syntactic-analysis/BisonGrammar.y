@@ -115,9 +115,9 @@
 %token <string> STRING
 %token <string> IDENTIFIER
 
-%token <token> INT_ID
-%token <token> FLOAT_ID
-%token <token> VECTOR_ID
+%token <string> INT_ID
+%token <string> FLOAT_ID
+%token <string> VECTOR_ID
 
 %token <token> FLOAT_KEYWORD
 %token <token> INT_KEYWORD
@@ -174,10 +174,6 @@
 program: sentences													{ $$ = SentencesProgramSemanticAction(currentCompilerState(), $1); }
 	;
 
-/* TODO: Faltan todas las funciones release
- * TODO: Faltan muchas reglas/producciones, especialmente las de los vectores y las
-*/
-
 
 sentences: sentences sentence														{ $$ = SentencesSemanticAction($1, $2); }
 	| %empty                                                            			{ $$ = EmptySentencesSemanticAction(); }
@@ -198,6 +194,7 @@ block: OPEN_BRACES sentences CLOSE_BRACES											{ $$ = BlockSemanticAction($
 	;
 
 interval: OPEN_BRACKETS float_expression COLON float_expression CLOSE_BRACKETS		{ $$ = IntervalSemanticAction($2, $4); }
+/* TODO: Cambiar float_expression por integer_expression */
 	| IDENTIFIER 																	{ $$ = IntervalIdentifierSemanticAction($1); }
 	;
 
@@ -216,21 +213,13 @@ bool_expression: float_expression GEQ float_expression								{ $$ = BoolExpress
 bool_factor: OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS						{ $$ = BoolExpressionFactorSemanticAction($2); }
 	;
 
-
-
-/* 
-	Comentarios para seguir con el trabajo:
-	TODO: Las operaciones con vectores NO deberían ser compatibles con las operaciones numéricas
-
-	TODO: Si queremos aceptar operaciones EXCLUSIVAS para integers (/, %), deberíamos tener un
-		"integer_expression" y un "numeric_expression" (o algo así) y no mezclar tipos.
-
- */
-
 expression_list: expression_list[left] COMMA float_expression[right]				{ $$ = ExpressionListSemanticAction($left, $right); }
-	| float_expression[right]				{ $$ = ExpressionListSemanticAction(NULL, $right); }
-	| %empty													{ $$ = EmptyExpressionListSemanticAction(); }
+/* TODO: cambiar float_expression por generic_expression */
+	| float_expression[right]														{ $$ = ExpressionListSemanticAction(NULL, $right); }
+	| %empty																		{ $$ = EmptyExpressionListSemanticAction(); }
 	;
+
+/* TODO: Crear generic_expression */
 
 float_expression: float_expression[left] ADD float_expression[right]				{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, ADDITION); }
 	| float_expression[left] DIV float_expression[right]							{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, DIVISION); }
@@ -239,14 +228,11 @@ float_expression: float_expression[left] ADD float_expression[right]				{ $$ = F
 	| float_factor																	{ $$ = FloatFactorExpressionSemanticAction($1); }
 	| vector_expression DOT X_PARAM													{ $$ = VectorDotExpressionSemanticAction($1, GET_X); }
 	| vector_expression DOT Y_PARAM													{ $$ = VectorDotExpressionSemanticAction($1, GET_Y); }
-
 	;
 
 float_factor: OPEN_PARENTHESIS float_expression CLOSE_PARENTHESIS					{ $$ = FloatExpressionFactorSemanticAction($2); }
 	| constant																		{ $$ = FloatConstantFactorSemanticAction($1); }
-	/* | vector																		{ $$ = VectorFactorSemanticAction($1); } */
 	| FLOAT_KEYWORD OPEN_PARENTHESIS integer_expression CLOSE_PARENTHESIS			{ $$ = IntegerToFloatFactorSemanticAction($3); }
-// El vector no debería ser un float_factor. Debería tener su propia categoría de vector_expression
 	;
 
 
@@ -261,6 +247,7 @@ integer_expression: integer_expression[left] ADD integer_expression[right]			{ $
 integer_factor: OPEN_PARENTHESIS integer_expression CLOSE_PARENTHESIS				{ $$ = IntegerExpressionFactorSemanticAction($2); }
 	| INTEGER																		{ $$ = IntegerConstantFactorSemanticAction($1); }
 	| IDENTIFIER																	{ $$ = IntegerIdentifierFactorSemanticAction($1); }
+	/* TODO: Cambiar IDENTIFIER por INT_ID cuando se pueda */
 	;
 
 
@@ -274,11 +261,15 @@ vector_expression: vector_expression[left] ADD vector_expression[right]			{ $$ =
 vector_factor: OPEN_PARENTHESIS vector_expression CLOSE_PARENTHESIS				{ $$ = VectorExpressionFactorSemanticAction($2); }
 	| vector																	{ $$ = VectorFactorSemanticAction($1); }
 	| IDENTIFIER																{ $$ = VectorIdentifierFactorSemanticAction($1); }
+		/* TODO: Cambiar IDENTIFIER por VECTOR_ID cuando se pueda */
+
 	;
 
 constant: DECIMAL													{ $$ = DecimalConstantSemanticAction($1); }
 	| INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
 	| IDENTIFIER												{ $$ = IdentifierConstantSemanticAction($1); }
+		/* TODO: Cambiar IDENTIFIER por FLOAT_ID cuando se pueda */
+
 	;
 
 
@@ -286,10 +277,7 @@ constant: DECIMAL													{ $$ = DecimalConstantSemanticAction($1); }
 
 vector: OPEN_PARENTHESIS constant[left] COMMA constant[right] CLOSE_PARENTHESIS	{ $$ = VectorSemanticAction($left, $right); }
 	;
-
-// Deberíamos reemplazar la anterior por esta
-/* vector: OPEN_PARENTHESIS float_expression[left] COMMA float_expression[right] CLOSE_PARENTHESIS	{ $$ = VectorSemanticAction($left, $right); }
-	; */
+	/* TODO: Cambiar constant por float_expression */
 	
 
 %%

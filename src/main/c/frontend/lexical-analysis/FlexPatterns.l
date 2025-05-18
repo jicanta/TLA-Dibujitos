@@ -62,15 +62,9 @@ comment           \/\/[^\n]*
 "+"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), ADD); }
 
 "float"                             { return FloatKeywordLexemeAction(createLexicalAnalyzerContext()); }
-
-"int"                               { BEGIN(INT_ASSIGNMENT); return IntKeywordLexemeAction(createLexicalAnalyzerContext()); }
-<INT_ASSIGNMENT>{identifier}        { return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng, INT_ID);  BEGIN(INITIAL); }
-<INT_ASSIGNMENT>[[:space:]]+		{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-<INT_ASSIGNMENT>.					{ return UnknownLexemeAction(createLexicalAnalyzerContext()); }
-
-
-
+"int"                               { return IntKeywordLexemeAction(createLexicalAnalyzerContext()); }
 "vector"                            { return VectorKeywordLexemeAction(createLexicalAnalyzerContext()); }
+
 
 "%"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), MOD); }
 
@@ -130,14 +124,16 @@ comment           \/\/[^\n]*
 
 /**
  * Moví lo que pensaba que no tenía sentido
+ *
+ * "int"                               { BEGIN(INT_ASSIGNMENT); return IntKeywordLexemeAction(createLexicalAnalyzerContext()); }
+ * <INT_ASSIGNMENT>{identifier}        { BEGIN(INITIAL); return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng, INT_ID);}
+ * <INT_ASSIGNMENT>[[:space:]]+		{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+ * <INT_ASSIGNMENT>.					{ return UnknownLexemeAction(createLexicalAnalyzerContext()); }
  * 
  * 
- * NOOOOO ESTO NOOOO PLZ:
- * "+="                                { return PlusEqualsLexemeAction(createLexicalAnalyzerContext()); }
- * "-="                                { return MinusEqualsLexemeAction(createLexicalAnalyzerContext()); }
- * "*="                                { return TimesEqualsLexemeAction(createLexicalAnalyzerContext()); }
- * "/="                                { return DivEqualsLexemeAction(createLexicalAnalyzerContext()); }
- * "%="                                { return ModEqualsLexemeAction(createLexicalAnalyzerContext()); }
  * 
- * TODO: Ojo que faltan parsear los floats
+ * "vector"                            { BEGIN(VECTOR_ASSIGNMENT); return VectorKeywordLexemeAction(createLexicalAnalyzerContext()); }
+ * <VECTOR_ASSIGNMENT>{identifier}     { BEGIN(INITIAL); return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng, VECTOR_ID);}
+ * <VECTOR_ASSIGNMENT>[[:space:]]+		{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+ * <VECTOR_ASSIGNMENT>.				{ return UnknownLexemeAction(createLexicalAnalyzerContext()); } 
  */
