@@ -202,6 +202,12 @@ Token BracketsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Toke
 	return token;
 }
 
+Token FloatKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+	return FLOAT_KEYWORD;
+}
+
 Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 

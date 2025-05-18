@@ -214,7 +214,7 @@ void releaseIntegerExpression(IntegerExpression * integerExpression) {
 				releaseIntegerExpression(integerExpression->rightIntegerExpression);
 				break;
 			case INT_FACTOR:
-				releaseIntegerFactor(integerExpression->factor);
+				releaseIntegerFactor(integerExpression->integerFactor);
 				break;
 		}
 		free(integerExpression);

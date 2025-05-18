@@ -107,6 +107,8 @@
 %token <string> STRING
 %token <string> IDENTIFIER
 
+%token <token> FLOAT_KEYWORD
+
 
 
 
@@ -152,6 +154,7 @@
  */
 %left ADD SUB
 %left MUL DIV
+%left MOD
 
 %left AND OR
 
@@ -174,6 +177,7 @@ sentences: sentences sentence														{ $$ = SentencesSemanticAction($1, $2
 	;
 
 sentence: IDENTIFIER ASSIGN float_expression SEMICOLON								{ $$ = AssignSentenceSemanticAction($1, $3); }
+/* TODO: Agregar una INT_KEYWORD y hacer el assign. Copiar lógica para los vectores */
 	| IDENTIFIER ASSIGN OPEN_BRACKETS expression_list CLOSE_BRACKETS SEMICOLON { $$ = AssignArraySentenceSemanticAction($1, $4); }
 	/* | IDENTIFIER ASSIGN vector											// TODO: VECTOR */
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ $$ = IfSentenceSemanticAction($3, $5); }
@@ -181,6 +185,8 @@ sentence: IDENTIFIER ASSIGN float_expression SEMICOLON								{ $$ = AssignSente
 	| FOR IDENTIFIER IN interval block												{ $$ = ForSentenceSemanticAction($2, $4, $5); }
 	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ $$ = FunctionSentenceSemanticAction($1, $3); }
 	;
+
+
 
 block: OPEN_BRACES sentences CLOSE_BRACES											{ $$ = BlockSemanticAction($2); }
 	;
@@ -234,7 +240,7 @@ float_expression: float_expression[left] ADD float_expression[right]				{ $$ = F
 float_factor: OPEN_PARENTHESIS float_expression CLOSE_PARENTHESIS					{ $$ = FloatExpressionFactorSemanticAction($2); }
 	| constant																		{ $$ = FloatConstantFactorSemanticAction($1); }
 	| vector																		{ $$ = VectorFactorSemanticAction($1); }
-	| OPEN_PARENTHESIS "float" CLOSE_PARENTHESIS integer_expression															{ $$ = IntegerToFloatSemanticAction($1); }
+	| FLOAT_KEYWORD OPEN_PARENTHESIS integer_expression CLOSE_PARENTHESIS			{ $$ = IntegerToFloatFactorSemanticAction($3); }
 // El vector no debería ser un float_factor. Debería tener su propia categoría de vector_expression
 	;
 
@@ -248,8 +254,8 @@ integer_expression: integer_expression[left] ADD integer_expression[right]			{ $
 	;
 
 integer_factor: OPEN_PARENTHESIS integer_expression CLOSE_PARENTHESIS				{ $$ = IntegerExpressionFactorSemanticAction($2); }
-	| INTEGER																		{ $$ = IntegerConstantSemanticAction($1); }
-	| IDENTIFIER																	{ $$ = IntegerIdentifierSemanticAction($1); }
+	| INTEGER																		{ $$ = IntegerConstantFactorSemanticAction($1); }
+	| IDENTIFIER																	{ $$ = IntegerIdentifierFactorSemanticAction($1); }
 	;
 
 /*
@@ -264,7 +270,7 @@ vector_expression: vector_expression[left] ADD vector_expression[right]					{ $$
 
 constant: DECIMAL													{ $$ = DecimalConstantSemanticAction($1); }
 	/* | INTEGER													{ $$ = IntegerConstantSemanticAction($1); } */
-	/* | IDENTIFIER												{ $$ = IdentifierConstantSemanticAction($1); } */
+	| IDENTIFIER												{ $$ = IdentifierConstantSemanticAction($1); }
 	;
 
 

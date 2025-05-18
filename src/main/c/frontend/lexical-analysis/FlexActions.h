@@ -53,6 +53,7 @@ void BeginInterpolatedStringLexemeAction(LexicalAnalyzerContext *);
 void EndInterpolatedStringLexemeAction(LexicalAnalyzerContext *);
 Token IdentifierLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length);
 Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length);
+Token FloatKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 
 #endif

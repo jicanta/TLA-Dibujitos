@@ -57,7 +57,7 @@ comment           \/\/[^\n]*
 "/"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), DIV); }
 "+"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), ADD); }
 
-
+"float"                             { return FloatKeywordLexemeAction(createLexicalAnalyzerContext()); }
 
 
 "%"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), MOD); }

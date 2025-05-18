@@ -296,7 +296,7 @@ FloatFactor * IntegerToFloatFactorSemanticAction(IntegerExpression * integerExpr
 IntegerExpression * IntegerFactorExpressionSemanticAction(IntegerFactor * integerFactor) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	IntegerExpression * integerExpression = calloc(1, sizeof(IntegerExpression));
-	integerExpression->factor = integerFactor;
+	integerExpression->integerFactor = integerFactor;
 	integerExpression->type = INT_FACTOR;
 	return integerExpression;
 }

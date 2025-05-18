@@ -56,6 +56,6 @@ IntegerFactor * IntegerExpressionFactorSemanticAction(IntegerExpression * intege
 IntegerFactor * IntegerConstantFactorSemanticAction(int integer);
 IntegerFactor * IntegerIdentifierFactorSemanticAction(char * identifier);
 
-IntegerFactor * IntegerFactorExpressionSemanticAction(IntegerFactor * integerFactor);
+IntegerExpression * IntegerFactorExpressionSemanticAction(IntegerFactor * integerFactor);
 
 #endif
