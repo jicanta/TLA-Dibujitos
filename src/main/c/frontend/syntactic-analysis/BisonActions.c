@@ -275,6 +275,55 @@ BoolFactor * BoolExpressionFactorSemanticAction(BoolExpression * boolExpression)
 	return boolFactor;
 }
 
+IntegerExpression * IntegerArithmeticExpressionSemanticAction(IntegerExpression * leftIntegerExpression, IntegerExpression * rightIntegerExpression, IntegerExpressionType type) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	IntegerExpression * integerExpression = calloc(1, sizeof(IntegerExpression));
+	integerExpression->leftIntegerExpression = leftIntegerExpression;
+	integerExpression->rightIntegerExpression = rightIntegerExpression;
+	integerExpression->type = type;
+	return integerExpression;
+}
+
+
+FloatFactor * IntegerToFloatFactorSemanticAction(IntegerExpression * integerExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FloatFactor * floatFactor = calloc(1, sizeof(FloatFactor));
+	floatFactor->integerExpression = integerExpression;
+	floatFactor->type = INTEGER_TO_FLOAT;
+	return floatFactor;
+}
+
+IntegerExpression * IntegerFactorExpressionSemanticAction(IntegerFactor * integerFactor) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	IntegerExpression * integerExpression = calloc(1, sizeof(IntegerExpression));
+	integerExpression->factor = integerFactor;
+	integerExpression->type = INT_FACTOR;
+	return integerExpression;
+}
+
+IntegerFactor * IntegerExpressionFactorSemanticAction(IntegerExpression * integerExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	IntegerFactor * integerFactor = calloc(1, sizeof(IntegerFactor));
+	integerFactor->integerExpression = integerExpression;
+	integerFactor->type = INT_EXPRESSION;
+	return integerFactor;
+}
+IntegerFactor * IntegerConstantFactorSemanticAction(int integer) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	IntegerFactor * integerFactor = calloc(1, sizeof(IntegerFactor));
+	integerFactor->integer = integer;
+	integerFactor->type = INT_CONSTANT;
+	return integerFactor;
+}
+IntegerFactor * IntegerIdentifierFactorSemanticAction(char * identifier) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	IntegerFactor * integerFactor = calloc(1, sizeof(IntegerFactor));
+	integerFactor->identifier = identifier;
+	integerFactor->type = INT_IDENTIFIER;
+	return integerFactor;
+}
+
+
 
 
 

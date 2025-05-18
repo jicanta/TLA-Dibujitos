@@ -66,6 +66,9 @@ void releaseFloatFactor(FloatFactor * floatFactor) {
 			case VECTOR:
 				releaseVector(floatFactor->vector);
 				break;
+			case INTEGER_TO_FLOAT:
+				releaseIntegerExpression(floatFactor->integerExpression);
+				break;
 		}
 		free(floatFactor);
 	}
@@ -195,5 +198,43 @@ void releaseBoolFactor(BoolFactor * boolFactor) {
 	if (boolFactor != NULL) {
 		releaseBoolExpression(boolFactor->boolExpression);
 		free(boolFactor);
+	}
+}
+
+void releaseIntegerExpression(IntegerExpression * integerExpression) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (integerExpression != NULL) {
+		switch (integerExpression->type) {
+			case INT_ADDITION:
+			case INT_SUBTRACTION:
+			case INT_MULTIPLICATION:
+			case INT_DIVISION:
+			case INT_MODULUS:
+				releaseIntegerExpression(integerExpression->leftIntegerExpression);
+				releaseIntegerExpression(integerExpression->rightIntegerExpression);
+				break;
+			case INT_FACTOR:
+				releaseIntegerFactor(integerExpression->factor);
+				break;
+		}
+		free(integerExpression);
+	}
+}
+
+void releaseIntegerFactor(IntegerFactor * integerFactor) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (integerFactor != NULL) {
+		switch (integerFactor->type) {
+			case INT_CONSTANT:
+				// No need to free anything for integer constants
+				break;
+			case INT_EXPRESSION:
+				releaseIntegerExpression(integerFactor->integerExpression);
+				break;
+			case INT_IDENTIFIER:
+				free(integerFactor->identifier);
+				break;
+		}
+		free(integerFactor);
 	}
 }

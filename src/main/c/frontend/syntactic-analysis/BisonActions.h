@@ -49,5 +49,13 @@ Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * fu
 ExpressionList * ExpressionListSemanticAction(ExpressionList * expressionList, FloatExpression * expression);
 ExpressionList * EmptyExpressionListSemanticAction();
 
+IntegerExpression * IntegerArithmeticExpressionSemanticAction(IntegerExpression * leftIntegerExpression, IntegerExpression * rightIntegerExpression, IntegerExpressionType type);
+FloatFactor * IntegerToFloatFactorSemanticAction(IntegerExpression * integerExpression);
+
+IntegerFactor * IntegerExpressionFactorSemanticAction(IntegerExpression * integerExpression);
+IntegerFactor * IntegerConstantFactorSemanticAction(int integer);
+IntegerFactor * IntegerIdentifierFactorSemanticAction(char * identifier);
+
+IntegerFactor * IntegerFactorExpressionSemanticAction(IntegerFactor * integerFactor);
 
 #endif

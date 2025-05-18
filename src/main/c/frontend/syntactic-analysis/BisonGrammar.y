@@ -31,6 +31,9 @@
 	Interval * interval;
 	BoolExpression * bool_expression;
 	BoolFactor * bool_factor;
+
+	IntegerExpression * integer_expression;
+	IntegerFactor * integer_factor;
 }
 
 /**
@@ -50,6 +53,11 @@
 %destructor { releaseInterval($$); } <interval>
 %destructor { releaseBoolExpression($$); } <bool_expression>
 %destructor { releaseBoolFactor($$); } <bool_factor>
+
+%destructor { releaseIntegerExpression($$); } <integer_expression>
+%destructor { releaseIntegerFactor($$); } <integer_factor>
+
+
 
 
 
@@ -114,6 +122,7 @@
 %type <constant> constant
 %type <float_expression> float_expression
 %type <float_factor> float_factor
+
 %type <vector> vector
 %type <program> program
 
@@ -127,6 +136,9 @@
 %type <interval> interval
 %type <bool_expression> bool_expression
 %type <bool_factor> bool_factor
+
+%type <integer_expression> integer_expression
+%type <integer_factor> integer_factor
 
 
 
@@ -157,24 +169,24 @@ program: sentences													{ $$ = SentencesProgramSemanticAction(currentComp
 */
 
 
-sentences: sentences sentence											{ $$ = SentencesSemanticAction($1, $2); }
-	| %empty                                                            { $$ = EmptySentencesSemanticAction(); }
+sentences: sentences sentence														{ $$ = SentencesSemanticAction($1, $2); }
+	| %empty                                                            			{ $$ = EmptySentencesSemanticAction(); }
 	;
 
-sentence: IDENTIFIER ASSIGN float_expression SEMICOLON					{ $$ = AssignSentenceSemanticAction($1, $3); }
+sentence: IDENTIFIER ASSIGN float_expression SEMICOLON								{ $$ = AssignSentenceSemanticAction($1, $3); }
 	| IDENTIFIER ASSIGN OPEN_BRACKETS expression_list CLOSE_BRACKETS SEMICOLON { $$ = AssignArraySentenceSemanticAction($1, $4); }
 	/* | IDENTIFIER ASSIGN vector											// TODO: VECTOR */
-	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block		{ $$ = IfSentenceSemanticAction($3, $5); }
+	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ $$ = IfSentenceSemanticAction($3, $5); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
-	| FOR IDENTIFIER IN interval block									{ $$ = ForSentenceSemanticAction($2, $4, $5); }
-	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON	{ $$ = FunctionSentenceSemanticAction($1, $3); }
+	| FOR IDENTIFIER IN interval block												{ $$ = ForSentenceSemanticAction($2, $4, $5); }
+	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ $$ = FunctionSentenceSemanticAction($1, $3); }
 	;
 
-block: OPEN_BRACES sentences CLOSE_BRACES								{ $$ = BlockSemanticAction($2); }
+block: OPEN_BRACES sentences CLOSE_BRACES											{ $$ = BlockSemanticAction($2); }
 	;
 
-interval: OPEN_BRACKETS float_expression COLON float_expression CLOSE_BRACKETS	{ $$ = IntervalSemanticAction($2, $4); }
-	| IDENTIFIER 											{ $$ = IntervalIdentifierSemanticAction($1); }
+interval: OPEN_BRACKETS float_expression COLON float_expression CLOSE_BRACKETS		{ $$ = IntervalSemanticAction($2, $4); }
+	| IDENTIFIER 																	{ $$ = IntervalIdentifierSemanticAction($1); }
 	;
 
 bool_expression: float_expression GEQ float_expression								{ $$ = BoolExpressionSemanticAction($1, $3, GREATER_OR_EQUAL); }
@@ -183,13 +195,13 @@ bool_expression: float_expression GEQ float_expression								{ $$ = BoolExpress
 	| float_expression LT float_expression											{ $$ = BoolExpressionSemanticAction($1, $3, LESS_THAN); }
 	| float_expression EQ float_expression											{ $$ = BoolExpressionSemanticAction($1, $3, EQUAL_TO); }
 	| float_expression NEQ float_expression											{ $$ = BoolExpressionSemanticAction($1, $3, NOT_EQUAL); }
-	| bool_expression AND bool_expression								{ $$ = BoolBinaryExpressionSemanticAction($1, $3, AND_TYPE); }
-	| bool_expression OR bool_expression								{ $$ = BoolBinaryExpressionSemanticAction($1, $3, OR_TYPE); }
-	| NOT bool_expression												{ $$ = BoolUnaryExpressionSemanticAction($2, NOT_TYPE); }
-	| bool_factor														{ $$ = BoolFactorExpressionSemanticAction($1); }
+	| bool_expression AND bool_expression											{ $$ = BoolBinaryExpressionSemanticAction($1, $3, AND_TYPE); }
+	| bool_expression OR bool_expression											{ $$ = BoolBinaryExpressionSemanticAction($1, $3, OR_TYPE); }
+	| NOT bool_expression															{ $$ = BoolUnaryExpressionSemanticAction($2, NOT_TYPE); }
+	| bool_factor																	{ $$ = BoolFactorExpressionSemanticAction($1); }
 	;
 
-bool_factor: OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS			{ $$ = BoolExpressionFactorSemanticAction($2); }
+bool_factor: OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS						{ $$ = BoolExpressionFactorSemanticAction($2); }
 	;
 
 
@@ -208,32 +220,38 @@ expression_list: expression_list[left] COMMA float_expression[right]				{ $$ = E
 	| %empty													{ $$ = EmptyExpressionListSemanticAction(); }
 	;
 
-float_expression: float_expression[left] ADD float_expression[right]					{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, ADDITION); }
-	| float_expression[left] DIV float_expression[right]						{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, DIVISION); }
-	| float_expression[left] MUL float_expression[right]						{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
-	| float_expression[left] SUB float_expression[right]						{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
-	| float_factor														{ $$ = FloatFactorExpressionSemanticAction($1); }
+float_expression: float_expression[left] ADD float_expression[right]				{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, ADDITION); }
+	| float_expression[left] DIV float_expression[right]							{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, DIVISION); }
+	| float_expression[left] MUL float_expression[right]							{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
+	| float_expression[left] SUB float_expression[right]							{ $$ = FloatArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
+	| float_factor																	{ $$ = FloatFactorExpressionSemanticAction($1); }
 /*	| vector_expression DOT X
 	| vector_expression DOT Y	falta en el flex
 	| integer_expression
 */
 	;
 
-float_factor: OPEN_PARENTHESIS float_expression CLOSE_PARENTHESIS				{ $$ = FloatExpressionFactorSemanticAction($2); }
-	| constant														{ $$ = FloatConstantFactorSemanticAction($1); }
-	| vector														{ $$ = VectorFactorSemanticAction($1); }
+float_factor: OPEN_PARENTHESIS float_expression CLOSE_PARENTHESIS					{ $$ = FloatExpressionFactorSemanticAction($2); }
+	| constant																		{ $$ = FloatConstantFactorSemanticAction($1); }
+	| vector																		{ $$ = VectorFactorSemanticAction($1); }
+	| OPEN_PARENTHESIS "float" CLOSE_PARENTHESIS integer_expression															{ $$ = IntegerToFloatSemanticAction($1); }
 // El vector no debería ser un float_factor. Debería tener su propia categoría de vector_expression
 	;
 
 
-/* integer_expression: integer_expression[left] ADD integer_expression[right]					{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, ADDITION); }
-	| integer_expression[left] DIV integer_expression[right]						{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, DIVISION); }
-	| integer_expression[left] MOD integer_expression[right]						{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, MODULUS); }
-	| integer_expression[left] MUL integer_expression[right]						{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
-	| integer_expression[left] SUB integer_expression[right]						{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
-	| float_factor														{ $$ = FloatFactorExpressionSemanticAction($1); }
+integer_expression: integer_expression[left] ADD integer_expression[right]			{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, INT_ADDITION); }
+	| integer_expression[left] DIV integer_expression[right]						{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, INT_DIVISION); }
+	| integer_expression[left] MOD integer_expression[right]						{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, INT_MODULUS); }
+	| integer_expression[left] MUL integer_expression[right]						{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, INT_MULTIPLICATION); }
+	| integer_expression[left] SUB integer_expression[right]						{ $$ = IntegerArithmeticExpressionSemanticAction($left, $right, INT_SUBTRACTION); }
+	| integer_factor																{ $$ = IntegerFactorExpressionSemanticAction($1); }
 	;
-*/
+
+integer_factor: OPEN_PARENTHESIS integer_expression CLOSE_PARENTHESIS				{ $$ = IntegerExpressionFactorSemanticAction($2); }
+	| INTEGER																		{ $$ = IntegerConstantSemanticAction($1); }
+	| IDENTIFIER																	{ $$ = IntegerIdentifierSemanticAction($1); }
+	;
+
 /*
 vector_expression: vector_expression[left] ADD vector_expression[right]					{ $$ = VectorArithmeticExpressionSemanticAction($left, $right, ADDITION); }
 	| vector_expression[left] DIV float_expression[right]						{ $$ = VectorArithmeticExpressionSemanticAction($left, $right, DIVISION); }
@@ -244,9 +262,9 @@ vector_expression: vector_expression[left] ADD vector_expression[right]					{ $$
 
 	
 
-constant: INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
-	| DECIMAL													{ $$ = DecimalConstantSemanticAction($1); }
-	| IDENTIFIER												{ $$ = IdentifierConstantSemanticAction($1); }
+constant: DECIMAL													{ $$ = DecimalConstantSemanticAction($1); }
+	/* | INTEGER													{ $$ = IntegerConstantSemanticAction($1); } */
+	/* | IDENTIFIER												{ $$ = IdentifierConstantSemanticAction($1); } */
 	;
 
 

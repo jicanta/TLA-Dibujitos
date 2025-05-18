@@ -22,6 +22,8 @@ typedef enum SentenceType SentenceType;
 typedef enum BoolExpressionType BoolExpressionType;
 typedef enum ConstantType ConstantType;
 typedef enum IntervalType IntervalType;
+typedef enum IntegerExpressionType IntegerExpressionType;
+typedef enum IntegerFactorType IntegerFactorType;
 
 
 typedef struct Constant Constant;
@@ -42,16 +44,28 @@ typedef struct BoolExpression BoolExpression;
 typedef struct BoolFactor BoolFactor;
 typedef struct ExpressionList ExpressionList;
 
+typedef struct IntegerExpression IntegerExpression;
+typedef struct IntegerFactor IntegerFactor;
+
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
 
 enum FloatExpressionType {
 	ADDITION,
-	DIVISION,
-	FACTOR,
+	SUBTRACTION,
 	MULTIPLICATION,
-	SUBTRACTION
+	DIVISION,
+	FACTOR
+};
+
+enum IntegerExpressionType {
+	INT_ADDITION,
+	INT_SUBTRACTION,
+	INT_MULTIPLICATION,
+	INT_DIVISION,
+	INT_MODULUS,
+	INT_FACTOR
 };
 
 enum BoolExpressionType {
@@ -72,6 +86,7 @@ enum FloatFactorType {
 	CONSTANT,
 	EXPRESSION,
 	VECTOR,
+	INTEGER_TO_FLOAT
 };
 
 enum IntervalType {
@@ -94,6 +109,12 @@ enum ConstantType {
 	IDENTIFIER_CONSTANT,
 };
 
+enum IntegerFactorType {
+	INT_CONSTANT,
+	INT_EXPRESSION,
+	INT_IDENTIFIER
+};
+
 struct Constant {
 	union {
 		int integer;
@@ -108,9 +129,12 @@ struct FloatFactor {
 		Constant * constant;
 		FloatExpression * floatExpression;
 		Vector * vector;
+		IntegerExpression * integerExpression;
 	};
 	FloatFactorType type;
 };
+
+
 
 struct Vector {
 	Constant * left;
@@ -233,6 +257,28 @@ struct BoolFactor {
 	BoolExpression * boolExpression;
 };
 
+struct IntegerExpression {
+	union {
+		IntegerFactor * integerFactor;
+		struct {
+			IntegerExpression * leftIntegerExpression;
+			IntegerExpression * rightIntegerExpression;
+		};
+	};
+	IntegerExpressionType type;
+};
+
+struct IntegerFactor {
+	union {
+		int integer;
+		IntegerExpression * integerExpression;
+		char * identifier;
+	};
+	IntegerFactorType type;
+};
+
+
+
 
 /**
  * Node recursive destructors.
@@ -250,6 +296,9 @@ void releaseBoolExpression(BoolExpression * boolExpression);
 void releaseBoolFactor(BoolFactor * boolFactor);
 void releaseVector(Vector * vector);
 void releaseExpressionList(ExpressionList * expressionList);
+void releaseIntegerExpression(IntegerExpression * integerExpression);
+void releaseIntegerFactor(IntegerFactor * integerFactor);
+
 
 
 
