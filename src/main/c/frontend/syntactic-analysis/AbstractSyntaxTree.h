@@ -65,7 +65,8 @@ enum ExpressionType {
 	MODULUS,
 	GET_X,
 	GET_Y,
-	ARRAY_ACCESS
+	ARRAY_ACCESS,
+	FUNCTION_EXPRESSION,
 };
 
 
@@ -111,6 +112,7 @@ enum SentenceType {
 	ASSIGN_ARRAY_SENTENCE,
 	ASSIGN_ARRAY_ELEMENT_SENTENCE,
 	LOG_SENTENCE,
+	IMPORT_SENTENCE,
 };
 
 enum ArrayType {
@@ -118,8 +120,6 @@ enum ArrayType {
 	INTERVAL_ARRAY,
 	BASIC_ARRAY,
 };
-
-
 
 struct Program {
 	Sentences * sentences;
@@ -165,6 +165,9 @@ struct Sentence {
 		};
 		struct {
 			StringPartList * logString;
+		};
+		struct {
+			StringPartList * importPath;
 		};
 	};
 	SentenceType type;
@@ -240,6 +243,10 @@ struct Expression {
 			Expression * indexExpression;
 		};
 		Expression * expression;
+		struct {
+			char * functionIdentifier;
+			ExpressionList * functionArguments;
+		};
 	};
 	ExpressionType type;
 };

@@ -348,3 +348,19 @@ BoolFactor * BoolExpressionFactorSemanticAction(BoolExpression * boolExpression)
 	return boolFactor;
 }
 
+Expression * FunctionExpressionSemanticAction(char * identifier, ExpressionList * functionArguments) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->functionIdentifier = identifier;
+	expression->functionArguments = functionArguments;
+	expression->type = FUNCTION_EXPRESSION;
+	return expression;
+}
+
+Sentence * ImportSentenceSemanticAction(StringPartList * importPath) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Sentence * sentence = calloc(1, sizeof(Sentence));
+	sentence->importPath = importPath;
+	sentence->type = IMPORT_SENTENCE;
+	return sentence;
+}

@@ -32,8 +32,6 @@ Token ParenthesisLexemeAction(Token token, char *text);
 
 Token UnknownLexemeAction(char *text);
 
-// NUESTRO
-
 Token BinaryOperatorLexemeAction(Token token, char *text);
 Token UnaryOperatorLexemeAction(Token token, char *text);
 Token AssignmentLexemeAction();
@@ -53,9 +51,6 @@ Token BeginInterpolatedStringLexemeAction();
 Token EndInterpolatedStringLexemeAction();
 Token IdentifierLexemeAction(char * text_pointer, int text_length);
 Token StringLexemeAction(char * text_pointer, int text_length);
-Token FloatKeywordLexemeAction();
-Token IntKeywordLexemeAction();
-Token VectorKeywordLexemeAction();
 
 Token XParamLexemeAction();
 Token YParamLexemeAction();

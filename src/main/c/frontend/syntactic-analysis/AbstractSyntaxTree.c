@@ -49,6 +49,10 @@ void releaseExpression(Expression * expression) {
 				releaseArray(expression->array);
 				releaseExpression(expression->indexExpression);
 				break;
+			case FUNCTION_EXPRESSION:
+				free((char *) expression->functionIdentifier); // Cast to char* to free the string
+				releaseExpressionList(expression->functionArguments);
+				break;
 		}
 		free(expression);
 	}
@@ -141,6 +145,9 @@ void releaseSentence(Sentence * sentence){
 				break;
 			case LOG_SENTENCE:
 				releaseStringPartList(sentence->logString);
+				break;
+			case IMPORT_SENTENCE:
+				releaseStringPartList(sentence->importPath);
 				break;
 		}
 		free(sentence);

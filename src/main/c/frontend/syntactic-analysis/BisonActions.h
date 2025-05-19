@@ -44,6 +44,7 @@ Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Exp
 Expression * FactorExpressionSemanticAction(Factor * factor);
 Expression * DotExpressionSemanticAction(Expression * expression, ExpressionType type);
 Expression * ArrayAccessExpressionSemanticAction(Array * array, Expression * indexExpression);
+Expression * FunctionExpressionSemanticAction(char * identifier, ExpressionList * functionArguments);
 Factor * IdentifierFactorSemanticAction(char * identifier);
 Factor * IntegerFactorSemanticAction(int integer);
 Factor * DecimalFactorSemanticAction(float decimal);
@@ -56,7 +57,7 @@ Array * IntervalArraySemanticAction(Expression * leftExpression, Expression * ri
 Array * IdentifierArraySemanticAction(char * identifier);
 Array * BasicArraySemanticAction(ExpressionList * expressionList);
 Sentence * AssignArrayElementSentenceSemanticAction(char * identifier, Expression * indexExpression, Expression * expression);
-
+Sentence * ImportSentenceSemanticAction(StringPartList * importPath);
 
 
 #endif

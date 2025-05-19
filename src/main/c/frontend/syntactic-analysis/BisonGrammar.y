@@ -90,8 +90,8 @@
 
 %token <token> OPEN_BRACES
 %token <token> CLOSE_BRACES
-%token <token> OPEN_BRACKETS
-%token <token> CLOSE_BRACKETS
+%token <token> OPEN_BRACKET
+%token <token> CLOSE_BRACKET
 
 %token <token> COMMA
 %token <token> SEMICOLON
@@ -170,13 +170,14 @@ sentences: sentences sentence														{ $$ = SentencesSemanticAction($1, $2
 	;
 
 sentence: IDENTIFIER ASSIGN expression SEMICOLON									{ $$ = AssignSentenceSemanticAction($1, $3); }
-	| IDENTIFIER OPEN_BRACKETS CLOSE_BRACKETS ASSIGN array SEMICOLON 				{ $$ = AssignArraySentenceSemanticAction($1, $5); }
-	| IDENTIFIER OPEN_BRACKETS expression CLOSE_BRACKETS ASSIGN expression SEMICOLON{ $$ = AssignArrayElementSentenceSemanticAction($1, $3, $6); }
+	| IDENTIFIER OPEN_BRACKET CLOSE_BRACKET ASSIGN array SEMICOLON 				 	{ $$ = AssignArraySentenceSemanticAction($1, $5); }
+	| IDENTIFIER OPEN_BRACKET expression CLOSE_BRACKET ASSIGN expression SEMICOLON	{ $$ = AssignArrayElementSentenceSemanticAction($1, $3, $6); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ $$ = IfSentenceSemanticAction($3, $5); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
 	| FOR IDENTIFIER IN array block													{ $$ = ForSentenceSemanticAction($2, $4, $5); }
 	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ $$ = FunctionSentenceSemanticAction($1, $3); }
 	| LOG BEGIN_STRING string_part_list END_STRING SEMICOLON						{ $$ = LogSentenceSemanticAction($3); }
+	| IMPORT BEGIN_STRING string_part_list END_STRING SEMICOLON						{ $$ = ImportSentenceSemanticAction($3); }
 	;
 
 string_part_list
@@ -192,8 +193,8 @@ string_part
 block: OPEN_BRACES sentences CLOSE_BRACES											{ $$ = BlockSemanticAction($2); }
 	;
 
-array: OPEN_BRACKETS expression_list CLOSE_BRACKETS									{ $$ = BasicArraySemanticAction($2); }
-	| OPEN_BRACKETS expression COLON expression CLOSE_BRACKETS						{ $$ = IntervalArraySemanticAction($2, $4); }
+array: OPEN_BRACKET expression_list CLOSE_BRACKET									{ $$ = BasicArraySemanticAction($2); }
+	| OPEN_BRACKET expression COLON expression CLOSE_BRACKET						{ $$ = IntervalArraySemanticAction($2, $4); }
 	| IDENTIFIER																	{ $$ = IdentifierArraySemanticAction($1); }
 	;
 
@@ -229,7 +230,8 @@ expression: expression[left] ADD expression[right]									{ $$ = ArithmeticExpr
 	| expression DOT X_PARAM														{ $$ = DotExpressionSemanticAction($1, GET_X); }
 	| expression DOT Y_PARAM														{ $$ = DotExpressionSemanticAction($1, GET_Y); }
 	| factor																		{ $$ = FactorExpressionSemanticAction($1); }
-	| array OPEN_BRACKETS expression CLOSE_BRACKETS									{ $$ = ArrayAccessExpressionSemanticAction($1, $3); }
+	| array OPEN_BRACKET expression CLOSE_BRACKET									{ $$ = ArrayAccessExpressionSemanticAction($1, $3); }
+	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS					{ $$ = FunctionExpressionSemanticAction($1, $3); }
 	;
 
 factor: IDENTIFIER																	{ $$ = IdentifierFactorSemanticAction($1); }
