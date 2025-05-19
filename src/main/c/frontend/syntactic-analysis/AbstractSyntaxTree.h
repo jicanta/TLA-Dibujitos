@@ -14,25 +14,22 @@ void shutdownAbstractSyntaxTreeModule();
  * This typedefs allows self-referencing types.
  */
 
-typedef enum FloatExpressionType FloatExpressionType;
-typedef enum FloatFactorType FloatFactorType;
+typedef enum ExpressionType ExpressionType;
+typedef enum FactorType FactorType;
 typedef enum SentenceType SentenceType;
 
-
 typedef enum BoolExpressionType BoolExpressionType;
-typedef enum ConstantType ConstantType;
-typedef enum IntervalType IntervalType;
-typedef enum IntegerExpressionType IntegerExpressionType;
-typedef enum IntegerFactorType IntegerFactorType;
 
-typedef enum VectorExpressionType VectorExpressionType;
-typedef enum VectorFactorType VectorFactorType;
+typedef enum IntervalType IntervalType;
+
 typedef enum StringPartType StringPartType;
 
 
 typedef struct Constant Constant;
-typedef struct FloatExpression FloatExpression;
-typedef struct FloatFactor FloatFactor;
+typedef struct Expression Expression;
+typedef struct Expressions Expressions;
+
+typedef struct Factor Factor;
 typedef struct Vector Vector;
 typedef struct Program Program;
 
@@ -56,24 +53,17 @@ typedef struct VectorFactor VectorFactor;
 typedef struct StringPartList StringPartList;
 typedef struct StringPart StringPart;
 
-enum FloatExpressionType {
+enum ExpressionType {
 	ADDITION,
 	SUBTRACTION,
 	MULTIPLICATION,
 	DIVISION,
 	FACTOR,
+	MODULUS,
 	GET_X,
 	GET_Y
 };
 
-enum IntegerExpressionType {
-	INT_ADDITION,
-	INT_SUBTRACTION,
-	INT_MULTIPLICATION,
-	INT_DIVISION,
-	INT_MODULUS,
-	INT_FACTOR
-};
 
 enum StringPartType {
 	STRING_SEGMENT,
@@ -95,11 +85,12 @@ enum BoolExpressionType {
 	BOOL_FACTOR
 };
 
-enum FloatFactorType {
-	CONSTANT,
-	EXPRESSION,
-	VECTOR,
-	INTEGER_TO_FLOAT
+enum FactorType {
+	IDENTIFIER_FACTOR,
+	INTEGER_FACTOR,
+	VECTOR_FACTOR,
+	DECIMAL_FACTOR,
+	PARENTHESIS_FACTOR
 };
 
 enum IntervalType {
@@ -111,113 +102,12 @@ enum SentenceType {
 	IF_SENTENCE,
 	IF_ELSE_SENTENCE,
 	ASSIGN_SENTENCE,
-	ASSIGN_INT_SENTENCE,
-	ASSIGN_VECTOR_SENTENCE,
 	FOR_SENTENCE,
 	FUNCTION_SENTENCE,
 	ASSIGN_ARRAY_SENTENCE,
 	LOG_SENTENCE,
 };
 
-enum ConstantType {
-	INTEGER_CONSTANT,
-	DECIMAL_CONSTANT,
-	IDENTIFIER_CONSTANT,
-};
-
-enum IntegerFactorType {
-	INT_CONSTANT,
-	INT_EXPRESSION,
-	INT_IDENTIFIER
-};
-
-enum VectorExpressionType {
-	VEC_ADDITION,
-	VEC_SUBTRACTION,
-	VEC_MULTIPLICATION,
-	VEC_DIVISION,
-	VEC_FACTOR
-};
-enum VectorFactorType {
-	VEC_VECTOR,
-	VEC_EXPRESSION,
-	VEC_IDENTIFIER
-};
-
-struct StringPart {
-	union {
-		char * string;
-		char * identifier;
-	};
-	StringPartType type;
-};
-
-struct StringPartList {
-	StringPart * stringPart;
-	StringPartList * next;
-};
-
-struct Constant {
-	union {
-		int integer;
-		float decimal;
-		const char * identifier;
-	};
-	ConstantType type;
-};
-
-struct FloatFactor {
-	union {
-		Constant * constant;
-		FloatExpression * floatExpression;
-		Vector * vector;
-		IntegerExpression * integerExpression;
-	};
-	FloatFactorType type;
-};
-
-
-
-struct Vector {
-	Constant * left;
-	Constant * right;
-};
-
-struct FloatExpression {
-	union {
-		FloatFactor * floatFactor;
-		struct {
-			FloatExpression * leftFloatExpression;
-			FloatExpression * rightFloatExpression;
-		};
-		VectorExpression * vectorExpression;
-	};
-	FloatExpressionType type;
-};
-
-struct VectorExpression {
-	union {
-		VectorFactor * vectorFactor;
-		struct {
-			VectorExpression * leftVectorExpression;
-			VectorExpression * rightVectorExpression;
-		};
-		struct {
-			VectorExpression * vectorExpression;
-			FloatExpression * floatExpression;
-		};
-	};
-	VectorExpressionType type;
-};
-
-struct VectorFactor {
-	union {
-		Vector * vector;
-		VectorExpression * vectorExpression;
-		char * identifier;
-	};
-	VectorFactorType type;
-};
 
 struct Program {
 	Sentences * sentences;
@@ -231,16 +121,8 @@ struct Sentences {
 struct Sentence {
 	union {
 		struct {
-			char * assignFloatIdentifier;
-			FloatExpression * assignFloatExpression;
-		};
-		struct {
-			char * assignIntegerIdentifier;
-			IntegerExpression * assignIntegerExpression;
-		};
-		struct {
-			char * assignVectorIdentifier;
-			VectorExpression * assignVectorExpression;
+			char * assignIdentifier;
+			Expression * assignExpression;
 		};
 		struct {
 			char * assignArrayIdentifier;
@@ -271,30 +153,17 @@ struct Sentence {
 	SentenceType type;
 };
 
-struct ExpressionList {
-	FloatExpression * expression;
-	ExpressionList * next;
+struct StringPart {
+	union {
+		char * string;
+		char * identifier;
+	};
+	StringPartType type;
 };
 
-
-struct IfSentence {
-	BoolExpression * boolExpression;
-	Block * block;
-};
-
-struct IfElseSentence {
-	BoolExpression * boolExpression;
-	Block * leftBlock;
-	Block * rightBlock;
-};
-
-struct ForSentence {
-	Interval * interval;
-	Block * block;
-};
-
-struct AssignSentence {
-	FloatExpression * floatExpression;
+struct StringPartList {
+	StringPart * stringPart;
+	StringPartList * next;
 };
 
 struct Block {
@@ -304,8 +173,8 @@ struct Block {
 struct Interval {
 	union {
 		struct {
-			FloatExpression * leftFloatExpression;
-			FloatExpression * rightFloatExpression;
+			Expression * leftExpression;
+			Expression * rightExpression;
 		};
 		struct {
 			char * identifier;
@@ -314,13 +183,12 @@ struct Interval {
 	IntervalType type;
 };
 
-// TODO: Es muy probable que haya que separar esto en partes D:
 struct BoolExpression {
 	union {
 		BoolFactor * boolFactor;
 		struct {
-			FloatExpression * leftFloatExpression;
-			FloatExpression * rightFloatExpression;
+			Expression * leftExpression;
+			Expression * rightExpression;
 		};
 		struct {
 			BoolExpression * leftBoolExpression;
@@ -335,24 +203,41 @@ struct BoolFactor {
 	BoolExpression * boolExpression;
 };
 
-struct IntegerExpression {
-	union {
-		IntegerFactor * integerFactor;
-		struct {
-			IntegerExpression * leftIntegerExpression;
-			IntegerExpression * rightIntegerExpression;
-		};
-	};
-	IntegerExpressionType type;
+struct ExpressionList {
+	Expressions * expressions;
 };
 
-struct IntegerFactor {
+struct Expressions {
+	Expression * expression;
+	Expressions * next;
+};
+
+struct Expression {
 	union {
-		int integer;
-		IntegerExpression * integerExpression;
-		char * identifier;
+		Factor * factor;
+		struct {
+			Expression * leftExpression;
+			Expression * rightExpression;
+		};
+		Expression * expression;
 	};
-	IntegerFactorType type;
+	ExpressionType type;
+};
+
+struct Factor {
+	union {
+		char * identifier;
+		Expression * expression;
+		Vector * vector;
+		int integerExpression;
+		float floatExpression;
+	};
+	FactorType type;
+};
+
+struct Vector {
+	Expression * x;
+	Expression * y;
 };
 
 
@@ -362,25 +247,22 @@ struct IntegerFactor {
  * Node recursive destructors.
  * TODO: seguir haciendo estos "Node Recursive Destructors"
  */
-void releaseConstant(Constant * constant);
-void releaseFloatExpression(FloatExpression * floatExpression);
-void releaseFloatFactor(FloatFactor * floatFactor);
 void releaseProgram(Program * program);
 void releaseSentences(Sentences * sentences);
 void releaseSentence(Sentence * sentence);
+void releaseStringPart(StringPart * stringPart);
+void releaseStringPartList(StringPartList * stringPartList);
 void releaseBlock(Block * block);
 void releaseInterval(Interval * interval);
 void releaseBoolExpression(BoolExpression * boolExpression);
 void releaseBoolFactor(BoolFactor * boolFactor);
-void releaseVector(Vector * vector);
 void releaseExpressionList(ExpressionList * expressionList);
-void releaseIntegerExpression(IntegerExpression * integerExpression);
-void releaseIntegerFactor(IntegerFactor * integerFactor);
-void releaseVectorExpression(VectorExpression * vectorExpression);
-void releaseVectorFactor(VectorFactor * vectorFactor);
+void releaseExpressions(Expressions * expressions);
+void releaseExpression(Expression * expression);
+void releaseFactor(Factor * factor);
+void releaseVector(Vector * vector);
 
-void releaseStringPartList(StringPartList * stringPartList);
-void releaseStringPart(StringPart * stringPart);
+
 
 
 #endif
