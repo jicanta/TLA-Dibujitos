@@ -24,93 +24,91 @@
  * @see https://westes.github.io/flex/manual/Matching.html
  * @see https://westes.github.io/flex/manual/Patterns.html
  */
-string            \"([^\\\"{}]|\\.)*\"
+
 digit              [0-9]
 decimal            [+-]?(([0-9]+\.[0-9]*)|(\.[0-9]+))
+integer            [+-]?{digit}+
 char               [a-zA-Z_]
 identifier         {char}({char}|{digit})*
-comment           \/\/[^\n]*
+single_comment     \/\/[^\n]*
 %%
 
-\"                              { BEGIN(INTERP_STRING); BeginInterpolatedStringLexemeAction(createLexicalAnalyzerContext()); }
-<INTERP_STRING>"{"              { BEGIN(INTERP_EXPR); return OPEN_BRACES; }
-<INTERP_STRING>[^\\"{}]+        { return StringLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
-<INTERP_STRING>\\.              { return StringLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
-<INTERP_STRING>"}"              { return BracesLexemeAction(createLexicalAnalyzerContext(), CLOSE_BRACES); }
-<INTERP_STRING>\"               { EndInterpolatedStringLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
+"/*"								{ BEGIN(MULTILINE_COMMENT); BeginMultilineCommentLexemeAction(); }
+<MULTILINE_COMMENT>"*/"				{ EndMultilineCommentLexemeAction(); BEGIN(INITIAL); }
+<MULTILINE_COMMENT>[[:space:]]+		{ IgnoredLexemeAction(yytext); }
+<MULTILINE_COMMENT>[^*]+			{ IgnoredLexemeAction(yytext); }
+<MULTILINE_COMMENT>.				{ IgnoredLexemeAction(yytext); }
 
-<INTERP_EXPR>{identifier}       { BEGIN(INTERP_STRING); return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng, IDENTIFIER); }
-<INTERP_EXPR>"}"                { BEGIN(INTERP_STRING); return BracesLexemeAction(createLexicalAnalyzerContext(), CLOSE_BRACES); }
+{single_comment}                    { IgnoredLexemeAction(yytext); }
 
+{decimal}				    		{ return DecimalLexemeAction(yytext); }
+{integer}	        				{ return IntegerLexemeAction(yytext); }
 
+\"                              { BEGIN(INTERP_STRING); BeginInterpolatedStringLexemeAction(); }
+<INTERP_STRING>"{"              { BEGIN(INTERP_EXPR); return BracesLexemeAction(OPEN_BRACES, yytext); }
+<INTERP_STRING>[^\\"{}]+        { return StringLexemeAction(yytext, yyleng); }
+<INTERP_STRING>\\.              { return StringLexemeAction(yytext, yyleng); }
+<INTERP_STRING>"}"              { return BracesLexemeAction(CLOSE_BRACES, yytext); }
+<INTERP_STRING>\"               { EndInterpolatedStringLexemeAction(); BEGIN(INITIAL); }
 
-"/*"								{ BEGIN(MULTILINE_COMMENT); BeginMultilineCommentLexemeAction(createLexicalAnalyzerContext()); }
-<MULTILINE_COMMENT>"*/"				{ EndMultilineCommentLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
-<MULTILINE_COMMENT>[[:space:]]+		{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-<MULTILINE_COMMENT>[^*]+			{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-<MULTILINE_COMMENT>.				{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-{comment} {IgnoredLexemeAction(createLexicalAnalyzerContext());}
-{decimal}				    		{ return DecimalLexemeAction(createLexicalAnalyzerContext()); }
-[+-]?[[:digit:]]+					{ return IntegerLexemeAction(createLexicalAnalyzerContext()); }
+<INTERP_EXPR>{identifier}       { BEGIN(INTERP_STRING); return IdentifierLexemeAction(yytext, yyleng); }
+<INTERP_EXPR>"}"                { BEGIN(INTERP_STRING); return BracesLexemeAction(CLOSE_BRACES, yytext); }
 
-"-"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), SUB); }
-"*"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), MUL); }
-"/"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), DIV); }
-"+"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), ADD); }
+"-"									{ return ArithmeticOperatorLexemeAction(SUB, yytext); }
+"*"									{ return ArithmeticOperatorLexemeAction(MUL, yytext); }
+"/"									{ return ArithmeticOperatorLexemeAction(DIV, yytext); }
+"+"									{ return ArithmeticOperatorLexemeAction(ADD, yytext); }
 
-"float"                             { return FloatKeywordLexemeAction(createLexicalAnalyzerContext()); }
-"int"                               { return IntKeywordLexemeAction(createLexicalAnalyzerContext()); }
-"vector"                            { return VectorKeywordLexemeAction(createLexicalAnalyzerContext()); }
+"float"                             { return FloatKeywordLexemeAction(); }
+"int"                               { return IntKeywordLexemeAction(); }
+"vector"                            { return VectorKeywordLexemeAction(); }
 
+"%"									{ return ArithmeticOperatorLexemeAction(MOD, yytext); }
 
-"%"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext(), MOD); }
+">="                                { return BinaryOperatorLexemeAction(GEQ, yytext); }
+"<="                                { return BinaryOperatorLexemeAction(LEQ, yytext); }                        
+">"                                 { return BinaryOperatorLexemeAction(GT, yytext); }
+"<"                                 { return BinaryOperatorLexemeAction(LT, yytext); }
+"=="                                { return BinaryOperatorLexemeAction(EQ, yytext); }
+"!="                                { return BinaryOperatorLexemeAction(NEQ, yytext); }
+"and"                               { return BinaryOperatorLexemeAction(AND, yytext); }
+"or"                                { return BinaryOperatorLexemeAction(OR, yytext); }
+"not"                               { return UnaryOperatorLexemeAction(NOT, yytext); }
 
-">="                                { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), GEQ); }
-"<="                                { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), LEQ); }                        
-">"                                 { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), GT); }
-"<"                                 { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), LT); }
-"=="                                { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), EQ); }
-"!="                                { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), NEQ); }
-"and"                               { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), AND); }
-"or"                                { return BinaryOperatorLexemeAction(createLexicalAnalyzerContext(), OR); }
-"not"                               { return UnaryOperatorLexemeAction(createLexicalAnalyzerContext(), NOT); }
+"="                                 { return AssignmentLexemeAction(); }
+"log"                               { return LogLexemeAction(); }
 
-"="                                 { return AssignmentLexemeAction(createLexicalAnalyzerContext()); }
-"log"                               { return LogLexemeAction(createLexicalAnalyzerContext()); }
+","                                 { return CommaLexemeAction(); }
+";"                                  { return SemicolonLexemeAction(); }
+"."                                 { return DotLexemeAction(); }
+"x"                                 { return XParamLexemeAction(); }
+"y"                                 { return YParamLexemeAction(); }
+":"                                 { return ColonLexemeAction(); }
 
-","                                 { return CommaLexemeAction(createLexicalAnalyzerContext()); }
-";"                                  { return SemicolonLexemeAction(createLexicalAnalyzerContext()); }
-"."                                 { return DotLexemeAction(createLexicalAnalyzerContext()); }
-"x"                                 { return XParamLexemeAction(createLexicalAnalyzerContext()); }
-"y"                                 { return YParamLexemeAction(createLexicalAnalyzerContext()); }
-":"                                 { return ColonLexemeAction(createLexicalAnalyzerContext()); }
+"import"                            { return ImportLexemeAction(); }
+"if"                                { return IfLexemeAction(); }
+"else"                              { return ElseLexemeAction(); }
+"in"                                { return InLexemeAction(); }
+"for"                               { return ForLexemeAction(); }
 
-"import"                            { return ImportLexemeAction(createLexicalAnalyzerContext()); }
-"if"                                { return IfLexemeAction(createLexicalAnalyzerContext()); }
-"else"                              { return ElseLexemeAction(createLexicalAnalyzerContext()); }
-"in"                                { return InLexemeAction(createLexicalAnalyzerContext()); }
-"for"                               { return ForLexemeAction(createLexicalAnalyzerContext()); }
-
-"{"									{ return BracesLexemeAction(createLexicalAnalyzerContext(), OPEN_BRACES); }
-"}"									{ return BracesLexemeAction(createLexicalAnalyzerContext(), CLOSE_BRACES); }
-"["									{ return BracketsLexemeAction(createLexicalAnalyzerContext(), OPEN_BRACKETS); }
-"]"									{ return BracketsLexemeAction(createLexicalAnalyzerContext(), CLOSE_BRACKETS); }
-
+"{"									{ return BracesLexemeAction(OPEN_BRACES, yytext); }
+"}"									{ return BracesLexemeAction(CLOSE_BRACES, yytext); }
+"["									{ return BracketsLexemeAction(OPEN_BRACKETS, yytext); }
+"]"									{ return BracketsLexemeAction(CLOSE_BRACKETS, yytext); }
 
 
-"("									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext(), OPEN_PARENTHESIS); }
-")"									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext(), CLOSE_PARENTHESIS); }
+"("									{ return ParenthesisLexemeAction(OPEN_PARENTHESIS, yytext); }
+")"									{ return ParenthesisLexemeAction(CLOSE_PARENTHESIS, yytext); }
 
 
 
 
-{identifier}                        { return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng, IDENTIFIER); }
-{string}                            { return StringLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng); }
+{identifier}                        { return IdentifierLexemeAction(yytext, yyleng); }
 
-[[:space:]]+						{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+[[:space:]]+						{ IgnoredLexemeAction(yytext); }
 
 
-.									{ return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+.									{ return UnknownLexemeAction(yytext); }
 
 
 

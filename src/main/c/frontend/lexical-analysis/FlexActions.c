@@ -34,207 +34,185 @@ static void _logLexicalAnalyzerContext(const char * functionName, LexicalAnalyze
 	free(escapedLexeme);
 }
 
+static void _logDebug(const char * functionName, const char * message) {
+	logDebugging(_logger, "%s: %s", functionName, message);
+}
+
 /* PUBLIC FUNCTIONS */
 
-void BeginMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+void BeginMultilineCommentLexemeAction() {
 	if (_logIgnoredLexemes) {
-		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+		_logDebug(__FUNCTION__, "/*");
 	}
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-void EndMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+void EndMultilineCommentLexemeAction() {
 	if (_logIgnoredLexemes) {
-		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+		_logDebug(__FUNCTION__, "*/");
 	}
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+void IgnoredLexemeAction(char * text) {
 	if (_logIgnoredLexemes) {
-		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+		_logDebug(__FUNCTION__, text);
 	}
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-Token ArithmeticOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->token = token;
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token ArithmeticOperatorLexemeAction(Token token, char *text) {
+	_logDebug(__FUNCTION__, text);
+	yylval.token = token;
 	return token;
 }
 
-Token IntegerLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->integer = atoi(lexicalAnalyzerContext->lexeme);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token IntegerLexemeAction(char * text) {
+	_logDebug(__FUNCTION__, text);
+	yylval.integer = atoi(text);
+
 	return INTEGER;
 }
 
-Token DecimalLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-    _logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+Token DecimalLexemeAction(char *text) {
+	_logDebug(__FUNCTION__, text);
+    yylval.decimal = strtof(text, NULL);
 
-    // Convert the lexeme string to a float (single precision)
-    lexicalAnalyzerContext->semanticValue->decimal = strtof(lexicalAnalyzerContext->lexeme, NULL);
-
-    destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
     return DECIMAL;
 }
 
-Token ParenthesisLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->token = token;
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token ParenthesisLexemeAction(Token token, char *text) {
+	_logDebug(__FUNCTION__, text);	
+	yylval.token = token;
 	return token;
 }
 
-Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token UnknownLexemeAction(char *text) {
+	_logDebug(__FUNCTION__, text);
+
 	return UNKNOWN;
 }
 
-
-
-// NUESTRO:
-
-Token BinaryOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->token = token;
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token BinaryOperatorLexemeAction(Token token, char *text) {
+	_logDebug(__FUNCTION__, text);
+	yylval.token = token;
 	return token;
 }
 
-Token UnaryOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->token = token;
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token UnaryOperatorLexemeAction(Token token, char *text) {
+	_logDebug(__FUNCTION__, text);
+	yylval.token = token;
+
 	return token;
 }
 
-Token AssignmentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token AssignmentLexemeAction() {
+	_logDebug(__FUNCTION__, "assignment =");	
+
 	return ASSIGN;
 }
 
-Token CommaLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token CommaLexemeAction() {
+	_logDebug(__FUNCTION__, "comma ,");
+
 	return COMMA;
 }
 
-Token SemicolonLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token SemicolonLexemeAction() {
+	_logDebug(__FUNCTION__, "semicolon ;");
+
 	return SEMICOLON;
 }
 
-void BeginInterpolatedStringLexemeAction(LexicalAnalyzerContext * ctx) {
-    if (_logIgnoredLexemes) { _logLexicalAnalyzerContext(__FUNCTION__, ctx); }
-    destroyLexicalAnalyzerContext(ctx);          
+void BeginInterpolatedStringLexemeAction() {
+    _logDebug(__FUNCTION__, "\"begin string\"");        
 }
 
-void EndInterpolatedStringLexemeAction(LexicalAnalyzerContext * ctx) {
-    if (_logIgnoredLexemes) { _logLexicalAnalyzerContext(__FUNCTION__, ctx); }
-    destroyLexicalAnalyzerContext(ctx);         
+void EndInterpolatedStringLexemeAction() {
+	_logDebug(__FUNCTION__, "\"end string\"");
 }
 
-Token LogLexemeAction(LexicalAnalyzerContext * ctx) {
-	_logLexicalAnalyzerContext(__FUNCTION__, ctx);
-	destroyLexicalAnalyzerContext(ctx);
+Token LogLexemeAction() {
+	_logDebug(__FUNCTION__, "log");
+
 	return LOG;
 }
 
-Token DotLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token DotLexemeAction() {
+	_logDebug(__FUNCTION__, "dot .");
 	return DOT;
 }
 
-Token ColonLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token ColonLexemeAction() {
+	_logDebug(__FUNCTION__, "colon :");
 	return COLON;
 }
 
-Token ImportLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token ImportLexemeAction() {
+	_logDebug(__FUNCTION__, "import");
 	return IMPORT;
 }
 
-Token IfLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token IfLexemeAction() {
+	_logDebug(__FUNCTION__, "if");
 	return IF;
 }
 
-Token ElseLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token ElseLexemeAction() {
+	_logDebug(__FUNCTION__, "else");
 	return ELSE;
 }
 
-Token InLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token InLexemeAction() {
+	_logDebug(__FUNCTION__, "in");
 	return IN;
 }
 
-Token ForLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token ForLexemeAction() {
+	_logDebug(__FUNCTION__, "for");
 	return FOR;
 }
 
-Token BracesLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->token = token;
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token BracesLexemeAction(Token token, char *text) {
+	_logDebug(__FUNCTION__, text);
+	yylval.token = token;
+
 	return token;
 }
 
-Token BracketsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->token = token;
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token BracketsLexemeAction(Token token, char *text) {
+	_logDebug(__FUNCTION__, text);
+	yylval.token = token;
+
 	return token;
 }
 
-Token FloatKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token FloatKeywordLexemeAction() {
+	_logDebug(__FUNCTION__, "float keyword");
 	return FLOAT_KEYWORD;
 }
 
-Token IntKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token IntKeywordLexemeAction() {
+	_logDebug(__FUNCTION__, "int keyword");
 	return INT_KEYWORD;
 }
 
-Token VectorKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token VectorKeywordLexemeAction() {
+	_logDebug(__FUNCTION__, "vector keyword");
 	return VECTOR_KEYWORD;
 }
 
-Token XParamLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token XParamLexemeAction() {
+	_logDebug(__FUNCTION__, "x param'");
 	return X_PARAM;
 }
 
-Token YParamLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+Token YParamLexemeAction() {
+	_logDebug(__FUNCTION__, "y param'");
 	return Y_PARAM;
 }
 
-Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+Token StringLexemeAction(char * text_pointer, int text_length) {
+	_logDebug(__FUNCTION__, text_pointer);
 
+	yylval.string = NULL; // Initialize to NULL to avoid dangling pointer
 	// Strip the surrounding quotes (assuming they are present)
 	if (text_length >= 2 && text_pointer[0] == '"' && text_pointer[text_length - 1] == '"') {
 		char * unquoted = malloc(text_length - 1); // yyleng - 2 for quotes + 1 for '\0'
@@ -243,20 +221,14 @@ Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char *
 		}
 		strncpy(unquoted, text_pointer + 1, text_length - 2);
 		unquoted[text_length - 2] = '\0';
-
-		lexicalAnalyzerContext->semanticValue->string = unquoted;
-	} else {
-		// Fallback if string is malformed
-		lexicalAnalyzerContext->semanticValue->string = NULL;
+		yylval.string = unquoted;
 	}
 
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return STRING;
 }
 
-Token IdentifierLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length, Token token) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-
+Token IdentifierLexemeAction(char * text_pointer, int text_length) {
+	_logDebug(__FUNCTION__, text_pointer);
 	char * identifier_name = malloc(text_length + 1); // yyleng + 1 for '\0'
 
 	if (!identifier_name) {
@@ -266,9 +238,7 @@ Token IdentifierLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, ch
 
 	identifier_name[text_length] = '\0';
 
-	lexicalAnalyzerContext->semanticValue->string = identifier_name;
+	yylval.string = identifier_name;
 
-
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
-	return token;
+	return IDENTIFIER;
 }

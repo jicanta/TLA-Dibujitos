@@ -21,43 +21,43 @@ void shutdownFlexActionsModule();
  * Flex lexeme processing actions.
  */
 
-void BeginMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-void EndMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+void BeginMultilineCommentLexemeAction();
+void EndMultilineCommentLexemeAction();
+void IgnoredLexemeAction(char * text);
 
-Token ArithmeticOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
-Token IntegerLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token DecimalLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token ParenthesisLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
+Token ArithmeticOperatorLexemeAction(Token token, char *text);
+Token IntegerLexemeAction(char * text);
+Token DecimalLexemeAction(char * text);
+Token ParenthesisLexemeAction(Token token, char *text);
 
-Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token UnknownLexemeAction(char *text);
 
 // NUESTRO
 
-Token BinaryOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
-Token UnaryOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
-Token AssignmentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token CommaLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token SemicolonLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token DotLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token ColonLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token ImportLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token IfLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token ElseLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token InLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token ForLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token BracesLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
-Token BracketsLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
-Token LogLexemeAction(LexicalAnalyzerContext *);
-void BeginInterpolatedStringLexemeAction(LexicalAnalyzerContext *);
-void EndInterpolatedStringLexemeAction(LexicalAnalyzerContext *);
-Token IdentifierLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length, Token token);
-Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, char * text_pointer, int text_length);
-Token FloatKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token IntKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token VectorKeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token BinaryOperatorLexemeAction(Token token, char *text);
+Token UnaryOperatorLexemeAction(Token token, char *text);
+Token AssignmentLexemeAction();
+Token CommaLexemeAction();
+Token SemicolonLexemeAction();
+Token DotLexemeAction();
+Token ColonLexemeAction();
+Token ImportLexemeAction();
+Token IfLexemeAction();
+Token ElseLexemeAction();
+Token InLexemeAction();
+Token ForLexemeAction();
+Token BracesLexemeAction(Token token, char *text);
+Token BracketsLexemeAction(Token token, char *text);
+Token LogLexemeAction();
+void BeginInterpolatedStringLexemeAction();
+void EndInterpolatedStringLexemeAction();
+Token IdentifierLexemeAction(char * text_pointer, int text_length);
+Token StringLexemeAction(char * text_pointer, int text_length);
+Token FloatKeywordLexemeAction();
+Token IntKeywordLexemeAction();
+Token VectorKeywordLexemeAction();
 
-Token XParamLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token YParamLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token XParamLexemeAction();
+Token YParamLexemeAction();
 
 #endif
