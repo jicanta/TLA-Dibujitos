@@ -201,17 +201,13 @@ Token YParamLexemeAction() {
 Token StringLexemeAction(char * text_pointer, int text_length) {
 	_logDebug(__FUNCTION__, text_pointer);
 
-	yylval.string = NULL; // Initialize to NULL to avoid dangling pointer
-	// Strip the surrounding quotes (assuming they are present)
-	if (text_length >= 2 && text_pointer[0] == '"' && text_pointer[text_length - 1] == '"') {
-		char * unquoted = malloc(text_length - 1); // yyleng - 2 for quotes + 1 for '\0'
-		if (!unquoted) {
-			exit(EXIT_FAILURE); // Handle malloc failure gracefully if needed
-		}
-		strncpy(unquoted, text_pointer + 1, text_length - 2);
-		unquoted[text_length - 2] = '\0';
-		yylval.string = unquoted;
+	char * unquoted = malloc(text_length + 1);  // yyleng + 1 for '\0'
+	if (!unquoted) {
+		exit(EXIT_FAILURE); // Handle malloc failure gracefully if needed
 	}
+	strncpy(unquoted, text_pointer, text_length);
+	unquoted[text_length] = '\0';
+	yylval.string = unquoted;
 
 	return STRING;
 }
