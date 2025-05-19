@@ -54,10 +54,9 @@ endif ()
 
 # Defines the entry-point of the application, and the source-codes (*.c extension).
 # The header files (*.h extension), are automatically included from the source-codes.
-add_executable(Compiler
+add_library(CompilerLib STATIC
 	src/main/c/backend/code-generation/Generator.c
 	src/main/c/backend/domain-specific/Calculator.c
-	src/main/c/EntryPoint.c
 	src/main/c/frontend/lexical-analysis/FlexActions.c
 	src/main/c/frontend/lexical-analysis/FlexScanner.c
 	src/main/c/frontend/lexical-analysis/LexicalAnalyzerContext.c
@@ -68,9 +67,21 @@ add_executable(Compiler
 	src/main/c/shared/Environment.c
 	src/main/c/shared/Logger.c
 	src/main/c/shared/String.c
-	# Add more *.c files if needed (otherwise, they won't be compiled).
-	# ...
 )
 
-# Link final project and libraries.
-target_link_libraries(Compiler)
+# Create the main compiler executable
+add_executable(Compiler src/main/c/EntryPoint.c)
+target_link_libraries(Compiler CompilerLib)
+
+# Add tree visualizer executable
+add_executable(tree_visualizer
+	src/main/c/tools/tree_visualizer.c
+)
+
+target_include_directories(tree_visualizer PRIVATE
+	${CMAKE_SOURCE_DIR}/src/main/c
+)
+
+target_link_libraries(tree_visualizer
+	CompilerLib
+)
