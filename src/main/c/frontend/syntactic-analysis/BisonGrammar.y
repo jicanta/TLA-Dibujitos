@@ -76,7 +76,6 @@
 %token <token> BEGIN_STRING
 %token <token> END_STRING
 
-/** NUESTROS TERMINALES */
 %token <token> MOD
 
 %token <token> GEQ
@@ -123,8 +122,6 @@
 /** Non-terminals. */
 %type <vector> vector
 %type <program> program
-
-/** NUESTROS NO-TERMINALES */
 
 %type <sentences> sentences
 %type <sentence> sentence
@@ -180,7 +177,6 @@ sentence: IDENTIFIER ASSIGN expression SEMICOLON									{ $$ = AssignSentenceSe
 	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ $$ = FunctionSentenceSemanticAction($1, $3); }
 	| LOG BEGIN_STRING string_part_list END_STRING SEMICOLON						{ $$ = LogSentenceSemanticAction($3); }
 	;
-/* TODO: Renombrar ExpressionList a Array */
 
 string_part_list
     : string_part_list string_part													{ $$ = appendStringPartList($1, $2); }
@@ -195,7 +191,6 @@ string_part
 block: OPEN_BRACES sentences CLOSE_BRACES											{ $$ = BlockSemanticAction($2); }
 	;
 
-/* expression_list debería llamarse ARRAY */
 array: OPEN_BRACKETS expression_list CLOSE_BRACKETS									{ $$ = BasicArraySemanticAction($2); }
 	| OPEN_BRACKETS expression COLON expression CLOSE_BRACKETS						{ $$ = IntervalArraySemanticAction($2, $4); }
 	| IDENTIFIER																	{ $$ = IdentifierArraySemanticAction($1); }
@@ -203,10 +198,7 @@ array: OPEN_BRACKETS expression_list CLOSE_BRACKETS									{ $$ = BasicArraySem
 
 expression_list: expressions														{ $$ = FilledExpressionListSemanticAction($1); }		
 	| %empty																		{ $$ = EmptyExpressionListSemanticAction(); }
-
-/* Este es el verdadero EXPRESSION_LIST */
-/* expression_list: expressions
-	| empty */
+	;
 
 bool_expression: expression GEQ expression											{ $$ = BoolComparisonExpressionSemanticAction($1, $3, GREATER_OR_EQUAL); }
 	| expression LEQ expression														{ $$ = BoolComparisonExpressionSemanticAction($1, $3, LESS_OR_EQUAL); }
