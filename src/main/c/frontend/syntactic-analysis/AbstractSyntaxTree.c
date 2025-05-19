@@ -46,7 +46,7 @@ void releaseExpression(Expression * expression) {
 				releaseFactor(expression->factor);
 				break;
 			case ARRAY_ACCESS:
-				releaseExpressionList(expression->expressionList);
+				releaseArray(expression->array);
 				releaseExpression(expression->indexExpression);
 				break;
 		}
@@ -123,7 +123,7 @@ void releaseSentence(Sentence * sentence){
 				break;
 			case FOR_SENTENCE:
 				free(sentence->forIdentifier);
-				releaseExpressionList(sentence->forExpressionList);
+				releaseArray(sentence->forArray);
 				releaseBlock(sentence->forBlock);
 				break;
 			case FUNCTION_SENTENCE:
@@ -132,7 +132,7 @@ void releaseSentence(Sentence * sentence){
 				break;
 			case ASSIGN_ARRAY_SENTENCE:
 				free(sentence->assignArrayIdentifier);
-				releaseExpressionList(sentence->arrayExpressionList);
+				releaseArray(sentence->assignArray);
 				break;
 			case LOG_SENTENCE:
 				releaseStringPartList(sentence->logString);
@@ -169,17 +169,27 @@ void releaseStringPart(StringPart * stringPart) {
 void releaseExpressionList(ExpressionList * expressionList) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (expressionList != NULL) {
-		switch (expressionList->type) {
-			case EMPTY_EXPRESSION_LIST:
+		releaseExpressions(expressionList->expressions);
+		free(expressionList);
+	}
+}
+
+void releaseArray(Array * array) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (array != NULL) {
+		switch (array->type) {
+			case IDENTIFIER_ARRAY:
+				free(array->identifier);
 				break;
-			case INTERVAL_EXPRESSION_LIST:
-				releaseExpression(expressionList->leftExpression);
-				releaseExpression(expressionList->rightExpression);
+			case INTERVAL_ARRAY:
+				releaseExpression(array->leftExpression);
+				releaseExpression(array->rightExpression);
 				break;
-			case EXPRESSION_LIST:
-				releaseExpressions(expressionList->expressions);
+			case BASIC_ARRAY:
+				releaseExpressionList(array->expressionList);
 				break;
 		}
+		free(array);
 	}
 }
 
@@ -191,21 +201,6 @@ void releaseBlock(Block * block) {
 	}
 }
 
-void releaseInterval(Interval * interval) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (interval != NULL) {
-		switch (interval->type) {
-			case IDENTIFIER_INTERVAL:
-				free(interval->identifier);
-				break;
-			case RANGE_INTERVAL:
-				releaseExpression(interval->leftExpression);
-				releaseExpression(interval->rightExpression);
-				break; 
-		}
-		free(interval);
-	}
-}
 
 void releaseBoolExpression(BoolExpression * boolExpression) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);

@@ -24,8 +24,7 @@ typedef enum IntervalType IntervalType;
 
 typedef enum StringPartType StringPartType;
 
-typedef enum ExpressionListType ExpressionListType;
-
+typedef enum ArrayType ArrayType;
 
 typedef struct Constant Constant;
 typedef struct Expression Expression;
@@ -54,6 +53,8 @@ typedef struct VectorExpression VectorExpression;
 typedef struct VectorFactor VectorFactor;
 typedef struct StringPartList StringPartList;
 typedef struct StringPart StringPart;
+
+typedef struct Array Array;
 
 enum ExpressionType {
 	ADDITION,
@@ -111,11 +112,12 @@ enum SentenceType {
 	LOG_SENTENCE,
 };
 
-enum ExpressionListType {
-	EXPRESSION_LIST,
-	EMPTY_EXPRESSION_LIST,
-	INTERVAL_EXPRESSION_LIST
+enum ArrayType {
+	IDENTIFIER_ARRAY,
+	INTERVAL_ARRAY,
+	BASIC_ARRAY,
 };
+
 
 
 struct Program {
@@ -135,7 +137,7 @@ struct Sentence {
 		};
 		struct {
 			char * assignArrayIdentifier;
-			ExpressionList * arrayExpressionList;
+			Array * assignArray;
 		};
 		struct {
 			BoolExpression * ifBoolExpression;
@@ -148,7 +150,7 @@ struct Sentence {
 		};
 		struct {
 			char * forIdentifier;
-			ExpressionList * forExpressionList;
+			Array * forArray;
 			Block * forBlock;
 		};
 		struct {
@@ -179,17 +181,16 @@ struct Block {
 	Sentences * sentences;
 };
 
-struct Interval {
+struct Array {
 	union {
+		ExpressionList * expressionList;
 		struct {
 			Expression * leftExpression;
 			Expression * rightExpression;
 		};
-		struct {
-			char * identifier;
-		};
+		char * identifier;
 	};
-	IntervalType type;
+	ArrayType type;
 };
 
 struct BoolExpression {
@@ -213,14 +214,7 @@ struct BoolFactor {
 };
 
 struct ExpressionList {
-	union {
-		Expressions * expressions;
-		struct {
-			Expression * leftExpression;
-			Expression * rightExpression;
-		};
-	};
-	ExpressionListType type;
+	Expressions * expressions;
 };
 
 struct Expressions {
@@ -236,7 +230,7 @@ struct Expression {
 			Expression * rightExpression;
 		};
 		struct {
-			ExpressionList * expressionList;
+			Array * array;
 			Expression * indexExpression;
 		};
 		Expression * expression;
@@ -273,7 +267,6 @@ void releaseSentence(Sentence * sentence);
 void releaseStringPart(StringPart * stringPart);
 void releaseStringPartList(StringPartList * stringPartList);
 void releaseBlock(Block * block);
-void releaseInterval(Interval * interval);
 void releaseBoolExpression(BoolExpression * boolExpression);
 void releaseBoolFactor(BoolFactor * boolFactor);
 void releaseExpressionList(ExpressionList * expressionList);
@@ -281,6 +274,7 @@ void releaseExpressions(Expressions * expressions);
 void releaseExpression(Expression * expression);
 void releaseFactor(Factor * factor);
 void releaseVector(Vector * vector);
+void releaseArray(Array * array);
 
 
 

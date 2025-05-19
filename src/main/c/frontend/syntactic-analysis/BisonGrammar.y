@@ -29,9 +29,9 @@
 	Sentence * sentence;
 
 	Block * block;
-	Interval * interval;
 	BoolExpression * bool_expression;
 	BoolFactor * bool_factor;
+	Array * array;
 
 }
 
@@ -47,11 +47,18 @@
 %destructor { releaseSentences($$); } <sentences>
 %destructor { releaseSentence($$); } <sentence>
 %destructor { releaseBlock($$); } <block>
-%destructor { releaseInterval($$); } <interval>
+
 %destructor { releaseBoolExpression($$); } <bool_expression>
 %destructor { releaseBoolFactor($$); } <bool_factor>
 
 %destructor { releaseVector($$); } <vector>
+%destructor { releaseExpression($$); } <expression>
+%destructor { releaseFactor($$); } <factor>
+%destructor { releaseExpressions($$); } <expressions>
+%destructor { releaseExpressionList($$); } <expression_list>
+%destructor { releaseStringPartList($$); } <string_part_list>
+%destructor { releaseStringPart($$); } <string_part>
+%destructor { releaseArray($$); } <array>
 
 
 
@@ -124,7 +131,6 @@
 %type <string_part> string_part
 
 %type <block> block
-%type <interval> interval
 %type <bool_expression> bool_expression
 %type <bool_factor> bool_factor
 
@@ -132,6 +138,7 @@
 %type <expression> expression
 %type <factor> factor
 %type <expressions> expressions
+%type <array> array
 
 
 
@@ -164,10 +171,10 @@ sentences: sentences sentence														{ $$ = SentencesSemanticAction($1, $2
 	;
 
 sentence: IDENTIFIER ASSIGN expression SEMICOLON									{ $$ = AssignSentenceSemanticAction($1, $3); }
-	| IDENTIFIER ASSIGN expression_list SEMICOLON 									{ $$ = AssignArraySentenceSemanticAction($1, $3); }
+	| IDENTIFIER OPEN_BRACKETS CLOSE_BRACKETS ASSIGN array SEMICOLON 				{ $$ = AssignArraySentenceSemanticAction($1, $5); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ $$ = IfSentenceSemanticAction($3, $5); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
-	| FOR IDENTIFIER IN expression_list block										{ $$ = ForSentenceSemanticAction($2, $4, $5); }
+	| FOR IDENTIFIER IN array block													{ $$ = ForSentenceSemanticAction($2, $4, $5); }
 	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ $$ = FunctionSentenceSemanticAction($1, $3); }
 	| LOG OPEN_PARENTHESIS string_part_list CLOSE_PARENTHESIS SEMICOLON				{ $$ = LogSentenceSemanticAction($3); }
 	;
@@ -186,14 +193,14 @@ string_part
 block: OPEN_BRACES sentences CLOSE_BRACES											{ $$ = BlockSemanticAction($2); }
 	;
 
-interval: OPEN_BRACKETS expression COLON expression CLOSE_BRACKETS					{ $$ = IntervalSemanticAction($2, $4); }
+/* expression_list debería llamarse ARRAY */
+array: OPEN_BRACKETS expression_list CLOSE_BRACKETS									{ $$ = BasicArraySemanticAction($2); }
+	| OPEN_BRACKETS expression COLON expression CLOSE_BRACKETS						{ $$ = IntervalArraySemanticAction($2, $4); }
+	| IDENTIFIER																	{ $$ = IdentifierArraySemanticAction($1); }
 	;
 
-/* expression_list debería llamarse ARRAY*/
-expression_list: OPEN_BRACKETS expressions CLOSE_BRACKETS							{ $$ = FilledExpressionListSemanticAction($2); }
-	| OPEN_BRACKETS CLOSE_BRACKETS													{ $$ = EmptyExpressionListSemanticAction(); }
-	| OPEN_BRACKETS expression COLON expression CLOSE_BRACKETS						{ $$ = IntervalSemanticAction($2, $4); }	
-	;
+expression_list: expressions														{ $$ = FilledExpressionListSemanticAction($1); }		
+	| %empty																		{ $$ = EmptyExpressionListSemanticAction(); }
 
 /* Este es el verdadero EXPRESSION_LIST */
 /* expression_list: expressions
@@ -227,7 +234,7 @@ expression: expression[left] ADD expression[right]									{ $$ = ArithmeticExpr
 	| expression DOT X_PARAM														{ $$ = DotExpressionSemanticAction($1, GET_X); }
 	| expression DOT Y_PARAM														{ $$ = DotExpressionSemanticAction($1, GET_Y); }
 	| factor																		{ $$ = FactorExpressionSemanticAction($1); }
-	| expression_list OPEN_BRACES expression CLOSE_BRACES							{ $$ = ArrayAccessExpressionSemanticAction($1, $3); }
+	| array OPEN_BRACES expression CLOSE_BRACES										{ $$ = ArrayAccessExpressionSemanticAction($1, $3); }
 	;
 
 factor: IDENTIFIER																	{ $$ = IdentifierFactorSemanticAction($1); }

@@ -24,16 +24,15 @@ Sentences * EmptySentencesSemanticAction();
 Sentences * SentencesSemanticAction(Sentences * sentences, Sentence * sentence);
 Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expression);
 Sentence * IfSentenceSemanticAction(BoolExpression * boolExpression, Block * block);
-Sentence * ForSentenceSemanticAction(char * identifier, ExpressionList * expressionList, Block * block);
+Sentence * ForSentenceSemanticAction(char * identifier, Array * array, Block * block);
 Sentence * IfElseSentenceSemanticAction(BoolExpression * boolExpression, Block * leftBlock, Block * rightBlock);
-Sentence * AssignArraySentenceSemanticAction(char * identifier, ExpressionList * expressionList);
+Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array);
 Block * BlockSemanticAction(Sentences * sentences);
 BoolExpression * BoolBinaryExpressionSemanticAction(BoolExpression * leftBoolExpression, BoolExpression * rightBoolExpression, BoolExpressionType type);
 BoolExpression * BoolUnaryExpressionSemanticAction(BoolExpression * boolExpression, BoolExpressionType type);
 BoolExpression * BoolFactorExpressionSemanticAction(BoolFactor * boolFactor);
 BoolFactor * BoolExpressionFactorSemanticAction(BoolExpression * boolExpression);
 Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * functionArguments);
-ExpressionList * EmptyExpressionListSemanticAction();
 Sentence * LogSentenceSemanticAction(StringPartList * stringPartList);
 StringPartList * appendStringPartList(StringPartList * stringPartList, StringPart *stringPart);
 StringPartList * createStringPartList(StringPart * stringPart);
@@ -44,15 +43,19 @@ Factor * VectorFactorSemanticAction(Vector * vector);
 Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type);
 Expression * FactorExpressionSemanticAction(Factor * factor);
 Expression * DotExpressionSemanticAction(Expression * expression, ExpressionType type);
-Expression * ArrayAccessExpressionSemanticAction(ExpressionList * expressionList, Expression * indexExpression);
+Expression * ArrayAccessExpressionSemanticAction(Array * array, Expression * indexExpression);
 Factor * IdentifierFactorSemanticAction(char * identifier);
 Factor * IntegerFactorSemanticAction(int integer);
 Factor * DecimalFactorSemanticAction(float decimal);
 Factor * ParenthesisFactorSemanticAction(Expression * expression);
 ExpressionList * FilledExpressionListSemanticAction(Expressions * expressions);
+ExpressionList * EmptyExpressionListSemanticAction();
 Expressions * ExpressionsSemanticAction(Expressions * expressions, Expression * expression);
 BoolExpression * BoolComparisonExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, BoolExpressionType type);
-ExpressionList * IntervalSemanticAction(Expression * leftExpression, Expression * rightExpression);
+Array * IntervalArraySemanticAction(Expression * leftExpression, Expression * rightExpression);
+Array * IdentifierArraySemanticAction(char * identifier);
+Array * BasicArraySemanticAction(ExpressionList * expressionList);
+
 
 
 #endif

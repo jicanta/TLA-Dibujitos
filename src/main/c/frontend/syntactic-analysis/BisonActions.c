@@ -57,10 +57,10 @@ Expression * DotExpressionSemanticAction(Expression * expression, ExpressionType
 	return dotExpression;
 }
 
-Expression * ArrayAccessExpressionSemanticAction(ExpressionList * expressionList, Expression * indexExpression) {
+Expression * ArrayAccessExpressionSemanticAction(Array * array, Expression * indexExpression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Expression * expression = calloc(1, sizeof(Expression));
-	expression->expressionList = expressionList;
+	expression->array = array;
 	expression->indexExpression = indexExpression;
 	expression->type = ARRAY_ACCESS;
 	return expression;
@@ -142,9 +142,9 @@ Sentences * EmptySentencesSemanticAction() {
 
 ExpressionList * FilledExpressionListSemanticAction(Expressions * expressions) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	ExpressionList * expressionList_ret = calloc(1, sizeof(ExpressionList));
-	expressionList_ret->expressions = expressions;
-	return expressionList_ret;
+	ExpressionList * expressionList = calloc(1, sizeof(ExpressionList));
+	expressionList->expressions = expressions;
+	return expressionList;
 }
 
 ExpressionList * EmptyExpressionListSemanticAction() {
@@ -189,11 +189,11 @@ Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expressi
 }
 
 
-Sentence * AssignArraySentenceSemanticAction(char * identifier, ExpressionList * expressionList) {
+Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Sentence * sentence = calloc(1, sizeof(Sentence));
 	sentence->assignArrayIdentifier = identifier;
-	sentence->arrayExpressionList = expressionList;
+	sentence->assignArray = array;
 	sentence->type = ASSIGN_ARRAY_SENTENCE;
 	return sentence;
 }
@@ -243,11 +243,11 @@ Sentence * IfSentenceSemanticAction(BoolExpression * boolExpression, Block * blo
 	return sentence;
 }
 
-Sentence * ForSentenceSemanticAction(char * identifier, ExpressionList * expressionList, Block * block) {
+Sentence * ForSentenceSemanticAction(char * identifier, Array * array, Block * block) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Sentence * sentence = calloc(1, sizeof(Sentence));
 	sentence->forIdentifier = identifier;
-	sentence->forExpressionList = expressionList;
+	sentence->forArray = array;
 	sentence->forBlock = block;
 	sentence->type = FOR_SENTENCE;
 	return sentence;
@@ -270,21 +270,29 @@ Block * BlockSemanticAction(Sentences * sentences) {
 	return block;
 }
 
-ExpressionList * IntervalSemanticAction(Expression * leftExpression, Expression * rightExpression) {
+Array * IntervalArraySemanticAction(Expression * leftExpression, Expression * rightExpression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	ExpressionList * expressionList = calloc(1, sizeof(ExpressionList));
-	expressionList->leftExpression = leftExpression;
-	expressionList->rightExpression = rightExpression;
-	expressionList->type = INTERVAL_EXPRESSION_LIST;
-	return expressionList;
+	Array * array = calloc(1, sizeof(Array));
+	array->leftExpression = leftExpression;
+	array->rightExpression = rightExpression;
+	array->type = INTERVAL_ARRAY;
+	return array;
 }
 
-Interval * IntervalIdentifierSemanticAction(char * identifier) {
+Array * IdentifierArraySemanticAction(char * identifier) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Interval * interval = calloc(1, sizeof(Interval));
-	interval->identifier = identifier;
-	interval->type = IDENTIFIER_INTERVAL;
-	return interval;
+	Array * array = calloc(1, sizeof(Array));
+	array->identifier = identifier;
+	array->type = IDENTIFIER_ARRAY;
+	return array;
+}
+
+Array * BasicArraySemanticAction(ExpressionList * expressionList) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Array * array = calloc(1, sizeof(Array));
+	array->expressionList = expressionList;
+	array->type = BASIC_ARRAY;
+	return array;
 }
 
 BoolExpression * BoolComparisonExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, BoolExpressionType type) {
