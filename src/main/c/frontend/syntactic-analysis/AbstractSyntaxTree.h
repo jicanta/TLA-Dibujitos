@@ -109,6 +109,7 @@ enum SentenceType {
 	FOR_SENTENCE,
 	FUNCTION_SENTENCE,
 	ASSIGN_ARRAY_SENTENCE,
+	ASSIGN_ARRAY_ELEMENT_SENTENCE,
 	LOG_SENTENCE,
 };
 
@@ -138,6 +139,11 @@ struct Sentence {
 		struct {
 			char * assignArrayIdentifier;
 			Array * assignArray;
+		};
+		struct {
+			char * assignArrayElemIdentifier;
+			Expression * assignArrayIndexExpression;
+			Expression * assignArrayElementExpression;
 		};
 		struct {
 			BoolExpression * ifBoolExpression;

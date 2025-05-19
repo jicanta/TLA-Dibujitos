@@ -1,0 +1,3 @@
+array = [1,2,3];
+foo = array[1.5];
+array[4.5] = 2;

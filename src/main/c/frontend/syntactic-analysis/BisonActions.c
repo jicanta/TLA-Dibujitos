@@ -90,6 +90,17 @@ Factor * DecimalFactorSemanticAction(float decimal) {
 	return factor;
 }
 
+Sentence * AssignArrayElementSentenceSemanticAction(char * identifier, Expression * indexExpression, Expression * expression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Sentence * sentence = calloc(1, sizeof(Sentence));
+	sentence->assignArrayElemIdentifier = identifier;
+	sentence->assignArrayIndexExpression = indexExpression;
+	sentence->assignArrayElementExpression = expression;
+	sentence->type = ASSIGN_ARRAY_ELEMENT_SENTENCE;
+
+	return sentence;
+}
+
 Factor * VectorFactorSemanticAction(Vector * vector) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Factor * factor = calloc(1, sizeof(Factor));

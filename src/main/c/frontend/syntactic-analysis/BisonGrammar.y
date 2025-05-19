@@ -171,6 +171,7 @@ sentences: sentences sentence														{ $$ = SentencesSemanticAction($1, $2
 
 sentence: IDENTIFIER ASSIGN expression SEMICOLON									{ $$ = AssignSentenceSemanticAction($1, $3); }
 	| IDENTIFIER OPEN_BRACKETS CLOSE_BRACKETS ASSIGN array SEMICOLON 				{ $$ = AssignArraySentenceSemanticAction($1, $5); }
+	| IDENTIFIER OPEN_BRACKETS expression CLOSE_BRACKETS ASSIGN expression SEMICOLON{ $$ = AssignArrayElementSentenceSemanticAction($1, $3, $6); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ $$ = IfSentenceSemanticAction($3, $5); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
 	| FOR IDENTIFIER IN array block													{ $$ = ForSentenceSemanticAction($2, $4, $5); }
@@ -228,7 +229,7 @@ expression: expression[left] ADD expression[right]									{ $$ = ArithmeticExpr
 	| expression DOT X_PARAM														{ $$ = DotExpressionSemanticAction($1, GET_X); }
 	| expression DOT Y_PARAM														{ $$ = DotExpressionSemanticAction($1, GET_Y); }
 	| factor																		{ $$ = FactorExpressionSemanticAction($1); }
-	| array OPEN_BRACES expression CLOSE_BRACES										{ $$ = ArrayAccessExpressionSemanticAction($1, $3); }
+	| array OPEN_BRACKETS expression CLOSE_BRACKETS									{ $$ = ArrayAccessExpressionSemanticAction($1, $3); }
 	;
 
 factor: IDENTIFIER																	{ $$ = IdentifierFactorSemanticAction($1); }

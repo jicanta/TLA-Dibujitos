@@ -134,6 +134,11 @@ void releaseSentence(Sentence * sentence){
 				free(sentence->assignArrayIdentifier);
 				releaseArray(sentence->assignArray);
 				break;
+			case ASSIGN_ARRAY_ELEMENT_SENTENCE:
+				free(sentence->assignArrayElemIdentifier);
+				releaseExpression(sentence->assignArrayIndexExpression);
+				releaseExpression(sentence->assignArrayElementExpression);
+				break;
 			case LOG_SENTENCE:
 				releaseStringPartList(sentence->logString);
 				break;

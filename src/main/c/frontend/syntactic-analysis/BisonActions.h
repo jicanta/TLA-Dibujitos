@@ -55,6 +55,7 @@ BoolExpression * BoolComparisonExpressionSemanticAction(Expression * leftExpress
 Array * IntervalArraySemanticAction(Expression * leftExpression, Expression * rightExpression);
 Array * IdentifierArraySemanticAction(char * identifier);
 Array * BasicArraySemanticAction(ExpressionList * expressionList);
+Sentence * AssignArrayElementSentenceSemanticAction(char * identifier, Expression * indexExpression, Expression * expression);
 
 
 
