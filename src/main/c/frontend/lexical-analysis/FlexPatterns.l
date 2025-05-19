@@ -44,15 +44,14 @@ single_comment     \/\/[^\n]*
 {decimal}				    		{ return DecimalLexemeAction(yytext); }
 {integer}	        				{ return IntegerLexemeAction(yytext); }
 
-\"                              { BEGIN(INTERP_STRING); BeginInterpolatedStringLexemeAction(); }
-<INTERP_STRING>"{"              { BEGIN(INTERP_EXPR); return BracesLexemeAction(OPEN_BRACES, yytext); }
-<INTERP_STRING>[^\\"{}]+        { return StringLexemeAction(yytext, yyleng); }
-<INTERP_STRING>\\.              { return StringLexemeAction(yytext, yyleng); }
-<INTERP_STRING>"}"              { return BracesLexemeAction(CLOSE_BRACES, yytext); }
-<INTERP_STRING>\"               { EndInterpolatedStringLexemeAction(); BEGIN(INITIAL); }
-
-<INTERP_EXPR>{identifier}       { BEGIN(INTERP_STRING); return IdentifierLexemeAction(yytext, yyleng); }
-<INTERP_EXPR>"}"                { BEGIN(INTERP_STRING); return BracesLexemeAction(CLOSE_BRACES, yytext); }
+\"                                  { BEGIN(INTERP_STRING); return BeginInterpolatedStringLexemeAction(); }
+<INTERP_STRING>"{"                  { BEGIN(INTERP_EXPR); return BracesLexemeAction(OPEN_BRACES, yytext); }
+<INTERP_STRING>[^\\"{}]+            { return StringLexemeAction(yytext, yyleng); }
+<INTERP_STRING>\\.                  { return StringLexemeAction(yytext, yyleng); }
+<INTERP_STRING>"}"                  { return BracesLexemeAction(CLOSE_BRACES, yytext); }
+<INTERP_STRING>\"                   { BEGIN(INITIAL); return EndInterpolatedStringLexemeAction(); }
+<INTERP_EXPR>{identifier}           { BEGIN(INTERP_STRING); return IdentifierLexemeAction(yytext, yyleng); }
+<INTERP_EXPR>"}"                    { BEGIN(INTERP_STRING); return BracesLexemeAction(CLOSE_BRACES, yytext); }
 
 "-"									{ return ArithmeticOperatorLexemeAction(SUB, yytext); }
 "*"									{ return ArithmeticOperatorLexemeAction(MUL, yytext); }
@@ -79,7 +78,7 @@ single_comment     \/\/[^\n]*
 "log"                               { return LogLexemeAction(); }
 
 ","                                 { return CommaLexemeAction(); }
-";"                                  { return SemicolonLexemeAction(); }
+";"                                 { return SemicolonLexemeAction(); }
 "."                                 { return DotLexemeAction(); }
 "x"                                 { return XParamLexemeAction(); }
 "y"                                 { return YParamLexemeAction(); }

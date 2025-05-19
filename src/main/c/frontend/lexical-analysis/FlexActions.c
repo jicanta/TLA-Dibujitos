@@ -121,12 +121,16 @@ Token SemicolonLexemeAction() {
 	return SEMICOLON;
 }
 
-void BeginInterpolatedStringLexemeAction() {
-    _logDebug(__FUNCTION__, "\"begin string\"");        
+Token BeginInterpolatedStringLexemeAction() {
+    _logDebug(__FUNCTION__, "\"begin string\"");       
+	
+	return BEGIN_STRING;
 }
 
-void EndInterpolatedStringLexemeAction() {
+Token EndInterpolatedStringLexemeAction() {
 	_logDebug(__FUNCTION__, "\"end string\"");
+
+	return END_STRING;
 }
 
 Token LogLexemeAction() {

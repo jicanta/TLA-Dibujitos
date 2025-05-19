@@ -66,6 +66,8 @@
 %token <token> MUL
 %token <token> OPEN_PARENTHESIS
 %token <token> SUB
+%token <token> BEGIN_STRING
+%token <token> END_STRING
 
 /** NUESTROS TERMINALES */
 %token <token> MOD
@@ -169,7 +171,7 @@ sentence: IDENTIFIER ASSIGN expression SEMICOLON									{ $$ = AssignSentenceSe
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
 	| FOR IDENTIFIER IN interval block												{ $$ = ForSentenceSemanticAction($2, $4, $5); }
 	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ $$ = FunctionSentenceSemanticAction($1, $3); }
-	| LOG OPEN_PARENTHESIS string_part_list CLOSE_PARENTHESIS SEMICOLON				{ $$ = LogSentenceSemanticAction($3); }
+	| LOG BEGIN_STRING string_part_list END_STRING SEMICOLON						{ $$ = LogSentenceSemanticAction($3); }
 	;
 
 string_part_list

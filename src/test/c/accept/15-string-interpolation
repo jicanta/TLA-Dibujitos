@@ -1,1 +1,1 @@
-log("ds{foo}ad");
+log "ds{foo}ad";

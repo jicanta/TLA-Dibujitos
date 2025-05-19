@@ -1,0 +1,3 @@
+log "part1" {hola} "part2";
+// lo rechaza porque deberia ser: log "part1 {hola} part2";
+// este caso es la razon por la que tenemos tokens BEGIN_STRING y END_STRING
