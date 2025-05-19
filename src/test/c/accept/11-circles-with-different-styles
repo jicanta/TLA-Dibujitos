@@ -1,4 +1,4 @@
-colores = [RED, ORANGE, YELLOW, GREEN, BLUE, INDIGO, PURPLE];
+colores[] = [RED, ORANGE, YELLOW, GREEN, BLUE, INDIGO, PURPLE];
 idx = 0;
 for c in colores {
     stroke(2);

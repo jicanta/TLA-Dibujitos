@@ -57,11 +57,6 @@ single_comment     \/\/[^\n]*
 "*"									{ return ArithmeticOperatorLexemeAction(MUL, yytext); }
 "/"									{ return ArithmeticOperatorLexemeAction(DIV, yytext); }
 "+"									{ return ArithmeticOperatorLexemeAction(ADD, yytext); }
-
-"float"                             { return FloatKeywordLexemeAction(); }
-"int"                               { return IntKeywordLexemeAction(); }
-"vector"                            { return VectorKeywordLexemeAction(); }
-
 "%"									{ return ArithmeticOperatorLexemeAction(MOD, yytext); }
 
 ">="                                { return BinaryOperatorLexemeAction(GEQ, yytext); }
@@ -92,8 +87,8 @@ single_comment     \/\/[^\n]*
 
 "{"									{ return BracesLexemeAction(OPEN_BRACES, yytext); }
 "}"									{ return BracesLexemeAction(CLOSE_BRACES, yytext); }
-"["									{ return BracketsLexemeAction(OPEN_BRACKETS, yytext); }
-"]"									{ return BracketsLexemeAction(CLOSE_BRACKETS, yytext); }
+"["									{ return BracketsLexemeAction(OPEN_BRACKET, yytext); }
+"]"									{ return BracketsLexemeAction(CLOSE_BRACKET, yytext); }
 
 
 "("									{ return ParenthesisLexemeAction(OPEN_PARENTHESIS, yytext); }
@@ -114,20 +109,3 @@ single_comment     \/\/[^\n]*
 %%
 
 #include "FlexExport.h"
-
-
-/**
- * Moví lo que pensaba que no tenía sentido
- *
- * "int"                               { BEGIN(INT_ASSIGNMENT); return IntKeywordLexemeAction(createLexicalAnalyzerContext()); }
- * <INT_ASSIGNMENT>{identifier}        { BEGIN(INITIAL); return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng, INT_ID);}
- * <INT_ASSIGNMENT>[[:space:]]+		{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
- * <INT_ASSIGNMENT>.					{ return UnknownLexemeAction(createLexicalAnalyzerContext()); }
- * 
- * 
- * 
- * "vector"                            { BEGIN(VECTOR_ASSIGNMENT); return VectorKeywordLexemeAction(createLexicalAnalyzerContext()); }
- * <VECTOR_ASSIGNMENT>{identifier}     { BEGIN(INITIAL); return IdentifierLexemeAction(createLexicalAnalyzerContext(), yytext, yyleng, VECTOR_ID);}
- * <VECTOR_ASSIGNMENT>[[:space:]]+		{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
- * <VECTOR_ASSIGNMENT>.				{ return UnknownLexemeAction(createLexicalAnalyzerContext()); } 
- */

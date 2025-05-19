@@ -1,0 +1,5 @@
+vec = (12, 13);
+vec_x = vec.x;
+z = (14, 15).y;
+
+log "vec.x={vec_x} el segundo componente de(14,15) es {z}";

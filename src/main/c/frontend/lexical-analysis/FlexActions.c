@@ -188,21 +188,6 @@ Token BracketsLexemeAction(Token token, char *text) {
 	return token;
 }
 
-Token FloatKeywordLexemeAction() {
-	_logDebug(__FUNCTION__, "float keyword");
-	return FLOAT_KEYWORD;
-}
-
-Token IntKeywordLexemeAction() {
-	_logDebug(__FUNCTION__, "int keyword");
-	return INT_KEYWORD;
-}
-
-Token VectorKeywordLexemeAction() {
-	_logDebug(__FUNCTION__, "vector keyword");
-	return VECTOR_KEYWORD;
-}
-
 Token XParamLexemeAction() {
 	_logDebug(__FUNCTION__, "x param'");
 	return X_PARAM;
