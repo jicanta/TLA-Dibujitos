@@ -11,17 +11,19 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-// Forward declarations
 static void print_factor(Factor* factor, int level, bool is_last);
 static void print_bool_factor(BoolFactor* factor, int level, bool is_last);
 static void print_sentences(Sentences* sentences, int level, bool is_last);
 static void print_expression(Expression* expr, int level, bool is_last);
 static void print_bool_expression(BoolExpression* expr, int level, bool is_last);
 static void print_block(Block* block, int level, bool is_last);
-static void print_interval(Interval* interval, int level, bool is_last);
+static void print_array(Array* array, int level, bool is_last);
 static void print_sentence(Sentence* sentence, int level, bool is_last);
+static void print_expression_list(ExpressionList* expr_list, int level, bool is_last);
+static void print_expressions(Expressions* expressions, int level, bool is_last);
+static void print_string_part_list(StringPartList* string_part_list, int level, bool is_last);
+static void print_string_part(StringPart* string_part, int level, bool is_last);
 
-// Function to print indentation with tree lines
 static void print_indent(int level, bool is_last) {
     for (int i = 0; i < level; i++) {
         if (i == level - 1) {
@@ -32,7 +34,6 @@ static void print_indent(int level, bool is_last) {
     }
 }
 
-// Function to print expression type
 static const char* expression_type_to_string(ExpressionType type) {
     switch (type) {
         case ADDITION: return "ADDITION";
@@ -47,7 +48,6 @@ static const char* expression_type_to_string(ExpressionType type) {
     }
 }
 
-// Function to print factor type
 static const char* factor_type_to_string(FactorType type) {
     switch (type) {
         case IDENTIFIER_FACTOR: return "IDENTIFIER";
@@ -59,7 +59,6 @@ static const char* factor_type_to_string(FactorType type) {
     }
 }
 
-// Function to print sentence type
 static const char* sentence_type_to_string(SentenceType type) {
     switch (type) {
         case IF_SENTENCE: return "IF";
@@ -68,12 +67,13 @@ static const char* sentence_type_to_string(SentenceType type) {
         case FOR_SENTENCE: return "FOR";
         case FUNCTION_SENTENCE: return "FUNCTION";
         case ASSIGN_ARRAY_SENTENCE: return "ASSIGN_ARRAY";
+        case ASSIGN_ARRAY_ELEMENT_SENTENCE: return "ASSIGN_ARRAY_ELEMENT";
         case LOG_SENTENCE: return "LOG";
+        case IMPORT_SENTENCE: return "IMPORT";
         default: return "UNKNOWN";
     }
 }
 
-// Function to print bool expression type
 static const char* bool_expression_type_to_string(BoolExpressionType type) {
     switch (type) {
         case GREATER_OR_EQUAL: return ">=";
@@ -90,7 +90,6 @@ static const char* bool_expression_type_to_string(BoolExpressionType type) {
     }
 }
 
-// Function to print factor
 static void print_factor(Factor* factor, int level, bool is_last) {
     if (!factor) return;
     
@@ -122,7 +121,6 @@ static void print_factor(Factor* factor, int level, bool is_last) {
     }
 }
 
-// Function to print expression
 static void print_expression(Expression* expr, int level, bool is_last) {
     if (!expr) return;
     
@@ -148,13 +146,11 @@ static void print_expression(Expression* expr, int level, bool is_last) {
     }
 }
 
-// Function to print bool factor
 static void print_bool_factor(BoolFactor* factor, int level, bool is_last) {
     if (!factor) return;
     print_bool_expression(factor->boolExpression, level, is_last);
 }
 
-// Function to print bool expression
 static void print_bool_expression(BoolExpression* expr, int level, bool is_last) {
     if (!expr) return;
     
@@ -185,7 +181,6 @@ static void print_bool_expression(BoolExpression* expr, int level, bool is_last)
     }
 }
 
-// Function to print sentences
 static void print_sentences(Sentences* sentences, int level, bool is_last) {
     if (!sentences) return;
     
@@ -193,32 +188,34 @@ static void print_sentences(Sentences* sentences, int level, bool is_last) {
     print_sentence(sentences->sentence, level, is_last);
 }
 
-// Function to print block
 static void print_block(Block* block, int level, bool is_last) {
     if (!block) return;
     print_sentences(block->sentences, level, is_last);
 }
 
-// Function to print interval
-static void print_interval(Interval* interval, int level, bool is_last) {
-    if (!interval) return;
+static void print_array(Array* array, int level, bool is_last) {
+    if (!array) return;
     
     print_indent(level, is_last);
-    printf("Interval\n");
+    printf("Array\n");
     
-    switch (interval->type) {
-        case RANGE_INTERVAL:
-            print_expression(interval->leftExpression, level + 1, false);
-            print_expression(interval->rightExpression, level + 1, true);
+    switch (array->type) {
+        case INTERVAL_ARRAY:
+            print_expression(array->leftExpression, level + 1, false);
+            print_expression(array->rightExpression, level + 1, true);
             break;
-        case IDENTIFIER_INTERVAL:
+        case IDENTIFIER_ARRAY:
             print_indent(level + 1, true);
-            printf("Identifier: %s\n", interval->identifier);
+            printf("Identifier: %s\n", array->identifier);
+            break;
+        case BASIC_ARRAY:
+            if (array->expressionList) {
+                print_expression_list(array->expressionList, level + 1, true);
+            }
             break;
     }
 }
 
-// Function to print sentence
 static void print_sentence(Sentence* sentence, int level, bool is_last) {
     if (!sentence) return;
     
@@ -226,6 +223,12 @@ static void print_sentence(Sentence* sentence, int level, bool is_last) {
     printf("Sentence (%s)\n", sentence_type_to_string(sentence->type));
     
     switch (sentence->type) {
+        case FOR_SENTENCE:
+            print_indent(level + 1, false);
+            printf("Identifier: %s\n", sentence->forIdentifier);
+            print_array(sentence->forArray, level + 1, false);
+            print_block(sentence->forBlock, level + 1, true);
+            break;
         case IF_SENTENCE:
             print_bool_expression(sentence->ifBoolExpression, level + 1, false);
             print_block(sentence->ifBlock, level + 1, true);
@@ -240,34 +243,86 @@ static void print_sentence(Sentence* sentence, int level, bool is_last) {
             printf("Identifier: %s\n", sentence->assignIdentifier);
             print_expression(sentence->assignExpression, level + 1, true);
             break;
-        case FOR_SENTENCE:
-            print_indent(level + 1, false);
-            printf("Identifier: %s\n", sentence->forIdentifier);
-            print_interval(sentence->forInterval, level + 1, false);
-            print_block(sentence->forBlock, level + 1, true);
-            break;
         case FUNCTION_SENTENCE:
             print_indent(level + 1, true);
             printf("Function: %s\n", sentence->functionIdentifier);
-            // TODO: Print function arguments
+            if (sentence->functionArguments) {
+                print_expression_list(sentence->functionArguments, level + 1, true);
+            }
             break;
         case ASSIGN_ARRAY_SENTENCE:
             print_indent(level + 1, true);
             printf("Array: %s\n", sentence->assignArrayIdentifier);
-            // TODO: Print array expressions
+            if (sentence->assignArray) {
+                print_array(sentence->assignArray, level + 1, true);
+            }
+            break;
+        case ASSIGN_ARRAY_ELEMENT_SENTENCE:
+            print_indent(level + 1, true);
+            printf("Array Element: %s\n", sentence->assignArrayElemIdentifier);
+            print_expression(sentence->assignArrayIndexExpression, level + 1, false);
+            print_expression(sentence->assignArrayElementExpression, level + 1, true);
             break;
         case LOG_SENTENCE:
             print_indent(level + 1, true);
             printf("Log\n");
-            // TODO: Print log string parts
+            if (sentence->logString) {
+                print_string_part_list(sentence->logString, level + 1, true);
+            }
+            break;
+        case IMPORT_SENTENCE:
+            print_indent(level + 1, true);
+            printf("Import\n");
+            if (sentence->importPath) {
+                print_string_part_list(sentence->importPath, level + 1, true);
+            }
             break;
     }
 }
 
-// Function to print program
 static void print_program(Program* program) {
     if (!program) return;
     print_sentences(program->sentences, 0, true);
+}
+
+static void print_expression_list(ExpressionList* expr_list, int level, bool is_last) {
+    if (!expr_list) return;
+    
+    print_indent(level, is_last);
+    printf("ExpressionList\n");
+    
+    if (expr_list->expressions) {
+        print_expressions(expr_list->expressions, level + 1, true);
+    }
+}
+
+static void print_expressions(Expressions* expressions, int level, bool is_last) {
+    if (!expressions) return;
+    
+    print_expressions(expressions->next, level, false);
+    print_expression(expressions->expression, level, is_last);
+}
+
+static void print_string_part_list(StringPartList* string_part_list, int level, bool is_last) {
+    if (!string_part_list) return;
+    
+    print_string_part_list(string_part_list->next, level, false);
+    print_string_part(string_part_list->stringPart, level, is_last);
+}
+
+static void print_string_part(StringPart* string_part, int level, bool is_last) {
+    if (!string_part) return;
+    
+    print_indent(level, is_last);
+    printf("StringPart (%s)\n", string_part->type == STRING_SEGMENT ? "STRING" : "IDENTIFIER");
+    
+    if (string_part->type == STRING_SEGMENT) {
+        print_indent(level + 1, true);
+        printf("String: %s\n", string_part->string);
+    } else {
+        print_indent(level + 1, true);
+        printf("Identifier: %s\n", string_part->identifier);
+    }
 }
 
 int main(int argc, char** argv) {
@@ -276,20 +331,17 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // Initialize modules
     initializeFlexActionsModule();
     initializeBisonActionsModule();
     initializeSyntacticAnalyzerModule();
     initializeAbstractSyntaxTreeModule();
 
-    // Open and read the test file
     FILE* file = fopen(argv[1], "r");
     if (!file) {
         printf("Error: Could not open file %s\n", argv[1]);
         return 1;
     }
 
-    // Create a pipe for stdin redirection
     int pipefd[2];
     if (pipe(pipefd) == -1) {
         printf("Error: Could not create pipe\n");
@@ -297,7 +349,6 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // Read the file content
     char buffer[4096];
     size_t bytes_read;
     while ((bytes_read = fread(buffer, 1, sizeof(buffer), file)) > 0) {
@@ -309,28 +360,24 @@ int main(int argc, char** argv) {
             return 1;
         }
     }
-    close(pipefd[1]); // Close write end
+    close(pipefd[1]);
 
-    // Redirect stdin to read from the pipe
     if (dup2(pipefd[0], STDIN_FILENO) == -1) {
         printf("Error: Could not redirect stdin\n");
         close(pipefd[0]);
         fclose(file);
         return 1;
     }
-    close(pipefd[0]); // Close original read end
+    close(pipefd[0]);
 
-    // Create compiler state
     CompilerState compilerState = {
         .abstractSyntaxtTree = NULL,
         .succeed = false,
         .value = 0
     };
 
-    // Parse the file
     const SyntacticAnalysisStatus status = parse(&compilerState);
     
-    // Close the file
     fclose(file);
 
     if (status == ACCEPT) {
@@ -340,7 +387,6 @@ int main(int argc, char** argv) {
         printf("\nError: Failed to parse %s\n", argv[1]);
     }
 
-    // Cleanup
     releaseProgram(compilerState.abstractSyntaxtTree);
     shutdownAbstractSyntaxTreeModule();
     shutdownSyntacticAnalyzerModule();
