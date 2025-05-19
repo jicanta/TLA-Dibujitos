@@ -34,6 +34,7 @@ void releaseExpression(Expression * expression) {
 			case DIVISION:
 			case MULTIPLICATION:
 			case SUBTRACTION:
+			case MODULUS:
 				releaseExpression(expression->leftExpression);
 				releaseExpression(expression->rightExpression);
 				break;
@@ -43,6 +44,10 @@ void releaseExpression(Expression * expression) {
 				break;
 			case FACTOR:
 				releaseFactor(expression->factor);
+				break;
+			case ARRAY_ACCESS:
+				releaseExpressionList(expression->expressionList);
+				releaseExpression(expression->indexExpression);
 				break;
 		}
 		free(expression);
@@ -118,7 +123,7 @@ void releaseSentence(Sentence * sentence){
 				break;
 			case FOR_SENTENCE:
 				free(sentence->forIdentifier);
-				releaseInterval(sentence->forInterval);
+				releaseExpressionList(sentence->forExpressionList);
 				releaseBlock(sentence->forBlock);
 				break;
 			case FUNCTION_SENTENCE:
@@ -164,8 +169,17 @@ void releaseStringPart(StringPart * stringPart) {
 void releaseExpressionList(ExpressionList * expressionList) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (expressionList != NULL) {
-		releaseExpressions(expressionList->expressions);
-		free(expressionList);
+		switch (expressionList->type) {
+			case EMPTY_EXPRESSION_LIST:
+				break;
+			case INTERVAL_EXPRESSION_LIST:
+				releaseExpression(expressionList->leftExpression);
+				releaseExpression(expressionList->rightExpression);
+				break;
+			case EXPRESSION_LIST:
+				releaseExpressions(expressionList->expressions);
+				break;
+		}
 	}
 }
 

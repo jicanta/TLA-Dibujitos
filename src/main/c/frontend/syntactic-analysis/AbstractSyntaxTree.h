@@ -24,6 +24,8 @@ typedef enum IntervalType IntervalType;
 
 typedef enum StringPartType StringPartType;
 
+typedef enum ExpressionListType ExpressionListType;
+
 
 typedef struct Constant Constant;
 typedef struct Expression Expression;
@@ -61,7 +63,8 @@ enum ExpressionType {
 	FACTOR,
 	MODULUS,
 	GET_X,
-	GET_Y
+	GET_Y,
+	ARRAY_ACCESS
 };
 
 
@@ -108,6 +111,12 @@ enum SentenceType {
 	LOG_SENTENCE,
 };
 
+enum ExpressionListType {
+	EXPRESSION_LIST,
+	EMPTY_EXPRESSION_LIST,
+	INTERVAL_EXPRESSION_LIST
+};
+
 
 struct Program {
 	Sentences * sentences;
@@ -139,7 +148,7 @@ struct Sentence {
 		};
 		struct {
 			char * forIdentifier;
-			Interval * forInterval;
+			ExpressionList * forExpressionList;
 			Block * forBlock;
 		};
 		struct {
@@ -204,7 +213,14 @@ struct BoolFactor {
 };
 
 struct ExpressionList {
-	Expressions * expressions;
+	union {
+		Expressions * expressions;
+		struct {
+			Expression * leftExpression;
+			Expression * rightExpression;
+		};
+	};
+	ExpressionListType type;
 };
 
 struct Expressions {
@@ -218,6 +234,10 @@ struct Expression {
 		struct {
 			Expression * leftExpression;
 			Expression * rightExpression;
+		};
+		struct {
+			ExpressionList * expressionList;
+			Expression * indexExpression;
 		};
 		Expression * expression;
 	};

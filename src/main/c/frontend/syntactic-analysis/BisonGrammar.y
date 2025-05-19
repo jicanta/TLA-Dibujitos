@@ -164,13 +164,14 @@ sentences: sentences sentence														{ $$ = SentencesSemanticAction($1, $2
 	;
 
 sentence: IDENTIFIER ASSIGN expression SEMICOLON									{ $$ = AssignSentenceSemanticAction($1, $3); }
-	| IDENTIFIER ASSIGN OPEN_BRACKETS expression_list CLOSE_BRACKETS SEMICOLON 		{ $$ = AssignArraySentenceSemanticAction($1, $4); }
+	| IDENTIFIER ASSIGN expression_list SEMICOLON 									{ $$ = AssignArraySentenceSemanticAction($1, $3); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ $$ = IfSentenceSemanticAction($3, $5); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
-	| FOR IDENTIFIER IN interval block												{ $$ = ForSentenceSemanticAction($2, $4, $5); }
+	| FOR IDENTIFIER IN expression_list block										{ $$ = ForSentenceSemanticAction($2, $4, $5); }
 	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ $$ = FunctionSentenceSemanticAction($1, $3); }
 	| LOG OPEN_PARENTHESIS string_part_list CLOSE_PARENTHESIS SEMICOLON				{ $$ = LogSentenceSemanticAction($3); }
 	;
+/* TODO: Renombrar ExpressionList a Array */
 
 string_part_list
     : string_part_list string_part													{ $$ = appendStringPartList($1, $2); }
@@ -187,12 +188,16 @@ block: OPEN_BRACES sentences CLOSE_BRACES											{ $$ = BlockSemanticAction($
 
 interval: OPEN_BRACKETS expression COLON expression CLOSE_BRACKETS					{ $$ = IntervalSemanticAction($2, $4); }
 	;
-/* TODO: Originalmente, un interval podía ser un Identifier, pero para mí es más cómodo que un intervalo sea una forma más de escribir una lista */
-/* O sea, a mí me gusta más algo así:
-expression_list: OPEN_BRACKETS expressions CLOSE_BRACKETS
-	| OPEN_BRACKETS CLOSE_BRACKETS
-	| OPEN_BRACKETS expression COLON expression CLOSE_BRACKETS
- */
+
+/* expression_list debería llamarse ARRAY*/
+expression_list: OPEN_BRACKETS expressions CLOSE_BRACKETS							{ $$ = FilledExpressionListSemanticAction($2); }
+	| OPEN_BRACKETS CLOSE_BRACKETS													{ $$ = EmptyExpressionListSemanticAction(); }
+	| OPEN_BRACKETS expression COLON expression CLOSE_BRACKETS						{ $$ = IntervalSemanticAction($2, $4); }	
+	;
+
+/* Este es el verdadero EXPRESSION_LIST */
+/* expression_list: expressions
+	| empty */
 
 bool_expression: expression GEQ expression											{ $$ = BoolComparisonExpressionSemanticAction($1, $3, GREATER_OR_EQUAL); }
 	| expression LEQ expression														{ $$ = BoolComparisonExpressionSemanticAction($1, $3, LESS_OR_EQUAL); }
@@ -209,8 +214,6 @@ bool_expression: expression GEQ expression											{ $$ = BoolComparisonExpres
 bool_factor: OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS						{ $$ = BoolExpressionFactorSemanticAction($2); }
 	;
 
-expression_list: expressions														{ $$ = ExpressionListSemanticAction($1); }
-	| %empty																		{ $$ = EmptyExpressionListSemanticAction(); }
 
 expressions: expressions[left] COMMA expression[right]								{ $$ = ExpressionsSemanticAction($left, $right); }
 	| expression																	{ $$ = ExpressionsSemanticAction(NULL, $1); }
@@ -224,6 +227,7 @@ expression: expression[left] ADD expression[right]									{ $$ = ArithmeticExpr
 	| expression DOT X_PARAM														{ $$ = DotExpressionSemanticAction($1, GET_X); }
 	| expression DOT Y_PARAM														{ $$ = DotExpressionSemanticAction($1, GET_Y); }
 	| factor																		{ $$ = FactorExpressionSemanticAction($1); }
+	| expression_list OPEN_BRACES expression CLOSE_BRACES							{ $$ = ArrayAccessExpressionSemanticAction($1, $3); }
 	;
 
 factor: IDENTIFIER																	{ $$ = IdentifierFactorSemanticAction($1); }

@@ -57,6 +57,15 @@ Expression * DotExpressionSemanticAction(Expression * expression, ExpressionType
 	return dotExpression;
 }
 
+Expression * ArrayAccessExpressionSemanticAction(ExpressionList * expressionList, Expression * indexExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->expressionList = expressionList;
+	expression->indexExpression = indexExpression;
+	expression->type = ARRAY_ACCESS;
+	return expression;
+}
+
 Factor * IdentifierFactorSemanticAction(char * identifier) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Factor * factor = calloc(1, sizeof(Factor));
@@ -131,7 +140,7 @@ Sentences * EmptySentencesSemanticAction() {
     return sentences;
 }
 
-ExpressionList * ExpressionListSemanticAction(Expressions * expressions) {
+ExpressionList * FilledExpressionListSemanticAction(Expressions * expressions) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ExpressionList * expressionList_ret = calloc(1, sizeof(ExpressionList));
 	expressionList_ret->expressions = expressions;
@@ -234,11 +243,11 @@ Sentence * IfSentenceSemanticAction(BoolExpression * boolExpression, Block * blo
 	return sentence;
 }
 
-Sentence * ForSentenceSemanticAction(char * identifier, Interval * interval, Block * block) {
+Sentence * ForSentenceSemanticAction(char * identifier, ExpressionList * expressionList, Block * block) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Sentence * sentence = calloc(1, sizeof(Sentence));
 	sentence->forIdentifier = identifier;
-	sentence->forInterval = interval;
+	sentence->forExpressionList = expressionList;
 	sentence->forBlock = block;
 	sentence->type = FOR_SENTENCE;
 	return sentence;
@@ -261,13 +270,13 @@ Block * BlockSemanticAction(Sentences * sentences) {
 	return block;
 }
 
-Interval * IntervalSemanticAction(Expression * leftExpression, Expression * rightExpression) {
+ExpressionList * IntervalSemanticAction(Expression * leftExpression, Expression * rightExpression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Interval * interval = calloc(1, sizeof(Interval));
-	interval->leftExpression= leftExpression;
-	interval->rightExpression= rightExpression;
-	interval->type = RANGE_INTERVAL;
-	return interval;
+	ExpressionList * expressionList = calloc(1, sizeof(ExpressionList));
+	expressionList->leftExpression = leftExpression;
+	expressionList->rightExpression = rightExpression;
+	expressionList->type = INTERVAL_EXPRESSION_LIST;
+	return expressionList;
 }
 
 Interval * IntervalIdentifierSemanticAction(char * identifier) {
