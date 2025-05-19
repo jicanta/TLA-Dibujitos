@@ -16,65 +16,60 @@ void shutdownAbstractSyntaxTreeModule() {
 
 /** PUBLIC FUNCTIONS */
 
-void releaseConstant(Constant * constant) {
+
+void releaseExpressions(Expressions * expressions) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (constant != NULL) {
-		switch (constant->type) {
-			case INTEGER_CONSTANT:
-				// No need to free anything for integer constants
-				break;
-			case DECIMAL_CONSTANT:
-				// No need to free anything for decimal constants
-				break;
-			case IDENTIFIER_CONSTANT:
-				free((char *) constant->identifier); // Cast to char* to free the string
-				break;
-		}
-		free(constant);
+	if (expressions != NULL) {
+		releaseExpression(expressions->expression);
+		releaseExpressions(expressions->next);
+		free(expressions);
 	}
 }
 
-void releaseFloatExpression(FloatExpression * floatExpression) {
+void releaseExpression(Expression * expression) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (floatExpression != NULL) {
-		switch (floatExpression->type) {
+	if (expression != NULL) {
+		switch (expression->type) {
 			case ADDITION:
 			case DIVISION:
 			case MULTIPLICATION:
 			case SUBTRACTION:
-				releaseFloatExpression(floatExpression->leftFloatExpression);
-				releaseFloatExpression(floatExpression->rightFloatExpression);
+				releaseExpression(expression->leftExpression);
+				releaseExpression(expression->rightExpression);
 				break;
 			case GET_X:
 			case GET_Y:
-				releaseVectorExpression(floatExpression->vectorExpression);
+				releaseExpression(expression->expression);
 				break;
 			case FACTOR:
-				releaseFloatFactor(floatExpression->floatFactor);
+				releaseFactor(expression->factor);
 				break;
 		}
-		free(floatExpression);
+		free(expression);
 	}
 }
 
-void releaseFloatFactor(FloatFactor * floatFactor) {
+void releaseFactor(Factor * factor) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (floatFactor != NULL) {
-		switch (floatFactor->type) {
-			case CONSTANT:
-				releaseConstant(floatFactor->constant);
+	if (factor != NULL) {
+		switch (factor->type) {
+			case INTEGER_FACTOR:
+				// No need to free anything for integer constants
 				break;
-			case EXPRESSION:
-				releaseFloatExpression(floatFactor->floatExpression);
+			case DECIMAL_FACTOR:
+				// No need to free anything for decimal constants
 				break;
-			case VECTOR:
-				releaseVector(floatFactor->vector);
+			case PARENTHESIS_FACTOR:
+				releaseExpression(factor->expression);
 				break;
-			case INTEGER_TO_FLOAT:
-				releaseIntegerExpression(floatFactor->integerExpression);
+			case VECTOR_FACTOR:
+				releaseVector(factor->vector);
+				break;
+			case IDENTIFIER_FACTOR:
+				free((char *) factor->identifier); // Cast to char* to free the string
 				break;
 		}
-		free(floatFactor);
+		free(factor);
 	}
 }
 
@@ -89,8 +84,8 @@ void releaseProgram(Program * program) {
 void releaseVector(Vector * vector) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (vector != NULL) {
-		releaseConstant(vector->left);
-		releaseConstant(vector->right);
+		releaseExpression(vector->x);
+		releaseExpression(vector->y);
 		free(vector);
 	}
 }
@@ -113,16 +108,8 @@ void releaseSentence(Sentence * sentence){
 				releaseBlock(sentence->ifBlock);
 				break;
 			case ASSIGN_SENTENCE:
-				free(sentence->assignFloatIdentifier);
-				releaseFloatExpression(sentence->assignFloatExpression);
-				break;
-			case ASSIGN_INT_SENTENCE:
-				free(sentence->assignIntegerIdentifier);
-				releaseIntegerExpression(sentence->assignIntegerExpression);
-				break;
-			case ASSIGN_VECTOR_SENTENCE:
-				free(sentence->assignVectorIdentifier);
-				releaseVectorExpression(sentence->assignVectorExpression);
+				free(sentence->assignIdentifier);
+				releaseExpression(sentence->assignExpression);
 				break;
 			case IF_ELSE_SENTENCE:
 				releaseBoolExpression(sentence->ifElseBoolExpression);
@@ -177,8 +164,7 @@ void releaseStringPart(StringPart * stringPart) {
 void releaseExpressionList(ExpressionList * expressionList) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (expressionList != NULL) {
-		releaseFloatExpression(expressionList->expression);
-		releaseExpressionList(expressionList->next);
+		releaseExpressions(expressionList->expressions);
 		free(expressionList);
 	}
 }
@@ -199,8 +185,8 @@ void releaseInterval(Interval * interval) {
 				free(interval->identifier);
 				break;
 			case RANGE_INTERVAL:
-				releaseFloatExpression(interval->leftFloatExpression);
-				releaseFloatExpression(interval->rightFloatExpression);
+				releaseExpression(interval->leftExpression);
+				releaseExpression(interval->rightExpression);
 				break; 
 		}
 		free(interval);
@@ -217,8 +203,8 @@ void releaseBoolExpression(BoolExpression * boolExpression) {
 			case GREATER_OR_EQUAL: case LESS_OR_EQUAL:
 			case GREATER_THAN: case LESS_THAN:
 			case EQUAL_TO: case NOT_EQUAL:
-				releaseFloatExpression(boolExpression->leftFloatExpression);
-				releaseFloatExpression(boolExpression->rightFloatExpression);
+				releaseExpression(boolExpression->leftExpression);
+				releaseExpression(boolExpression->rightExpression);
 				break;
 			case AND_TYPE: case OR_TYPE:
 				releaseBoolExpression(boolExpression->leftBoolExpression);
@@ -240,79 +226,3 @@ void releaseBoolFactor(BoolFactor * boolFactor) {
 	}
 }
 
-void releaseIntegerExpression(IntegerExpression * integerExpression) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (integerExpression != NULL) {
-		switch (integerExpression->type) {
-			case INT_ADDITION:
-			case INT_SUBTRACTION:
-			case INT_MULTIPLICATION:
-			case INT_DIVISION:
-			case INT_MODULUS:
-				releaseIntegerExpression(integerExpression->leftIntegerExpression);
-				releaseIntegerExpression(integerExpression->rightIntegerExpression);
-				break;
-			case INT_FACTOR:
-				releaseIntegerFactor(integerExpression->integerFactor);
-				break;
-		}
-		free(integerExpression);
-	}
-}
-
-void releaseIntegerFactor(IntegerFactor * integerFactor) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (integerFactor != NULL) {
-		switch (integerFactor->type) {
-			case INT_CONSTANT:
-				// No need to free anything for integer constants
-				break;
-			case INT_EXPRESSION:
-				releaseIntegerExpression(integerFactor->integerExpression);
-				break;
-			case INT_IDENTIFIER:
-				free(integerFactor->identifier);
-				break;
-		}
-		free(integerFactor);
-	}
-}
-
-void releaseVectorExpression(VectorExpression * vectorExpression) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (vectorExpression != NULL) {
-		switch (vectorExpression->type) {
-			case VEC_FACTOR:
-				releaseVectorFactor(vectorExpression->vectorFactor);
-				break;
-			case VEC_ADDITION:
-			case VEC_SUBTRACTION:
-				releaseVectorExpression(vectorExpression->leftVectorExpression);
-				releaseVectorExpression(vectorExpression->rightVectorExpression);
-				break;
-			case VEC_MULTIPLICATION:
-			case VEC_DIVISION:
-				releaseVectorExpression(vectorExpression->vectorExpression);
-				releaseFloatExpression(vectorExpression->floatExpression);
-				break;
-		}
-		free(vectorExpression);
-	}
-}
-void releaseVectorFactor(VectorFactor * vectorFactor) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (vectorFactor != NULL) {
-		switch (vectorFactor->type) {
-			case VEC_VECTOR:
-				releaseVector(vectorFactor->vector);
-				break;
-			case VEC_EXPRESSION:
-				releaseVectorExpression(vectorFactor->vectorExpression);
-				break;
-			case VEC_IDENTIFIER:
-				free(vectorFactor->identifier);
-				break;
-		}
-		free(vectorFactor);
-	}
-}

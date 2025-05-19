@@ -31,78 +31,78 @@ static void _logSyntacticAnalyzerAction(const char * functionName) {
 
 /* PUBLIC FUNCTIONS */
 
-Constant * IntegerConstantSemanticAction(const int integer) {
+
+Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Constant * constant = calloc(1, sizeof(Constant));
-	constant->integer = integer;
-	constant->type = INTEGER_CONSTANT;
-	return constant;
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->leftExpression = leftExpression;
+	expression->rightExpression = rightExpression;
+	expression->type = type;
+	return expression;
 }
 
-Constant * IdentifierConstantSemanticAction(const char * identifier) {
+Expression * FactorExpressionSemanticAction(Factor * factor) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Constant * constant = calloc(1, sizeof(Constant));
-	constant->identifier = identifier;
-	constant->type = IDENTIFIER_CONSTANT;
-	return constant;
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->factor = factor;
+	expression->type = FACTOR;
+	return expression;
+}
+
+Expression * DotExpressionSemanticAction(Expression * expression, ExpressionType type) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * dotExpression = calloc(1, sizeof(Expression));
+	dotExpression->expression = expression;
+	dotExpression->type = type;
+	return dotExpression;
+}
+
+Factor * IdentifierFactorSemanticAction(char * identifier) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Factor * factor = calloc(1, sizeof(Factor));
+	factor->identifier = identifier;
+	factor->type = IDENTIFIER_FACTOR;
+	return factor;
+}
+
+Factor * IntegerFactorSemanticAction(int integer) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Factor * factor = calloc(1, sizeof(Factor));
+	factor->integerExpression = integer;
+	factor->type = INTEGER_FACTOR;
+	return factor;
+}
+
+Factor * DecimalFactorSemanticAction(float decimal) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Factor * factor = calloc(1, sizeof(Factor));
+	factor->floatExpression = decimal;
+	factor->type = DECIMAL_FACTOR;
+	return factor;
+}
+
+Factor * VectorFactorSemanticAction(Vector * vector) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Factor * factor = calloc(1, sizeof(Factor));
+	factor->vector = vector;
+	factor->type = VECTOR_FACTOR;
+	return factor;
+}
+
+Factor * ParenthesisFactorSemanticAction(Expression * expression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Factor * factor = calloc(1, sizeof(Factor));
+	factor->expression = expression;
+	factor->type = PARENTHESIS_FACTOR;
+	return factor;
 }
 
 
-Constant * DecimalConstantSemanticAction(const float decimal) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Constant * constant = calloc(1, sizeof(Constant));
-	constant->decimal = decimal;
-	constant->type = DECIMAL_CONSTANT;
-	return constant;
-}
-
-FloatExpression * FloatArithmeticExpressionSemanticAction(FloatExpression * leftFloatExpression, FloatExpression * rightFloatExpression, FloatExpressionType type) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	FloatExpression * floatExpression = calloc(1, sizeof(FloatExpression));
-	floatExpression->leftFloatExpression = leftFloatExpression;
-	floatExpression->rightFloatExpression = rightFloatExpression;
-	floatExpression->type = type;
-	return floatExpression;
-}
-
-FloatExpression * FloatFactorExpressionSemanticAction(FloatFactor * floatFactor) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	FloatExpression * floatExpression = calloc(1, sizeof(FloatExpression));
-	floatExpression->floatFactor = floatFactor;
-	floatExpression->type = FACTOR;
-	return floatExpression;
-}
-
-FloatExpression * VectorDotExpressionSemanticAction(VectorExpression * vectorExpression, FloatExpressionType type) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	FloatExpression * floatExpression = calloc(1, sizeof(FloatExpression));
-	floatExpression->vectorExpression = vectorExpression;
-	floatExpression->type = type;
-	return floatExpression;
-}
-
-FloatFactor * FloatConstantFactorSemanticAction(Constant * constant) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	FloatFactor * floatFactor = calloc(1, sizeof(FloatFactor));
-	floatFactor->constant = constant;
-	floatFactor->type = CONSTANT;
-	return floatFactor;
-}
-
-FloatFactor * FloatExpressionFactorSemanticAction(FloatExpression * floatExpression) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	FloatFactor * floatFactor = calloc(1, sizeof(FloatFactor));
-	floatFactor->floatExpression = floatExpression;
-	floatFactor->type = EXPRESSION;
-	return floatFactor;
-}
-
-
-Vector * VectorSemanticAction(Constant * left, Constant * right) {
+Vector * VectorSemanticAction(Expression * x, Expression * y) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Vector * vector = calloc(1, sizeof(Vector));
-	vector->left = left;
-	vector->right = right;
+	vector->x = x;
+	vector->y = y;
 	return vector;
 }
 
@@ -131,11 +131,10 @@ Sentences * EmptySentencesSemanticAction() {
     return sentences;
 }
 
-ExpressionList * ExpressionListSemanticAction(ExpressionList * expressionList, FloatExpression * expression) {
+ExpressionList * ExpressionListSemanticAction(Expressions * expressions) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ExpressionList * expressionList_ret = calloc(1, sizeof(ExpressionList));
-	expressionList_ret->expression = expression;
-	expressionList_ret->next = expressionList;
+	expressionList_ret->expressions = expressions;
 	return expressionList_ret;
 }
 
@@ -144,6 +143,14 @@ ExpressionList * EmptyExpressionListSemanticAction() {
     ExpressionList * expressionList = calloc(1, sizeof(ExpressionList));
     // Initialize fields to represent an empty state, if necessary.
     return expressionList;
+}
+
+Expressions * ExpressionsSemanticAction(Expressions * expressions, Expression * expression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expressions * expressions_ret = calloc(1, sizeof(Expressions));
+	expressions_ret->next = expressions;
+	expressions_ret->expression = expression;
+	return expressions_ret;
 }
 
 Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * functionArguments) {
@@ -163,31 +170,15 @@ Sentences * SentencesSemanticAction(Sentences * sentences, Sentence * sentence) 
 	return sentences_ret;
 }
 
-Sentence * AssignFloatSentenceSemanticAction(char * identifier, FloatExpression * floatExpression) {
+Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Sentence * sentence = calloc(1, sizeof(Sentence));
-	sentence->assignFloatIdentifier = identifier;
-	sentence->assignFloatExpression = floatExpression;
+	sentence->assignIdentifier = identifier;
+	sentence->assignExpression = expression;
 	sentence->type = ASSIGN_SENTENCE;
 	return sentence;
 }
 
-Sentence * AssignIntegerSentenceSemanticAction(char * identifier, IntegerExpression * integerExpression) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Sentence * sentence = calloc(1, sizeof(Sentence));
-	sentence->assignIntegerIdentifier = identifier;
-	sentence->assignIntegerExpression = integerExpression;
-	sentence->type = ASSIGN_INT_SENTENCE;
-	return sentence;
-}
-Sentence * AssignVectorSentenceSemanticAction(char * identifier, VectorExpression * vectorExpression) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Sentence * sentence = calloc(1, sizeof(Sentence));
-	sentence->assignVectorIdentifier = identifier;
-	sentence->assignVectorExpression = vectorExpression;
-	sentence->type = ASSIGN_VECTOR_SENTENCE;
-	return sentence;
-}
 
 Sentence * AssignArraySentenceSemanticAction(char * identifier, ExpressionList * expressionList) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
@@ -270,11 +261,11 @@ Block * BlockSemanticAction(Sentences * sentences) {
 	return block;
 }
 
-Interval * IntervalSemanticAction(FloatExpression * leftFloatExpression, FloatExpression * rightFloatExpression) {
+Interval * IntervalSemanticAction(Expression * leftExpression, Expression * rightExpression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Interval * interval = calloc(1, sizeof(Interval));
-	interval->leftFloatExpression = leftFloatExpression;
-	interval->rightFloatExpression = rightFloatExpression;
+	interval->leftExpression= leftExpression;
+	interval->rightExpression= rightExpression;
 	interval->type = RANGE_INTERVAL;
 	return interval;
 }
@@ -287,11 +278,11 @@ Interval * IntervalIdentifierSemanticAction(char * identifier) {
 	return interval;
 }
 
-BoolExpression * BoolExpressionSemanticAction(FloatExpression * leftFloatExpression, FloatExpression * rightFloatExpression, BoolExpressionType type) {
+BoolExpression * BoolComparisonExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, BoolExpressionType type) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	BoolExpression * boolExpression = calloc(1, sizeof(BoolExpression));
-	boolExpression->leftFloatExpression = leftFloatExpression;
-	boolExpression->rightFloatExpression = rightFloatExpression;
+	boolExpression->leftExpression = leftExpression;
+	boolExpression->rightExpression = rightExpression;
 	boolExpression->type = type;
 	return boolExpression;
 }
@@ -329,98 +320,3 @@ BoolFactor * BoolExpressionFactorSemanticAction(BoolExpression * boolExpression)
 	return boolFactor;
 }
 
-IntegerExpression * IntegerArithmeticExpressionSemanticAction(IntegerExpression * leftIntegerExpression, IntegerExpression * rightIntegerExpression, IntegerExpressionType type) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	IntegerExpression * integerExpression = calloc(1, sizeof(IntegerExpression));
-	integerExpression->leftIntegerExpression = leftIntegerExpression;
-	integerExpression->rightIntegerExpression = rightIntegerExpression;
-	integerExpression->type = type;
-	return integerExpression;
-}
-
-
-FloatFactor * IntegerToFloatFactorSemanticAction(IntegerExpression * integerExpression) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	FloatFactor * floatFactor = calloc(1, sizeof(FloatFactor));
-	floatFactor->integerExpression = integerExpression;
-	floatFactor->type = INTEGER_TO_FLOAT;
-	return floatFactor;
-}
-
-IntegerExpression * IntegerFactorExpressionSemanticAction(IntegerFactor * integerFactor) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	IntegerExpression * integerExpression = calloc(1, sizeof(IntegerExpression));
-	integerExpression->integerFactor = integerFactor;
-	integerExpression->type = INT_FACTOR;
-	return integerExpression;
-}
-
-IntegerFactor * IntegerExpressionFactorSemanticAction(IntegerExpression * integerExpression) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	IntegerFactor * integerFactor = calloc(1, sizeof(IntegerFactor));
-	integerFactor->integerExpression = integerExpression;
-	integerFactor->type = INT_EXPRESSION;
-	return integerFactor;
-}
-IntegerFactor * IntegerConstantFactorSemanticAction(int integer) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	IntegerFactor * integerFactor = calloc(1, sizeof(IntegerFactor));
-	integerFactor->integer = integer;
-	integerFactor->type = INT_CONSTANT;
-	return integerFactor;
-}
-IntegerFactor * IntegerIdentifierFactorSemanticAction(char * identifier) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	IntegerFactor * integerFactor = calloc(1, sizeof(IntegerFactor));
-	integerFactor->identifier = identifier;
-	integerFactor->type = INT_IDENTIFIER;
-	return integerFactor;
-}
-
-VectorExpression * VectorArithmeticExpressionSemanticAction(VectorExpression * leftVectorExpression, VectorExpression * rightVectorExpression, VectorExpressionType type) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	VectorExpression * vectorExpression = calloc(1, sizeof(VectorExpression));
-	vectorExpression->leftVectorExpression = leftVectorExpression;
-	vectorExpression->rightVectorExpression = rightVectorExpression;
-	vectorExpression->type = type;
-	return vectorExpression;
-}
-VectorExpression * VectorFloatArithmeticExpressionSemanticAction(VectorExpression * leftVectorExpression, FloatExpression * rightFloatExpression, VectorExpressionType type) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	VectorExpression * vectorExpression = calloc(1, sizeof(VectorExpression));
-	vectorExpression->vectorExpression = leftVectorExpression;
-	vectorExpression->floatExpression = rightFloatExpression;
-	vectorExpression->type = type;
-	return vectorExpression;
-}
-VectorExpression * VectorFactorExpressionSemanticAction(VectorFactor * vectorFactor) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	VectorExpression * vectorExpression = calloc(1, sizeof(VectorExpression));
-	vectorExpression->vectorFactor = vectorFactor;
-	vectorExpression->type = VEC_FACTOR;
-	return vectorExpression;
-}
-
-VectorFactor * VectorExpressionFactorSemanticAction(VectorExpression * vectorExpression) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	VectorFactor * vectorFactor = calloc(1, sizeof(VectorFactor));
-	vectorFactor->vectorExpression = vectorExpression;
-	vectorFactor->type = VEC_EXPRESSION;
-	return vectorFactor;
-}
-
-VectorFactor * VectorIdentifierFactorSemanticAction(char * identifier) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	VectorFactor * vectorFactor = calloc(1, sizeof(VectorFactor));
-	vectorFactor->identifier = identifier;
-	vectorFactor->type = VEC_IDENTIFIER;
-	return vectorFactor;
-}
-
-VectorFactor * VectorFactorSemanticAction(Vector * vector) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	VectorFactor * vectorFactor = calloc(1, sizeof(VectorFactor));
-	vectorFactor->vector = vector;
-	vectorFactor->type = VEC_VECTOR;
-	return vectorFactor;
-}
