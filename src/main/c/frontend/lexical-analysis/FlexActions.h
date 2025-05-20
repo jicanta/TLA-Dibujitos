@@ -28,6 +28,7 @@ void IgnoredLexemeAction(char * text);
 Token ArithmeticOperatorLexemeAction(Token token, char *text);
 Token IntegerLexemeAction(char * text);
 Token DecimalLexemeAction(char * text);
+Token HexIntegerLexemeAction(char * text);
 Token ParenthesisLexemeAction(Token token, char *text);
 
 Token UnknownLexemeAction(char *text);

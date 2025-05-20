@@ -212,6 +212,13 @@ Token StringLexemeAction(char * text_pointer, int text_length) {
 	return STRING;
 }
 
+Token HexIntegerLexemeAction(char * text) {
+	_logDebug(__FUNCTION__, text);
+	yylval.integer = (int)strtol(text + 2, NULL, 16);
+
+	return INTEGER;
+}
+
 Token IdentifierLexemeAction(char * text_pointer, int text_length) {
 	_logDebug(__FUNCTION__, text_pointer);
 	char * identifier_name = malloc(text_length + 1); // yyleng + 1 for '\0'

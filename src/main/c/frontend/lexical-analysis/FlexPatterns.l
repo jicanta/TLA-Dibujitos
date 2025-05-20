@@ -27,6 +27,7 @@
 
 digit              [0-9]
 decimal            [+-]?(([0-9]+\.[0-9]*)|(\.[0-9]+))
+hex_integer        0x[0-9a-fA-F]+
 integer            [+-]?{digit}+
 char               [a-zA-Z_]
 identifier         {char}({char}|{digit})*
@@ -43,6 +44,7 @@ single_comment     \/\/[^\n]*
 
 {decimal}				    		{ return DecimalLexemeAction(yytext); }
 {integer}	        				{ return IntegerLexemeAction(yytext); }
+{hex_integer}	        		    { return HexIntegerLexemeAction(yytext); }
 
 \"                                  { BEGIN(INTERP_STRING); return BeginInterpolatedStringLexemeAction(); }
 <INTERP_STRING>"{"                  { BEGIN(INTERP_EXPR); return BracesLexemeAction(OPEN_BRACES, yytext); }
