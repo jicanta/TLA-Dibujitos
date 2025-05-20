@@ -20,7 +20,9 @@ echo "Compiler should accept..."
 echo ""
 
 for test in $(ls src/test/c/accept/); do
-	echo -e "\n${GREEN}Testing: $test${OFF}"
+	if [ "$SHOW_AST" = "true" ]; then
+		echo -e "\n${GREEN}Testing: $test${OFF}"
+	fi
 	cat "src/test/c/accept/$test" | build/Compiler >/dev/null 2>&1
 	RESULT="$?"
 	if [ "$RESULT" == "0" ]; then
