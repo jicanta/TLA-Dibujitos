@@ -1,2 +1,4 @@
 p1 = (50, 50);
 p2 = p1 / 0;
+// Aun no puede detectar el error de división por cero.
+// En el stage III (Backend), se detecta el mismo.

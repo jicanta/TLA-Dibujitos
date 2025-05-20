@@ -1,6 +1,6 @@
 foo = 4;
 if (foo > 3) {
-    log "foo es mayor que 3";
+    
 } else {
-    log "foo no es mayor que 3";
+    
 }

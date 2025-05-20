@@ -1,2 +1,4 @@
 p1 = (50, 50);
 d1 = dist(p1, 20);
+// Aún no puede detectar el error de tipo incompatible.
+// En el stage III (Backend), se detecta el mismo.

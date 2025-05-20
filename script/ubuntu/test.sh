@@ -10,8 +10,8 @@ RED='\033[0;31m'
 OFF='\033[0m'
 STATUS=0
 
-# Build the tree visualizer if it doesn't exist
-if [ ! -f "build/tree_visualizer" ]; then
+# Build the tree visualizer if it doesn't exist and SHOW_AST is true
+if [ "${SHOW_AST:-false}" = "true" ] && [ ! -f "build/tree_visualizer" ]; then
 	echo "Building tree visualizer..."
 	gcc -o build/tree_visualizer src/main/c/tools/tree_visualizer.c -I src/main/c -L build -lCompiler
 fi
@@ -25,8 +25,10 @@ for test in $(ls src/test/c/accept/); do
 	RESULT="$?"
 	if [ "$RESULT" == "0" ]; then
 		echo -e "    $test, ${GREEN}and it does${OFF} (status $RESULT)"
-		# Show the tree for accepted tests
-		build/tree_visualizer "src/test/c/accept/$test"
+		# Show the tree for accepted tests only if SHOW_AST is true
+		if [ "${SHOW_AST:-false}" = "true" ]; then
+			build/tree_visualizer "src/test/c/accept/$test"
+		fi
 	else
 		STATUS=1
 		echo -e "    $test, ${RED}but it rejects${OFF} (status $RESULT)"

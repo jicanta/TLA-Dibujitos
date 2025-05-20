@@ -1,9 +1,4 @@
 z(BACK);
-fill(RED);
-stroke(INVISIBLE);
-polygon( (-40,-40), (40,-40), (40,40), (-40,40) );
 
 z(FRONT);
-fill(BLUE);
-stroke(3);
-circle((0,0), 30);
+

@@ -1,0 +1,2 @@
+foo = array[0];
+log "foo={foo}";

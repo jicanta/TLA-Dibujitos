@@ -6,6 +6,19 @@
 
 A base compiler example, developed with Flex and Bison.
 
+## Project Description
+
+This project is a compiler implementation that uses Flex (for lexical analysis) and Bison (for syntax analysis) to process and compile source code. The compiler includes a tree visualization tool that helps in understanding the abstract syntax tree (AST) generated during the compilation process.
+
+### Tree Visualizer
+
+The tree visualizer is a key component of this project that provides a graphical representation of the abstract syntax tree. It helps developers and users to:
+
+- Visualize the structure of parsed code
+- Debug syntax analysis issues
+- Understand the hierarchical relationships between different code elements
+- Validate the correctness of the parser implementation
+
 * [Environment](#environment)
 * [CI/CD](#cicd)
 * [Recommended Extensions](#recommended-extensions)
@@ -22,6 +35,7 @@ Set the following environment variables to control and configure the behaviour o
 |-|:-:|-|
 |`LOG_IGNORED_LEXEMES`|`true`|When `true`, logs all of the ignored lexemes found with Flex at DEBUGGING level. To remove those logs from the console output set it to `false`.|
 |`LOGGING_LEVEL`|`INFORMATION`|The minimum level to log in the console output. From lower to higher, the available levels are: `ALL`, `DEBUGGING`, `INFORMATION`, `WARNING`, `ERROR` and `CRITICAL`.|
+|`SHOW_AST`|`false`|When `true`, enables the visualization of the Abstract Syntax Tree (AST) in the web browser. Set to `false` to disable AST visualization.|
 
 ## CI/CD
 
