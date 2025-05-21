@@ -44,6 +44,8 @@ static const char* expression_type_to_string(ExpressionType type) {
         case MODULUS: return "MODULUS";
         case GET_X: return "GET_X";
         case GET_Y: return "GET_Y";
+        case ARRAY_ACCESS: return "ARRAY_ACCESS";
+        case FUNCTION_EXPRESSION: return "FUNCTION_EXPRESSION";
         default: return "UNKNOWN";
     }
 }
@@ -142,6 +144,17 @@ static void print_expression(Expression* expr, int level, bool is_last) {
             break;
         case FACTOR:
             print_factor(expr->factor, level + 1, true);
+            break;
+        case ARRAY_ACCESS:
+            print_array(expr->array, level + 1, true);
+            print_expression(expr->indexExpression, level + 1, true);
+            break;
+        case FUNCTION_EXPRESSION:
+            print_indent(level + 1, true);
+            printf("Function: %s\n", expr->functionIdentifier);
+            if (expr->functionArguments) {
+                print_expression_list(expr->functionArguments, level + 1, true);
+            }
             break;
     }
 }
