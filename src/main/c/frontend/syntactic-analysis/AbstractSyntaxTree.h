@@ -272,7 +272,6 @@ struct Vector {
 
 /**
  * Node recursive destructors.
- * TODO: seguir haciendo estos "Node Recursive Destructors"
  */
 void releaseProgram(Program * program);
 void releaseSentences(Sentences * sentences);

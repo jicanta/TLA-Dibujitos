@@ -50,7 +50,7 @@ void releaseExpression(Expression * expression) {
 				releaseExpression(expression->indexExpression);
 				break;
 			case FUNCTION_EXPRESSION:
-				free((char *) expression->functionIdentifier); // Cast to char* to free the string
+				free(expression->functionIdentifier); 
 				releaseExpressionList(expression->functionArguments);
 				break;
 		}
@@ -75,7 +75,7 @@ void releaseFactor(Factor * factor) {
 				releaseVector(factor->vector);
 				break;
 			case IDENTIFIER_FACTOR:
-				free((char *) factor->identifier); // Cast to char* to free the string
+				free(factor->identifier); 
 				break;
 		}
 		free(factor);

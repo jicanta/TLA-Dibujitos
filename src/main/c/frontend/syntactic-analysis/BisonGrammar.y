@@ -238,7 +238,6 @@ factor: IDENTIFIER																	{ $$ = IdentifierFactorSemanticAction($1); }
 	| INTEGER																		{ $$ = IntegerFactorSemanticAction($1); }
 	| DECIMAL																		{ $$ = DecimalFactorSemanticAction($1); }
 	| vector																		{ $$ = VectorFactorSemanticAction($1); }
-/* TODO: Agregar tipo de datos: "color" (no estaba originalmente pero tenemos que pensar una manera de representarlo) */
 	| OPEN_PARENTHESIS expression CLOSE_PARENTHESIS									{ $$ = ParenthesisFactorSemanticAction($2); }
 	;
 
