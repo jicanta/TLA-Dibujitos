@@ -16,7 +16,6 @@ void shutdownAbstractSyntaxTreeModule() {
 
 /** PUBLIC FUNCTIONS */
 
-
 void releaseExpressions(Expressions * expressions) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (expressions != NULL) {

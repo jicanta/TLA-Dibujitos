@@ -39,7 +39,7 @@ const int main(const int count, const char ** arguments) {
 	Program * program = compilerState.abstractSyntaxtTree;
 	if (syntacticAnalysisStatus == ACCEPT) {
 		// ----------------------------------------------------------------------------------------
-		// Beginning of the Backend... TODO: Descomentar ------------------------------------------------------------
+		// Beginning of the Backend... TODO: Descomentar ------------------------------------------
 		// logDebugging(logger, "Computing expression value...");
 		// ComputationResult computationResult = computeExpression(program->sentences);
 		// if (computationResult.succeed) {
