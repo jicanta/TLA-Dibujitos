@@ -2,6 +2,7 @@
 #define COMPILER_STATE_HEADER
 
 #include "Type.h"
+#include "../backend/semantic-analysis/symbolTable.h"
 
 /**
  * The general status of a compilation.
@@ -26,6 +27,7 @@ typedef struct {
 	// TODO: Add a symbol table.
 	// TODO: Add configuration.
 	// TODO: ...
+	SymbolTable symbolTable;
 
 	// The computed value of the entire program (only for the calculator).
 	int value;

@@ -8,6 +8,7 @@
 #include "shared/Environment.h"
 #include "shared/Logger.h"
 #include "shared/String.h"
+#include "backend/semantic-analysis/symbolTable.h"
 
 /**
  * The main entry-point of the entire application. If you use "strtok" to
@@ -16,6 +17,8 @@
  */
 const int main(const int count, const char ** arguments) {
 	Logger * logger = createLogger("EntryPoint");
+
+
 	initializeFlexActionsModule();
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
@@ -32,8 +35,12 @@ const int main(const int count, const char ** arguments) {
 	CompilerState compilerState = {
 		.abstractSyntaxtTree = NULL,
 		.succeed = false,
+		.symbolTable = createSymbolTable(),
 		.value = 0
 	};
+
+	setDefaultFunctions(&compilerState.symbolTable);
+
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
 	Program * program = compilerState.abstractSyntaxtTree;
@@ -60,6 +67,8 @@ const int main(const int count, const char ** arguments) {
 	logDebugging(logger, "Releasing AST resources...");
 	releaseProgram(program);
 	logDebugging(logger, "Releasing modules resources...");
+
+	freeSymbolTable(&compilerState.symbolTable);
 	// shutdownGeneratorModule();
 	// shutdownCalculatorModule();
 	shutdownAbstractSyntaxTreeModule();

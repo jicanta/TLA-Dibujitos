@@ -1,4 +1,5 @@
 #include "BisonActions.h"
+#include "../../backend/semantic-analysis/symbolTable.h"
 
 /* MODULE INTERNAL STATE */
 
@@ -141,9 +142,6 @@ Program * SentencesProgramSemanticAction(CompilerState * compilerState, Sentence
 	return program;
 }
 
-
-// NUESTRAS:
-
 Sentences * EmptySentencesSemanticAction() {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Sentences * sentences = calloc(1, sizeof(Sentences));
@@ -179,6 +177,65 @@ Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * fu
 	sentence->functionIdentifier = identifier;
 	sentence->functionArguments = functionArguments;
 	sentence->type = FUNCTION_SENTENCE;
+
+	// Semantic Analysis
+
+	const SymbolEntry symbolEntry = getSymbolEntry(&currentCompilerState()->symbolTable, identifier);
+	if (symbolEntry.type != FUNCTION_TYPE) {
+		logError(_logger, "The identifier '%s' is not a function.", identifier);
+		currentCompilerState()->succeed = false;
+		return NULL;
+	}
+
+	const SymbolType* fnParameterTypes = symbolEntry.value.functionData.dataTypes;
+
+	// Case where the function has no parameters (ExpressionList should be empty)
+	if (fnParameterTypes[0] == NULL_TYPE) {
+		if (functionArguments->expressions == NULL) {
+			return sentence;
+		}
+		logError(_logger, "The function '%s' does not expect any parameters.", identifier);
+		currentCompilerState()->succeed = false;
+		return NULL;
+	}
+
+	// Case where the function has parameters
+	const Expressions* expressionIndexer = functionArguments->expressions;
+	int i=0;
+	for (i=0; fnParameterTypes[i] != NULL_TYPE; i++) {
+		if (expressionIndexer == NULL) {
+			logError(_logger, "The function '%s' is being called with not enough parameters.", identifier);
+			currentCompilerState()->succeed = false;
+			return NULL;
+		}
+		// TODO: Uncomment when the type(expression) function is implemented
+		// if (fnParameterTypes[i] != type(expressionIndexer->expression)) {
+		// 	logError(_logger, "Invalid parameter in function '%s': Should be '%d'.", identifier, fnParameterTypes[i]);
+		// 	currentCompilerState()->succeed = false;
+		// 	return NULL;
+		// }
+		expressionIndexer = expressionIndexer->next;
+	}
+	if (symbolEntry.value.functionData.hasInfiniteParameters) {
+		i--; // Adjust for the last parameter which can be infinite
+		while (expressionIndexer != NULL) {
+			// TODO: Uncomment when the type(expression) function is implemented
+			// if (fnParameterTypes[i] != type(expressionIndexer->expression)) {
+			// 	logError(_logger, "Invalid parameter in function '%s': Should be '%d'.", identifier, fnParameterTypes[i]);
+			// 	currentCompilerState()->succeed = false;
+			// 	return NULL;
+			// }
+			expressionIndexer = expressionIndexer->next;
+		}
+	}
+	else {
+		if (expressionIndexer != NULL) {
+			logError(_logger, "The function '%s' is being called with too many parameters.", identifier);
+			currentCompilerState()->succeed = false;
+			return NULL;
+		}
+	}
+
 	return sentence;
 }
 

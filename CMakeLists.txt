@@ -57,6 +57,7 @@ endif ()
 add_library(CompilerLib STATIC
 	src/main/c/backend/code-generation/Generator.c
 	src/main/c/backend/domain-specific/Calculator.c
+	src/main/c/backend/semantic-analysis/symbolTable.c
 	src/main/c/frontend/lexical-analysis/FlexActions.c
 	src/main/c/frontend/lexical-analysis/FlexScanner.c
 	src/main/c/frontend/lexical-analysis/LexicalAnalyzerContext.c
