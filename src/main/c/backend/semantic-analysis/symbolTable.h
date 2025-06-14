@@ -40,9 +40,10 @@ typedef enum {
     VECTOR_TYPE,
     // Other types
     ARRAY_TYPE,
-    FUNCTION_TYPE
-    // BOOLEAN_TYPE, TODO decidir si sacarlo
-    // STRING_TYPE,
+    FUNCTION_TYPE,
+    BOOLEAN_TYPE, 
+    STRING_TYPE,
+    INVALID_TYPE,
 } SymbolType;
 
 
