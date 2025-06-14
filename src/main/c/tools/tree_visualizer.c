@@ -468,9 +468,10 @@ int main(int argc, char** argv) {
     CompilerState compilerState = {
         .abstractSyntaxtTree = NULL,
         .succeed = false,
+        .symbolTable = createSymbolTable(),
         .value = 0
     };
-
+    setDefaultFunctions(compilerState.symbolTable);
     const SyntacticAnalysisStatus status = parse(&compilerState);
     
     fclose(file);
@@ -481,7 +482,7 @@ int main(int argc, char** argv) {
     } else {
         printf("\nError: Failed to parse %s\n", argv[1]);
     }
-
+    freeSymbolTable(compilerState.symbolTable);
     releaseProgram(compilerState.abstractSyntaxtTree);
     shutdownAbstractSyntaxTreeModule();
     shutdownSyntacticAnalyzerModule();

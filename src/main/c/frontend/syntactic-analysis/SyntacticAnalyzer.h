@@ -5,7 +5,7 @@
 #include "../../shared/Logger.h"
 
 /** Bison imported functions. */
-
+struct CompilerState; // forward declaration
 int yylex(void);
 void yyerror(const char * string);
 
@@ -27,11 +27,11 @@ typedef enum {
  * parsing phase (i.e., during a call to the "parse" function). Outside of the
  * parse, the state is set to NULL.
  */
-CompilerState * currentCompilerState();
+struct CompilerState * currentCompilerState();
 
 /**
  * Executes the parsing phase of the compiler.
  */
-SyntacticAnalysisStatus parse(CompilerState * compilerState);
+SyntacticAnalysisStatus parse(struct CompilerState * compilerState);
 
 #endif

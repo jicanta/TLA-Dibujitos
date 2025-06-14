@@ -49,8 +49,9 @@ CompilerState * currentCompilerState() {
 SyntacticAnalysisStatus parse(CompilerState * compilerState) {
 	logDebugging(_logger, "Parsing...");
 	_currentCompilerState = compilerState;
+	if (compilerState->symbolTable == NULL) return REJECT;
 	const int code = yyparse();
-	_currentCompilerState = NULL;
+	// _currentCompilerState = NULL;
 	SyntacticAnalysisStatus syntacticAnalysisStatus;
 	logDebugging(_logger, "Parsing is done.");
 	switch (code) {

@@ -1,4 +1,5 @@
 #include "BisonActions.h"
+#include "../../shared/CompilerState.h"
 #include "../../backend/semantic-analysis/symbolTable.h"
 
 /* MODULE INTERNAL STATE */
@@ -180,7 +181,7 @@ Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * fu
 
 	// Semantic Analysis
 
-	const SymbolEntry symbolEntry = getSymbolEntry(&currentCompilerState()->symbolTable, identifier);
+	const SymbolEntry symbolEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
 	if (symbolEntry.type != FUNCTION_TYPE) {
 		logError(_logger, "The identifier '%s' is not a function.", identifier);
 		currentCompilerState()->succeed = false;
@@ -253,6 +254,47 @@ Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expressi
 	sentence->assignIdentifier = identifier;
 	sentence->assignExpression = expression;
 	sentence->type = ASSIGN_SENTENCE;
+
+	// Semantic Analysis
+	// Check if the identifier is already defined in the symbol table
+	const SymbolEntry currentEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
+	if (currentEntry.type != NULL_TYPE) {
+		logError(_logger, "The identifier '%s' is already defined.", identifier);
+		currentCompilerState()->succeed = false;
+		return NULL;
+	}
+	// Insert the identifier into the symbol table
+	SymbolType expressionType = typeOfExpression(expression);
+	switch (expressionType) {
+		case INTEGER_TYPE:
+			const SymbolEntry integerEntry = {
+				.identifier = identifier,
+				.type = expressionType, // Assuming the type of the expression is the type of the identifier
+				// .value.integerData = intValue(expression) TODO
+			};
+			insertSymbol(currentCompilerState()->symbolTable, integerEntry);
+			break;
+		case FLOAT_TYPE:
+			const SymbolEntry floatEntry = {
+			.identifier = identifier,
+			.type = expressionType, // Assuming the type of the expression is the type of the identifier
+			// .value.floatData = floatValue(expression) TODO
+			};
+			insertSymbol(currentCompilerState()->symbolTable, floatEntry);
+			break;
+		case VECTOR_TYPE:
+			const SymbolEntry vectorEntry = {
+			.identifier = identifier,
+			.type = expressionType, // Assuming the type of the expression is the type of the identifier
+			// .value.vectorData = vectorValue(expression), //TODO: beware that the return value of calculate should be correct
+			};
+			insertSymbol(currentCompilerState()->symbolTable, vectorEntry);
+			break;
+		default:
+			logError(_logger, "The identifier '%s' is invalid.", identifier);
+			currentCompilerState()->succeed = false;
+			return NULL;
+	}
 	return sentence;
 }
 

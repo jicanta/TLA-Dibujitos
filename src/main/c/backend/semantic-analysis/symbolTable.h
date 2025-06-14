@@ -32,6 +32,9 @@ lista de tipos: int (retorno), float (param1), float (param2)
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
+#include "./../../frontend/syntactic-analysis/abstractSyntaxTree.h"
+#include "./../../frontend/syntactic-analysis/SyntacticAnalyzer.h"
+
 typedef enum {
     // Types for expressions
     NULL_TYPE,
@@ -47,18 +50,17 @@ typedef enum {
 } SymbolType;
 
 
-// DEPRECATED (but could be used for functions and arrays)
+typedef struct VectorData {float x; float y;} VectorData;
+
 typedef struct BasicType {
     SymbolType type; // Type of the basic type
     union {
         int integerData; // Integer value for integer identifiers
         float floatData; // Float value for float identifiers
-        struct {
-            float x; // X component for vector identifiers
-            float y; // Y component for vector identifiers
-        } vectorData; // Vector details
+        VectorData vectorData; // Vector details
     } value; // Value associated with the basic type
 } BasicType;
+
 
 typedef struct SymbolEntry SymbolEntry;
 typedef struct SymbolEntry {
@@ -67,10 +69,7 @@ typedef struct SymbolEntry {
     union {
         int integerData; // Integer value for integer identifiers
         float floatData; // Float value for float identifiers
-        struct {
-            float x; // X component for vector identifiers
-            float y; // Y component for vector identifiers
-        } vectorData; // Vector details
+        VectorData vectorData; // Vector details
         struct {
             SymbolType* dataTypes; // Data types for the function parameters (Null Terminated). Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
             int hasInfiniteParameters; // Indicates if the function can take an infinite number of parameters (from the last data type)
@@ -78,7 +77,7 @@ typedef struct SymbolEntry {
             void (*functionPointer)(); // Pointer to the function implementation
         } functionData; // Function details
         struct {
-            SymbolEntry* elements; // Elements of the array of the same type (Null Terminated). Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
+            BasicType* elements; // Elements of the array of the same type (Null Terminated). Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
             SymbolType dataType; // Data type for the array. Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
         } arrayData; // Array details
     } value; // Value associated with the identifier
@@ -93,17 +92,18 @@ typedef struct SymbolEntryNode {
 } SymbolEntryNode;
 
 
-typedef struct {
+typedef struct SymbolTable {
     SymbolEntryNode* head; // Pointer to the head of the linked list
 } SymbolTable;
 
-SymbolTable createSymbolTable();
+SymbolTable *createSymbolTable();
 SymbolEntry getSymbolEntry(SymbolTable* symbolTable, const char* identifier);
 void insertSymbol(SymbolTable* symbolTable, SymbolEntry  data);
 void printSymbolTable( SymbolTable* symbolTable);
 void freeSymbolTable( SymbolTable* symbolTable);
 void setDefaultFunctions(SymbolTable* symbolTable);
-
+SymbolType typeOfExpression(Expression* expression);
+// BasicType calculate(Expression* expression);
 
 
 /* LISTA DE CONSTANTES PREDEFINIDAS

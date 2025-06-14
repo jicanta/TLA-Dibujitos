@@ -28,10 +28,8 @@ SymbolEntryNode* createSymbol(const SymbolEntry data) {
 }
 
 // Function to create the table
-SymbolTable createSymbolTable() {
-    SymbolTable table;
-    table.head = NULL;
-    return table; // Initialize the head of the linked list to NULL
+SymbolTable *createSymbolTable() {
+    return calloc(1, sizeof(SymbolTable)); // Initialize the head of the linked list to NULL
 }
 
 // Function to insert a new element at the beginning of the singly linked list
@@ -102,12 +100,13 @@ void freeSymbolTable(SymbolTable* symbolTable) {
 
         free(temp);
     }
+    free(symbolTable); // Free the symbol table itself
 }
 
 // Function to get a symbol entry by identifier
 SymbolEntry getSymbolEntry(SymbolTable* symbolTable, const char* identifier) {
     SymbolEntryNode* head = symbolTable->head;
-
+    
     while (head != NULL) {
         if (strcmp(head->entry.identifier, identifier) == 0) {
             return head->entry; // Return the found entry
@@ -138,7 +137,6 @@ int symbolExists(SymbolTable* symbolTable, const char* identifier) {
 
 // Function to set all default functions
 void setDefaultFunctions(SymbolTable* symbolTable) {
-
     SymbolType* circleDataTypes = malloc(3 * sizeof(SymbolType));
     circleDataTypes[0] = VECTOR_TYPE;
     circleDataTypes[1] = FLOAT_TYPE;
@@ -203,6 +201,97 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
 }
 
 
+SymbolType typeOfExpressionList(ExpressionList* expr_list) {
+    if (!expr_list) return INVALID_TYPE;
+    // TODO
+}
+
+SymbolType typeOfFactor(Factor *factor) {
+    return INVALID_TYPE; // TODO: Implement this function
+}
+
+static SymbolType typeOfArray(Array* array) {
+    if (!array) return INVALID_TYPE;
+    
+    SymbolType leftType, rightType = INVALID_TYPE;
+    
+    switch (array->type) {
+        case INTERVAL_ARRAY:
+            leftType = typeOfExpression(array->leftExpression);
+            rightType = typeOfExpression(array->rightExpression);
+            if(leftType == INTEGER_TYPE && rightType == INTEGER_TYPE) {
+                return ARRAY_TYPE;
+            } else {
+                return INVALID_TYPE; // Incompatible types
+            }
+            break;
+        case IDENTIFIER_ARRAY:
+            return getSymbolEntry(currentCompilerState()->symbolTable, array->identifier).type; 
+            break;
+        case BASIC_ARRAY:
+            if (array->expressionList) {
+                return typeOfExpressionList(array->expressionList);
+            }
+            break;
+    }
+    return INVALID_TYPE;
+}
+
+SymbolType typeOfExpression(Expression* expression) {
+    if (!expression) return INVALID_TYPE;
+    
+    SymbolType resultType1, resultType2 = INVALID_TYPE;
+    switch (expression->type) {
+        case ADDITION:
+        case SUBTRACTION:
+        case MULTIPLICATION:
+        case DIVISION:
+        case MODULUS:
+            resultType1 = typeOfExpression(expression->leftExpression);
+            resultType2 = typeOfExpression(expression->rightExpression);
+
+            if(resultType1 == INTEGER_TYPE && resultType2 == INTEGER_TYPE) {
+                return INTEGER_TYPE;
+            } else if(resultType1 == FLOAT_TYPE || resultType2 == FLOAT_TYPE) {
+                return FLOAT_TYPE;
+            } 
+            return INVALID_TYPE; // Incompatible types
+            
+            break;
+        case GET_X:
+        case GET_Y:
+            resultType1 = typeOfExpression(expression->expression);
+            if (resultType1 != VECTOR_TYPE) {
+                return INVALID_TYPE; 
+            } 
+            return VECTOR_TYPE; // Return the type of the vector
+
+            break;
+        case FACTOR:
+            return typeOfFactor(expression->factor);
+            break;
+        case ARRAY_ACCESS:
+            resultType1 = typeOfArray(expression->array);
+            resultType2 = typeOfExpression(expression->indexExpression);
+            if (resultType2 != INTEGER_TYPE || resultType1 != ARRAY_TYPE) {
+                return INVALID_TYPE; // Index must be an integer
+            }
+
+            return ARRAY_TYPE; // Return the type of the array
+
+            break;
+        case FUNCTION_EXPRESSION:
+            if (expression->functionArguments) {
+                // TODO chequear argumentos
+            }
+
+            SymbolEntry functionEntry = getSymbolEntry(currentCompilerState()->symbolTable, expression->functionIdentifier);
+            return functionEntry.value.functionData.returnType; // Return the type of the function
+   
+            break;
+    }
+    return INVALID_TYPE;
+}
 // Example usage of the symbol table
 /*
 int main() {

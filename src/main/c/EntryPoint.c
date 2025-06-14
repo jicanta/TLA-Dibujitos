@@ -39,8 +39,8 @@ const int main(const int count, const char ** arguments) {
 		.value = 0
 	};
 
-	setDefaultFunctions(&compilerState.symbolTable);
-
+	setDefaultFunctions(compilerState.symbolTable);
+	
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
 	Program * program = compilerState.abstractSyntaxtTree;
@@ -68,7 +68,7 @@ const int main(const int count, const char ** arguments) {
 	releaseProgram(program);
 	logDebugging(logger, "Releasing modules resources...");
 
-	freeSymbolTable(&compilerState.symbolTable);
+	freeSymbolTable(compilerState.symbolTable);
 	// shutdownGeneratorModule();
 	// shutdownCalculatorModule();
 	shutdownAbstractSyntaxTreeModule();
