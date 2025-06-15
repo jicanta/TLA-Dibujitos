@@ -209,23 +209,22 @@ Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * fu
 			currentCompilerState()->succeed = false;
 			return NULL;
 		}
-		// TODO: Uncomment when the type(expression) function is implemented
-		// if (fnParameterTypes[i] != type(expressionIndexer->expression)) {
-		// 	logError(_logger, "Invalid parameter in function '%s': Should be '%d'.", identifier, fnParameterTypes[i]);
-		// 	currentCompilerState()->succeed = false;
-		// 	return NULL;
-		// }
+
+		if (fnParameterTypes[i] != typeOfExpression(expressionIndexer->expression)) {
+			logError(_logger, "Invalid parameter in function '%s': Should be '%d'.", identifier, fnParameterTypes[i]);
+			currentCompilerState()->succeed = false;
+			return NULL;
+		}
 		expressionIndexer = expressionIndexer->next;
 	}
 	if (symbolEntry.value.functionData.hasInfiniteParameters) {
 		i--; // Adjust for the last parameter which can be infinite
 		while (expressionIndexer != NULL) {
-			// TODO: Uncomment when the type(expression) function is implemented
-			// if (fnParameterTypes[i] != type(expressionIndexer->expression)) {
-			// 	logError(_logger, "Invalid parameter in function '%s': Should be '%d'.", identifier, fnParameterTypes[i]);
-			// 	currentCompilerState()->succeed = false;
-			// 	return NULL;
-			// }
+			if (fnParameterTypes[i] != typeOfExpression(expressionIndexer->expression)) {
+				logError(_logger, "Invalid parameter in function '%s': Should be '%d'.", identifier, fnParameterTypes[i]);
+				currentCompilerState()->succeed = false;
+				return NULL;
+			}
 			expressionIndexer = expressionIndexer->next;
 		}
 	}
@@ -256,43 +255,36 @@ Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expressi
 	sentence->type = ASSIGN_SENTENCE;
 
 	// Semantic Analysis
-	// Check if the identifier is already defined in the symbol table
+	SymbolType expressionType = typeOfExpression(expression);
+	SymbolEntry symbolEntry = {
+		.identifier = identifier,
+		.type = expressionType, // Assuming the type of the expression is the type of the identifier
+	};
+	// printSymbolEntry(symbolEntry);
+	
 	const SymbolEntry currentEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
-	if (currentEntry.type != NULL_TYPE) {
-		logError(_logger, "The identifier '%s' is already defined.", identifier);
-		currentCompilerState()->succeed = false;
+	if (currentEntry.type != NULL_TYPE && currentEntry.type != expressionType) {
+		logError(_logger, "The identifier '%s' has type mismatch", identifier);
+		printSymbolEntry(currentEntry);
+		printSymbolEntry(symbolEntry);
+		puts("");
 		return NULL;
 	}
-	// Insert the identifier into the symbol table
-	SymbolType expressionType = typeOfExpression(expression);
 	switch (expressionType) {
 		case INTEGER_TYPE:
-			const SymbolEntry integerEntry = {
-				.identifier = identifier,
-				.type = expressionType, // Assuming the type of the expression is the type of the identifier
-				// .value.integerData = intValue(expression) TODO
-			};
-			insertSymbol(currentCompilerState()->symbolTable, integerEntry);
+			// symbolEntry.value.integerData = intValue(expression) //TODO
+			insertSymbol(currentCompilerState()->symbolTable, symbolEntry);
 			break;
 		case FLOAT_TYPE:
-			const SymbolEntry floatEntry = {
-			.identifier = identifier,
-			.type = expressionType, // Assuming the type of the expression is the type of the identifier
-			// .value.floatData = floatValue(expression) TODO
-			};
-			insertSymbol(currentCompilerState()->symbolTable, floatEntry);
+			// symbolEntry.value.floatData = floatValue(expression) // TODO
+			insertSymbol(currentCompilerState()->symbolTable, symbolEntry);
 			break;
 		case VECTOR_TYPE:
-			const SymbolEntry vectorEntry = {
-			.identifier = identifier,
-			.type = expressionType, // Assuming the type of the expression is the type of the identifier
-			// .value.vectorData = vectorValue(expression), //TODO: beware that the return value of calculate should be correct
-			};
-			insertSymbol(currentCompilerState()->symbolTable, vectorEntry);
+		// symbolEntry.value.vectorData = vectorValue(expression), //TODO: beware that the return value of calculate should be correct
+			insertSymbol(currentCompilerState()->symbolTable, symbolEntry);
 			break;
 		default:
-			logError(_logger, "The identifier '%s' is invalid.", identifier);
-			currentCompilerState()->succeed = false;
+			logError(_logger, "The identifier '%s' has invalid type", identifier);
 			return NULL;
 	}
 	return sentence;

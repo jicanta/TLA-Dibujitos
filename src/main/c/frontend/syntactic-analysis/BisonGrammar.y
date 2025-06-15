@@ -1,6 +1,7 @@
 %{
 
 #include "BisonActions.h"
+#include "AbstractSyntaxTree.h"
 
 %}
 
@@ -169,7 +170,12 @@ sentences: sentences sentence														{ $$ = SentencesSemanticAction($1, $2
 	| %empty                                                            			{ $$ = EmptySentencesSemanticAction(); }
 	;
 
-sentence: IDENTIFIER ASSIGN expression SEMICOLON									{ $$ = AssignSentenceSemanticAction($1, $3); }
+sentence: IDENTIFIER ASSIGN expression SEMICOLON { 
+		$$ = AssignSentenceSemanticAction($1, $3); 
+		if ($$ == NULL) {
+			YYABORT; 
+		}
+	}
 	| IDENTIFIER OPEN_BRACKET CLOSE_BRACKET ASSIGN array SEMICOLON 				 	{ $$ = AssignArraySentenceSemanticAction($1, $5); }
 	| IDENTIFIER OPEN_BRACKET expression CLOSE_BRACKET ASSIGN expression SEMICOLON	{ $$ = AssignArrayElementSentenceSemanticAction($1, $3, $6); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ $$ = IfSentenceSemanticAction($3, $5); }

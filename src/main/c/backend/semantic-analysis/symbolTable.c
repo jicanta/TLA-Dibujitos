@@ -116,7 +116,7 @@ SymbolEntry getSymbolEntry(SymbolTable* symbolTable, const char* identifier) {
 
     SymbolEntry emptyEntry = {0}; // Initialize an empty SymbolEntry
     emptyEntry.identifier = NULL;
-    emptyEntry.type = NULL_TYPE;
+    emptyEntry.type = NULL_TYPE; // Set to an invalid type
     // Initialize other fields of emptyEntry as needed
     return emptyEntry;
 }
@@ -207,7 +207,30 @@ SymbolType typeOfExpressionList(ExpressionList* expr_list) {
 }
 
 SymbolType typeOfFactor(Factor *factor) {
-    return INVALID_TYPE; // TODO: Implement this function
+    SymbolType leftType, rightType = INVALID_TYPE;
+    switch (factor->type) {
+        case IDENTIFIER_FACTOR:
+            return getSymbolEntry(currentCompilerState()->symbolTable, factor->identifier).type;
+
+            break;
+        case INTEGER_FACTOR:
+            return INTEGER_TYPE;
+            break;
+        case DECIMAL_FACTOR:
+            return FLOAT_TYPE;
+            break;
+        case PARENTHESIS_FACTOR:
+            return typeOfExpression(factor->expression);
+            break;
+        case VECTOR_FACTOR:
+            leftType = typeOfExpression(factor->vector->x);
+            rightType = typeOfExpression(factor->vector->y);
+            if(leftType == rightType) {
+                return leftType; // Both expressions in the vector have the same type
+            }
+            break;
+    }
+    return INVALID_TYPE;
 }
 
 static SymbolType typeOfArray(Array* array) {
@@ -292,33 +315,3 @@ SymbolType typeOfExpression(Expression* expression) {
     }
     return INVALID_TYPE;
 }
-// Example usage of the symbol table
-/*
-int main() {
-    SymbolTable symbolTable = createSymbolTable();
-
-    // Create and insert symbols
-    const SymbolEntry entry1 = {"x", INTEGER_TYPE, .value.integerData = 10};
-    insertSymbol(&symbolTable, entry1);
-
-    const SymbolEntry entry2 = {"y", FLOAT_TYPE, .value.floatData = 20.5};
-    insertSymbol(&symbolTable, entry2);
-
-    const SymbolEntry entry3 = {"v", VECTOR_TYPE, .value.vectorData = {1.0, 2.0}};
-    insertSymbol(&symbolTable, entry3);
-
-    // Print the symbol table
-    printSymbolTable(symbolTable);
-
-    // Free the symbol table
-    freeSymbolTable(symbolTable);
-
-    return 0;
-}
-*/
-
-// Uncomment to test the example usage
-/*
-    struct Node* head = NULL;
-    insertSymbol(&head, 10);
-*/

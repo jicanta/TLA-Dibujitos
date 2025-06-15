@@ -100,6 +100,7 @@ SymbolTable *createSymbolTable();
 SymbolEntry getSymbolEntry(SymbolTable* symbolTable, const char* identifier);
 void insertSymbol(SymbolTable* symbolTable, SymbolEntry  data);
 void printSymbolTable( SymbolTable* symbolTable);
+void printSymbolEntry(const SymbolEntry entry);
 void freeSymbolTable( SymbolTable* symbolTable);
 void setDefaultFunctions(SymbolTable* symbolTable);
 SymbolType typeOfExpression(Expression* expression);
