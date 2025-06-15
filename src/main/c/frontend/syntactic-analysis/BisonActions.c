@@ -254,7 +254,7 @@ int functionSemanticAnalyzerCheck(char * identifier, ExpressionList* functionArg
 		if (fnParameterTypes[i] != typeOfExpression(expressionIndexer->expression)) {
 			logError(_logger, "Invalid parameter in function '%s': Should be '%d'.", identifier, fnParameterTypes[i]);
 			currentCompilerState()->succeed = false;
-			return NULL;
+			return 0;
 		}
 		expressionIndexer = expressionIndexer->next;
 	}
@@ -265,7 +265,7 @@ int functionSemanticAnalyzerCheck(char * identifier, ExpressionList* functionArg
 			if (fnParameterTypes[i] != typeOfExpression(expressionIndexer->expression)) {
 				logError(_logger, "Invalid parameter in function '%s': Should be '%d'.", identifier, fnParameterTypes[i]);
 				currentCompilerState()->succeed = false;
-				return NULL;
+				return 0;
 			}
 			expressionIndexer = expressionIndexer->next;
 		}
@@ -322,7 +322,6 @@ Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expressi
 		return NULL;
 	}
 	// Insert the identifier into the symbol table
-	SymbolType expressionType = typeOfExpressionDummy(expression);
 	switch (expressionType) {
 		case INTEGER_TYPE:
 			// symbolEntry.value.integerData = intValue(expression) //TODO
