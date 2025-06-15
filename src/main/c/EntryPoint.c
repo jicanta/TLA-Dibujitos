@@ -45,6 +45,8 @@ const int main(const int count, const char ** arguments) {
 	CompilationStatus compilationStatus = SUCCEED;
 	Program * program = compilerState.abstractSyntaxtTree;
 	if (syntacticAnalysisStatus == ACCEPT) {
+
+		printSymbolTable(compilerState.symbolTable);
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... TODO: Descomentar ------------------------------------------
 		// logDebugging(logger, "Computing expression value...");
