@@ -61,7 +61,6 @@ typedef enum {
 
 typedef struct VectorData {float x; float y;} VectorData;
 
-// DEPRECATED (but could be used for functions and arrays)
 typedef struct BasicType {
     SymbolType type; // Type of the basic type
     union {
