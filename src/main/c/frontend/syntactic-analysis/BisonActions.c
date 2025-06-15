@@ -1,5 +1,7 @@
 #include "BisonActions.h"
 #include "../../shared/CompilerState.h"
+
+#include "BisonParser.h"
 #include "../../backend/semantic-analysis/symbolTable.h"
 
 /* MODULE INTERNAL STATE */
@@ -33,6 +35,20 @@ static void _logSyntacticAnalyzerAction(const char * functionName) {
 
 /* PUBLIC FUNCTIONS */
 
+// TODO: Delete. Right now, this is a dummy function to avoid compilation errors.
+SymbolType typeOfExpressionDummy(Expression* expression) {
+	return INTEGER_TYPE;
+}
+int intValue(Expression* expression) {
+	return 0;
+}
+float floatValue(Expression* expression) {
+	return 0.0f;
+}
+VectorData vectorValue(Expression* expression) {
+	VectorData vector = {0.0f, 0.0f};
+	return vector;
+};
 
 Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
@@ -65,6 +81,17 @@ Expression * ArrayAccessExpressionSemanticAction(Array * array, Expression * ind
 	expression->array = array;
 	expression->indexExpression = indexExpression;
 	expression->type = ARRAY_ACCESS;
+
+	// Semantic Analysis
+
+	// TODO: Check if indexExpression is of type INTEGER_TYPE, not negative and less than the size of the array
+	// const SymbolEntry symbolEntry = getSymbolEntry(currentCompilerState()->symbolTable, array->identifier);
+	// BasicType* arrayElements = symbolEntry.value.arrayData.elements;
+	// int arraySize = 0;
+	// for (; arrayElements[arraySize].type != NULL_TYPE; arraySize++) {
+	// 	// Count the number of elements in the array
+	// }
+	
 	return expression;
 }
 
@@ -73,6 +100,27 @@ Factor * IdentifierFactorSemanticAction(char * identifier) {
 	Factor * factor = calloc(1, sizeof(Factor));
 	factor->identifier = identifier;
 	factor->type = IDENTIFIER_FACTOR;
+
+	// Semantic Analysis
+	const SymbolEntry symbolEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
+	switch (symbolEntry.type) {
+		case INTEGER_TYPE:
+		case FLOAT_TYPE:
+		case VECTOR_TYPE:
+		break;
+		case FUNCTION_TYPE:
+			logError(_logger, "%s is a function", identifier);
+			currentCompilerState()->succeed = false;
+			return NULL;
+		case ARRAY_TYPE:
+			logError(_logger, "%s is an array", identifier);
+			currentCompilerState()->succeed = false;
+			return NULL;
+		default:
+			logError(_logger, "The identifier '%s' is not defined.", identifier);
+			currentCompilerState()->succeed = false;
+			return NULL;
+	}
 	return factor;
 }
 
@@ -99,8 +147,8 @@ Sentence * AssignArrayElementSentenceSemanticAction(char * identifier, Expressio
 	sentence->assignArrayIndexExpression = indexExpression;
 	sentence->assignArrayElementExpression = expression;
 	sentence->type = ASSIGN_ARRAY_ELEMENT_SENTENCE;
-
 	return sentence;
+	// TODO: Semantics needed
 }
 
 Factor * VectorFactorSemanticAction(Vector * vector) {
@@ -172,20 +220,13 @@ Expressions * ExpressionsSemanticAction(Expressions * expressions, Expression * 
 	return expressions_ret;
 }
 
-Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * functionArguments) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Sentence * sentence = calloc(1, sizeof(Sentence));
-	sentence->functionIdentifier = identifier;
-	sentence->functionArguments = functionArguments;
-	sentence->type = FUNCTION_SENTENCE;
-
+int functionSemanticAnalyzerCheck(char * identifier, ExpressionList* functionArguments) {
 	// Semantic Analysis
-
 	const SymbolEntry symbolEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
 	if (symbolEntry.type != FUNCTION_TYPE) {
 		logError(_logger, "The identifier '%s' is not a function.", identifier);
 		currentCompilerState()->succeed = false;
-		return NULL;
+		return 0;
 	}
 
 	const SymbolType* fnParameterTypes = symbolEntry.value.functionData.dataTypes;
@@ -193,11 +234,11 @@ Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * fu
 	// Case where the function has no parameters (ExpressionList should be empty)
 	if (fnParameterTypes[0] == NULL_TYPE) {
 		if (functionArguments->expressions == NULL) {
-			return sentence;
+			return 1;
 		}
 		logError(_logger, "The function '%s' does not expect any parameters.", identifier);
 		currentCompilerState()->succeed = false;
-		return NULL;
+		return 0;
 	}
 
 	// Case where the function has parameters
@@ -207,21 +248,22 @@ Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * fu
 		if (expressionIndexer == NULL) {
 			logError(_logger, "The function '%s' is being called with not enough parameters.", identifier);
 			currentCompilerState()->succeed = false;
-			return NULL;
+			return 0;
 		}
 		// TODO: Uncomment when the type(expression) function is implemented
-		// if (fnParameterTypes[i] != type(expressionIndexer->expression)) {
+		// if (fnParameterTypes[i] != typeOfExpression(expressionIndexer->expression)) {
 		// 	logError(_logger, "Invalid parameter in function '%s': Should be '%d'.", identifier, fnParameterTypes[i]);
 		// 	currentCompilerState()->succeed = false;
 		// 	return NULL;
 		// }
 		expressionIndexer = expressionIndexer->next;
 	}
+	// Additional operations if the function has infinite parameters
 	if (symbolEntry.value.functionData.hasInfiniteParameters) {
 		i--; // Adjust for the last parameter which can be infinite
 		while (expressionIndexer != NULL) {
 			// TODO: Uncomment when the type(expression) function is implemented
-			// if (fnParameterTypes[i] != type(expressionIndexer->expression)) {
+			// if (fnParameterTypes[i] != typeOfExpression(expressionIndexer->expression)) {
 			// 	logError(_logger, "Invalid parameter in function '%s': Should be '%d'.", identifier, fnParameterTypes[i]);
 			// 	currentCompilerState()->succeed = false;
 			// 	return NULL;
@@ -233,11 +275,20 @@ Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * fu
 		if (expressionIndexer != NULL) {
 			logError(_logger, "The function '%s' is being called with too many parameters.", identifier);
 			currentCompilerState()->succeed = false;
-			return NULL;
+			return 0;
 		}
 	}
+	return 1;
+}
 
-	return sentence;
+Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * functionArguments) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Sentence * sentence = calloc(1, sizeof(Sentence));
+	sentence->functionIdentifier = identifier;
+	sentence->functionArguments = functionArguments;
+	sentence->type = FUNCTION_SENTENCE;
+
+	return functionSemanticAnalyzerCheck(identifier, functionArguments)? sentence : NULL;
 }
 
 Sentences * SentencesSemanticAction(Sentences * sentences, Sentence * sentence) {
@@ -264,7 +315,7 @@ Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expressi
 		return NULL;
 	}
 	// Insert the identifier into the symbol table
-	SymbolType expressionType = typeOfExpression(expression);
+	SymbolType expressionType = typeOfExpressionDummy(expression);
 	switch (expressionType) {
 		case INTEGER_TYPE:
 			const SymbolEntry integerEntry = {
@@ -305,6 +356,83 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 	sentence->assignArrayIdentifier = identifier;
 	sentence->assignArray = array;
 	sentence->type = ASSIGN_ARRAY_SENTENCE;
+
+	// Check if the identifier is already defined in the symbol table
+	const SymbolEntry currentEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
+	if (currentEntry.type != NULL_TYPE) {
+		logError(_logger, "The identifier '%s' is already defined.", identifier);
+		currentCompilerState()->succeed = false;
+		return NULL;
+	}
+
+	if (array->type == BASIC_ARRAY) {
+		// Case where the array is empty
+		if (array->expressionList->expressions == NULL) {
+			logError(_logger, "The array '%s' is empty.", identifier);
+			currentCompilerState()->succeed = false;
+			return NULL;
+		}
+
+		BasicType* arrayElements = malloc(sizeof(SymbolEntry) * 100); // Assuming a maximum of 100 elements for simplicity
+
+		Expressions* expressionsIndex = array->expressionList->expressions;
+		SymbolType t = typeOfExpressionDummy(expressionsIndex->expression);
+
+		// Check if all expressions in the array are of the same type
+		for (int i=0; expressionsIndex != NULL; i++) {
+			if (t != typeOfExpressionDummy(expressionsIndex->expression)) {
+				logError(_logger, "The array '%s' has elements of different types.", identifier);
+				currentCompilerState()->succeed = false;
+				return NULL;
+			}
+			BasicType arrayElement = {
+				.type = t, // Assuming the type of the array is the type of the elements
+				.value.integerData = intValue(expressionsIndex->expression), // Assuming integer for simplicity
+			};
+			arrayElements[i] = arrayElement;
+			expressionsIndex = expressionsIndex->next;
+		}
+
+		const SymbolEntry entry = {
+			.identifier = identifier,
+			.type = ARRAY_TYPE, // Assuming the type of the array is ARRAY_TYPE
+			.value.arrayData = {
+				.elements = arrayElements, // This will be filled later when the array is defined
+				.dataType = array->type // Assuming the type of the array is the type of the identifier
+			}
+		};
+		insertSymbol(currentCompilerState()->symbolTable, entry);
+	} else if (array->type == IDENTIFIER_ARRAY) {
+
+		SymbolEntry otherArrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, array->identifier);
+		if (otherArrayEntry.type == NULL_TYPE) {
+			logError(_logger, "The identifier '%s' is not defined.", otherArrayEntry.identifier);
+			currentCompilerState()->succeed = false;
+			return NULL;
+		}
+
+		 SymbolEntry entry = {
+			.identifier = identifier,
+			.type = ARRAY_TYPE, // Assuming the type of the array is ARRAY_TYPE
+			.value.arrayData = {
+				.elements = otherArrayEntry.value.arrayData.elements, // Pointing to the same elements as the other array
+				.dataType = array->type // Assuming the type of the array is the type of the identifier
+			}
+		};
+		insertSymbol(currentCompilerState()->symbolTable, entry);
+	}
+	else if (array->type == INTERVAL_ARRAY) {
+		// Interval arrays are not supported yet
+		logError(_logger, "Interval arrays are not supported yet.");
+		currentCompilerState()->succeed = false;
+		return NULL;
+	} else {
+		logError(_logger, "The array '%s' is invalid.", identifier);
+		currentCompilerState()->succeed = false;
+		return NULL;
+	}
+
+
 	return sentence;
 }
 
@@ -351,6 +479,7 @@ Sentence * IfSentenceSemanticAction(BoolExpression * boolExpression, Block * blo
 	sentence->ifBlock = block;
 	sentence->type = IF_SENTENCE;
 	return sentence;
+	// TODO: Semantics needed
 }
 
 Sentence * ForSentenceSemanticAction(char * identifier, Array * array, Block * block) {
@@ -361,6 +490,7 @@ Sentence * ForSentenceSemanticAction(char * identifier, Array * array, Block * b
 	sentence->forBlock = block;
 	sentence->type = FOR_SENTENCE;
 	return sentence;
+	// TODO: Semantics needed
 }
 
 Sentence * IfElseSentenceSemanticAction(BoolExpression * boolExpression, Block * leftBlock, Block * rightBlock) {
@@ -371,6 +501,7 @@ Sentence * IfElseSentenceSemanticAction(BoolExpression * boolExpression, Block *
 	sentence->rightIfElseBlock = rightBlock;
 	sentence->type = IF_ELSE_SENTENCE;
 	return sentence;
+	// TODO: Semantics needed
 }
 
 Block * BlockSemanticAction(Sentences * sentences) {
@@ -394,6 +525,14 @@ Array * IdentifierArraySemanticAction(char * identifier) {
 	Array * array = calloc(1, sizeof(Array));
 	array->identifier = identifier;
 	array->type = IDENTIFIER_ARRAY;
+
+	// Semantic Analysis
+	const SymbolEntry symbolEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
+	if (symbolEntry.type != ARRAY_TYPE) {
+		logError(_logger, "The identifier '%s' is not an array.", identifier);
+		currentCompilerState()->succeed = false;
+		return NULL;
+	}
 	return array;
 }
 
@@ -453,7 +592,7 @@ Expression * FunctionExpressionSemanticAction(char * identifier, ExpressionList 
 	expression->functionIdentifier = identifier;
 	expression->functionArguments = functionArguments;
 	expression->type = FUNCTION_EXPRESSION;
-	return expression;
+	return functionSemanticAnalyzerCheck(identifier, functionArguments)? expression : NULL;
 }
 
 Sentence * ImportSentenceSemanticAction(StringPartList * importPath) {

@@ -7,7 +7,7 @@ el objetivo de esta etapa seria:
     - meter las variables declaradas
     - resolver tipos de datos de las expresiones
     - detectar el uso de variables inexistentes
-    - detectar operaciones incompatibles sobre tipos de datos 
+    - detectar operaciones incompatibles sobre tipos de datos
         ejemplo: funcion + 3;
         ejemplo: numero();
     - ver si hacer scopes
@@ -27,8 +27,17 @@ numero  INTEGER     3
 struct de funcion
 lista de tipos: int (retorno), float (param1), float (param2)
 
-*/
 
+Notas Alex:
+- Verificar tipos en funciones CON RETORNO
+- Manejar Scopes (FOR, IF ELSE)
+- - Leer el documento de scopes
+- Otros casos derivados:
+- - ¿Qué errores pueden aparecer al manejar arrays en FORs?
+- - Error de buscar en un array un valor demasiado alto
+- - Error de buscar en un array un valor negativo
+
+*/
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
@@ -52,6 +61,7 @@ typedef enum {
 
 typedef struct VectorData {float x; float y;} VectorData;
 
+// DEPRECATED (but could be used for functions and arrays)
 typedef struct BasicType {
     SymbolType type; // Type of the basic type
     union {
