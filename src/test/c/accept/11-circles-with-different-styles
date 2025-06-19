@@ -3,6 +3,6 @@ idx = 0;
 for c in colores {
     stroke(2);
     fill(c);
-    circle((0,0), 70 - idx*10);
+    circle((0,0), 70. - idx*10);
     idx = idx + 1;
 }

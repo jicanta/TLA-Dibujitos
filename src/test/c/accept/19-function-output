@@ -1,2 +1,2 @@
-foo = sqrt(169);
+foo = sqrt(169.);
 log "sqrt(169)={foo}";	

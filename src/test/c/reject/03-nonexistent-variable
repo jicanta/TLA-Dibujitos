@@ -1,3 +1,1 @@
 foo = bar;
-// Nota: en el stage II, aún no podemos detectar el error de variable no existente.
-// En el stage III (Backend), se detecta el mismo.

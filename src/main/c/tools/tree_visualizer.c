@@ -315,8 +315,8 @@ static void print_expression_list(ExpressionList* expr_list, int level, bool is_
 static void print_expressions(Expressions* expressions, int level, bool is_last) {
     if (!expressions) return;
     
-    print_expressions(expressions->next, level, false);
     print_expression(expressions->expression, level, is_last);
+    print_expressions(expressions->next, level, false);
 }
 
 static void print_string_part_list(StringPartList* string_part_list, int level, bool is_last) {

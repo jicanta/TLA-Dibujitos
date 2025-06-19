@@ -1,8 +1,8 @@
-#include "symbolTable.h"
-// #include "./../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
+#include "SymbolTable.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 /*
 // Hash function (by Daniel J. Bernstein)
 unsigned long hash(const char* str) {
@@ -70,7 +70,42 @@ void printSymbolEntry(const SymbolEntry entry) {
             printf("[(function) %s: {ret: %d, params: ...}]", entry.identifier, entry.value.functionData.returnType);
             break;
         case ARRAY_TYPE:
-            printf("[(array) %s: {type: %d, elems: ...}]", entry.identifier, entry.value.arrayData.dataType);
+            printf("[(array) %s: {type: %d, elems:", entry.identifier, entry.value.arrayData.dataType);
+            switch (entry.value.arrayData.dataType) {
+            case IDENTIFIER_ARRAY:
+                /* code */
+                break;
+            case INTERVAL_ARRAY:
+                printf(" (interval) {left: %d, right: %d}",
+                    entry.value.arrayData.elements[0].value.integerData,
+                    entry.value.arrayData.elements[1].value.integerData);
+                break;
+            case BASIC_ARRAY:
+                BasicType *arrayElements = entry.value.arrayData.elements;
+                for(int i = 0; i < entry.value.arrayData.size; i++) {
+                    if (i > 0) {
+                        printf(", ");
+                    }
+                    switch (arrayElements[i].type) {
+                        case INTEGER_TYPE:
+                            printf("%d", arrayElements[i].value.integerData);
+                            break;
+                        case FLOAT_TYPE:
+                            printf("%.2f", arrayElements[i].value.floatData);
+                            break;
+                        case VECTOR_TYPE:
+                            printf("{%.2f, %.2f}", arrayElements[i].value.vectorData.x, arrayElements[i].value.vectorData.y);
+                            break;
+                        default:
+                            printf("(unknown type)");
+                            break;
+                    }
+                }
+                break;
+            default:
+                break;
+            }
+            printf("}]");
             break;
         default:
             printf("[(unknown) %s]", entry.identifier);
@@ -132,6 +167,18 @@ SymbolEntry getSymbolEntry(SymbolTable* symbolTable, const char* identifier) {
     return emptyEntry;
 }
 
+void updateSymbol(SymbolTable* symbolTable, const SymbolEntry data) {
+    SymbolEntryNode* head = symbolTable->head;
+    
+    while (head != NULL) {
+        if (strcmp(head->entry.identifier, data.identifier) == 0) {
+            head->entry.value = data.value;
+            return;
+        }
+        head = head->next;
+    }
+}
+
 // Function to check if a symbol exists in the table
 int symbolExists(SymbolTable* symbolTable, const char* identifier) {
     SymbolEntryNode* head = symbolTable->head;
@@ -179,10 +226,41 @@ void setDefaultColors(SymbolTable* symbolTable) {
         .type = INTEGER_TYPE,
         .value.integerData = 0x000000 // Hexadecimal representation of black color
     });
+
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "INVISIBLE",
         .type = INTEGER_TYPE,
-        .value.integerData = 0x000000 // Hexadecimal representation of black color
+        .value.integerData = 0x000000 // TODO
+    });
+
+    insertSymbol(symbolTable, (SymbolEntry){
+        .identifier = "ORANGE",
+        .type = INTEGER_TYPE,
+        .value.integerData = 0xFFA500 // Hexadecimal representation of orange color
+    });
+
+    insertSymbol(symbolTable, (SymbolEntry){
+        .identifier = "INDIGO",
+        .type = INTEGER_TYPE,
+        .value.integerData = 0x4B0082 // Hexadecimal representation of indigo color
+    });
+
+    insertSymbol(symbolTable, (SymbolEntry){
+        .identifier = "PURPLE",
+        .type = INTEGER_TYPE,
+        .value.integerData = 0x800080 // Hexadecimal representation of purple color
+    });
+
+    insertSymbol(symbolTable, (SymbolEntry){
+        .identifier = "BACK",
+        .type = INTEGER_TYPE,
+        .value.integerData = 0 
+    });
+
+    insertSymbol(symbolTable, (SymbolEntry){
+        .identifier = "FRONT",
+        .type = INTEGER_TYPE,
+        .value.integerData = 1
     });
 }
 // Function to set all default functions
@@ -245,6 +323,33 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
     };
     insertSymbol(symbolTable, strokeFunction);
 
+    SymbolType* zDataTypes = malloc(1 * sizeof(SymbolType));
+    zDataTypes[0] = INTEGER_TYPE;  // TODO: replace with HEX data type
+    const SymbolEntry zFunction = {
+        .identifier = "layer",
+        .type = FUNCTION_TYPE,
+        .value.functionData = {
+            .parameterType = zDataTypes,
+            .parameterCount = 1,
+            .returnType = NULL_TYPE,
+            .functionPointer = NULL // Set to the actual function pointer later
+        }
+    };
+    insertSymbol(symbolTable, zFunction);
+
+    SymbolType* sqrtDataTypes = malloc(1 * sizeof(SymbolType));
+    sqrtDataTypes[0] = FLOAT_TYPE;  // TODO: replace with HEX data type
+    const SymbolEntry sqrtFunction = {
+        .identifier = "sqrt",
+        .type = FUNCTION_TYPE,
+        .value.functionData = {
+            .parameterType = sqrtDataTypes,
+            .parameterCount = 1,
+            .returnType = FLOAT_TYPE,
+            .functionPointer = NULL // Set to the actual function pointer later
+        }
+    };
+    insertSymbol(symbolTable, sqrtFunction);
 }
 
 
@@ -344,13 +449,13 @@ SymbolType typeOfExpression(Expression* expression) {
             return typeOfFactor(expression->factor);
             break;
         case ARRAY_ACCESS:
-            resultType1 = typeOfArray(expression->array);
             resultType2 = typeOfExpression(expression->indexExpression);
-            if (resultType2 != INTEGER_TYPE || resultType1 != ARRAY_TYPE) {
+            SymbolEntry arrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, expression->array->identifier); // Get the symbol entry for the array            
+            if (resultType2 != INTEGER_TYPE) {
                 return INVALID_TYPE; // Index must be an integer
             }
-
-            return ARRAY_TYPE; // Return the type of the array
+        
+            return arrayEntry.value.arrayData.elements[0].type; // Return the type of the array
 
             break;
         case FUNCTION_EXPRESSION:
@@ -387,6 +492,7 @@ int intValueFactor(Factor* factor) {
 }
 
 int intValueExpression(Expression* expression) {
+    int divisor = 0; // Declare divisor outside the switch to avoid re-declaration
     switch (expression->type)  // Check the type of the factor
     {
     case ADDITION:
@@ -396,17 +502,35 @@ int intValueExpression(Expression* expression) {
     case MULTIPLICATION:
         return intValueExpression(expression->leftExpression) * intValueExpression(expression->rightExpression);
     case DIVISION: // Note: Division by zero should be handled elsewhere
-        return intValueExpression(expression->leftExpression) / intValueExpression(expression->rightExpression);
+        divisor = intValueExpression(expression->rightExpression);
+        if (divisor == 0) { // int equals sin delta ????
+            currentCompilerState()->succeed = false; // Set the state to fail
+            return 0;
+        }
+        return intValueExpression(expression->leftExpression) / divisor;
     case MODULUS:
-        return intValueExpression(expression->leftExpression) % intValueExpression(expression->rightExpression);
+        divisor = intValueExpression(expression->rightExpression);
+        if (divisor == 0) { // int equals sin delta ????
+            currentCompilerState()->succeed = false; // Set the state to fail
+            return 0;
+        }
+        return intValueExpression(expression->leftExpression) % divisor;
     case FACTOR:
         return intValueFactor(expression->factor);
     case GET_X:
-        return intValueExpression(expression->factor->vector->x);
+        return vectorValueExpression(expression->expression).x;
     case GET_Y:
-        return intValueExpression(expression->factor->vector->y);
+        return vectorValueExpression(expression->expression).y;
     case ARRAY_ACCESS:
-        // Assuming the array is of type INTEGER_TYPE and the index is valid
+        SymbolEntry arrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, expression->array->identifier);
+        int index = intValueExpression(expression->indexExpression);
+        int size = arrayEntry.value.arrayData.size;
+        if (index < 0 || index >= size) {
+            //fprintf(stderr, "Index out of bounds for array[%d] accessed index %d\n", size, index);
+            currentCompilerState()->succeed = false;
+            return 0; // Handle
+        }
+        return arrayEntry.value.arrayData.elements[index].value.integerData; // Return the integer value at the index
     case FUNCTION_EXPRESSION:
         // Assuming the function returns an integer value
         break;
@@ -444,20 +568,26 @@ float floatValueExpression(Expression* expression) {
     case MULTIPLICATION:
         return floatValueExpression(expression->leftExpression) * floatValueExpression(expression->rightExpression);
     case DIVISION: // Note: Division by zero should be handled elsewhere
-        return floatValueExpression(expression->leftExpression) / floatValueExpression(expression->rightExpression);
+        float divisor = floatValueExpression(expression->rightExpression);
+        if (divisor == 0.0f) { // float equals sin delta ????
+            return NAN; // Handle division by zero
+        }
+        return floatValueExpression(expression->leftExpression) / divisor;
     case FACTOR:
         return floatValueFactor(expression->factor);
     case GET_X:
-        return floatValueExpression(expression->factor->vector->x);
+        return vectorValueExpression(expression->expression).x;
     case GET_Y:
-        return floatValueExpression(expression->factor->vector->y); 
+        return vectorValueExpression(expression->expression).y;
     case ARRAY_ACCESS:
+        SymbolEntry arrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, expression->array->identifier);
         int index = intValueExpression(expression->indexExpression);
-        Expressions* arrayElements = expression->array->expressionList->expressions;
-        while(index-- && arrayElements != NULL) {
-            arrayElements = arrayElements->next; // Move to the next element in the list
-        } // TODO
-        return floatValueExpression(arrayElements->expression);  
+        int size = arrayEntry.value.arrayData.size;
+        if (index < 0 || index >= size) {
+            //fprintf(stderr, "Index out of bounds for array[%d] accessed index %d\n", size, index);
+            return NAN; // Handle
+        }
+        return arrayEntry.value.arrayData.elements[index].value.floatData; // Return the integer value at the index
 
     case FUNCTION_EXPRESSION:
         // Assuming the function returns a float value
@@ -513,7 +643,7 @@ VectorData vectorValueExpression(Expression *expression) {
         // TODO
         break;
     case DIVISION: 
-        // TODO ERROR
+        vectorData.x = NAN;
         break;
     case FACTOR:
         vectorData = vectorValueFactor(expression->factor);

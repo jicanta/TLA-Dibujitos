@@ -1,6 +1,6 @@
 #include "BisonActions.h"
 #include "../../shared/CompilerState.h"
-
+#include <math.h>
 #include "BisonParser.h"
 #include "../../backend/semantic-analysis/symbolTable.h"
 
@@ -231,12 +231,12 @@ int functionSemanticAnalyzerCheck(char * identifier, ExpressionList* functionArg
 	// Case where the function has parameters
 	const Expressions* expressionIndexer = functionArguments->expressions;
 	int i=0;
-	for (i=1; i <= parameterCount; i++) {
+	for (i=0; i < parameterCount; i++) {
 		if (expressionIndexer == NULL) {
 			logError(_logger, "The function '%s' is being called with not enough parameters.", identifier);
 			return false;
 		}
-		SymbolType paramenterType = fnParameterTypes[parameterCount - i];
+		SymbolType paramenterType = fnParameterTypes[i];
 		SymbolType expressionType = typeOfExpression(expressionIndexer->expression);
 		if (paramenterType != expressionType) {
 			logError(_logger, "Invalid parameter in function '%s': Should be '%s' but found '%s'", identifier, symbolTypeToString(paramenterType), symbolTypeToString(expressionType));
@@ -246,7 +246,7 @@ int functionSemanticAnalyzerCheck(char * identifier, ExpressionList* functionArg
 	}
 	// Additional operations if the function has infinite parameters
 	if (parameterCount == -1) { // TODO: lo rompi :p
-		i--; // Adjust for the last parameter which can be infinite
+		i = 0; // Adjust for the last parameter which can be infinite
 		while (expressionIndexer != NULL) {
 			if (fnParameterTypes[i] != typeOfExpression(expressionIndexer->expression)) {
 				logError(_logger, "Invalid parameter in function '%s': Should be '%s'.", identifier, symbolTypeToString(fnParameterTypes[i]));
@@ -298,30 +298,51 @@ Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expressi
 	const SymbolEntry currentEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
 	if (currentEntry.type != NULL_TYPE && currentEntry.type != expressionType) {
 		logError(_logger, "The identifier '%s' has type mismatch", identifier);
-		printSymbolEntry(currentEntry);
-		printSymbolEntry(symbolEntry);
-		puts("");
+		return NULL;
+	}
+	if (expressionType == INVALID_TYPE) {
 		return NULL;
 	}
 	// Insert the identifier into the symbol table
 	switch (expressionType) {
 		case INTEGER_TYPE:
+			currentCompilerState()->succeed = true;
 			symbolEntry.value.integerData = intValueExpression(expression);
+			if(currentCompilerState()->succeed == false) {
+				logError(_logger, "The integer '%s' has invalid value.", identifier);
+				releaseExpression(expression);
+				return NULL;
+			}
 			break;
 		case FLOAT_TYPE:
 			symbolEntry.value.floatData = floatValueExpression(expression);
+			if(isnan(symbolEntry.value.floatData)) {
+				logError(_logger, "The float '%s' has invalid value.", identifier);
+				releaseExpression(expression);
+				return NULL;
+			}
 			break;
 		case VECTOR_TYPE:
 			symbolEntry.value.vectorData = vectorValueExpression(expression);
+			if (isnan(symbolEntry.value.vectorData.x)) {
+				logError(_logger, "The vector '%s' has invalid values. ", identifier);
+				releaseExpression(expression);
+				return NULL;
+			}
 			break;
 		default:
+			break;
 			logError(_logger, "The identifier '%s' has invalid type", identifier);
-			currentCompilerState()->succeed = false;
 			free(identifier);
 			releaseExpression(expression);
 			return NULL;
 	}
-	insertSymbol(currentCompilerState()->symbolTable, symbolEntry);
+	if (currentEntry.type == NULL_TYPE) {
+		insertSymbol(currentCompilerState()->symbolTable, symbolEntry);
+	}
+	else {
+		updateSymbol(currentCompilerState()->symbolTable, symbolEntry);
+	}
 
 	Sentence * sentence = calloc(1, sizeof(Sentence));
 	sentence->assignIdentifier = identifier;
@@ -361,7 +382,8 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 		SymbolType t = typeOfExpression(expressionsIndex->expression);
 
 		// Check if all expressions in the array are of the same type
-		for (int i=0; expressionsIndex != NULL; i++) {
+		int i = 0;
+		for (; expressionsIndex != NULL; i++) {
 			if (t != typeOfExpression(expressionsIndex->expression)) {
 				logError(_logger, "The array '%s' has elements of different types.", identifier);
 				currentCompilerState()->succeed = false;
@@ -380,7 +402,8 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 			.type = ARRAY_TYPE, // Assuming the type of the array is ARRAY_TYPE
 			.value.arrayData = {
 				.elements = arrayElements, // This will be filled later when the array is defined
-				.dataType = array->type // Assuming the type of the array is the type of the identifier
+				.dataType = array->type, // Assuming the type of the array is the type of the identifier
+				.size = i // Set the size of the array
 			}
 		};
 		insertSymbol(currentCompilerState()->symbolTable, entry);
@@ -462,6 +485,31 @@ Sentence * IfSentenceSemanticAction(BoolExpression * boolExpression, Block * blo
 	sentence->type = IF_SENTENCE;
 	return sentence;
 	// TODO: Semantics needed
+}
+
+void InsertForLoopIterator(char * identifier, Array * array) {
+	SymbolType elementType = INVALID_TYPE;
+	switch (array->type)
+	{
+		case IDENTIFIER_ARRAY:
+		SymbolEntry arrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, array->identifier);
+		elementType = arrayEntry.value.arrayData.elements[0].type;
+		/* code */
+		break;
+	case INTERVAL_ARRAY:
+		/* code */
+		break;
+	case BASIC_ARRAY:
+		/* code */
+	default:
+		break;
+	}
+	
+	insertSymbol(currentCompilerState()->symbolTable, (SymbolEntry) {
+		.identifier = identifier,
+		.type = elementType, // Assuming the type of the array is ARRAY_TYPE
+		// .value.arrayData = arrayEntry.value.arrayData[0]
+	});
 }
 
 Sentence * ForSentenceSemanticAction(char * identifier, Array * array, Block * block) {

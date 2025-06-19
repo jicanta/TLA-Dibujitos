@@ -190,7 +190,9 @@ sentence: IDENTIFIER ASSIGN expression SEMICOLON {
 	}
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ $$ = IfSentenceSemanticAction($3, $5); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
-	| FOR IDENTIFIER IN array block													{ $$ = ForSentenceSemanticAction($2, $4, $5); }
+	| FOR IDENTIFIER IN array {
+		InsertForLoopIterator($2, $4);
+	} block																			{ $$ = ForSentenceSemanticAction($2, $4, $6); }
 	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ $$ = FunctionSentenceSemanticAction($1, $3); }
 	| LOG BEGIN_STRING string_part_list END_STRING SEMICOLON						{ $$ = LogSentenceSemanticAction($3); }
 	| IMPORT BEGIN_STRING string_part_list END_STRING SEMICOLON						{ $$ = ImportSentenceSemanticAction($3); }
@@ -234,7 +236,7 @@ bool_factor: OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS						{ $$ = Bool
 	;
 
 
-expressions: expressions[left] COMMA expression[right]								{ $$ = ExpressionsSemanticAction($left, $right); }
+expressions: expression COMMA expressions											{ $$ = ExpressionsSemanticAction($3, $1); }
 	| expression																	{ $$ = ExpressionsSemanticAction(NULL, $1); }
 	;
 
