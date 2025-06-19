@@ -113,7 +113,8 @@ void printSymbolEntry(const SymbolEntry entry);
 void freeSymbolTable( SymbolTable* symbolTable);
 void setDefaultFunctions(SymbolTable* symbolTable);
 SymbolType typeOfExpression(Expression* expression);
-// BasicType calculate(Expression* expression);
+int intValueExpression(Expression* expression);
+float floatValueExpression(Expression* expression);
 
 
 /* LISTA DE CONSTANTES PREDEFINIDAS

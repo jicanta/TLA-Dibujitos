@@ -97,9 +97,6 @@ Expression * ArrayAccessExpressionSemanticAction(Array * array, Expression * ind
 
 Factor * IdentifierFactorSemanticAction(char * identifier) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Factor * factor = calloc(1, sizeof(Factor));
-	factor->identifier = identifier;
-	factor->type = IDENTIFIER_FACTOR;
 
 	// Semantic Analysis
 	const SymbolEntry symbolEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
@@ -110,17 +107,21 @@ Factor * IdentifierFactorSemanticAction(char * identifier) {
 		break;
 		case FUNCTION_TYPE:
 			logError(_logger, "%s is a function", identifier);
-			currentCompilerState()->succeed = false;
+			free(identifier);
 			return NULL;
-		case ARRAY_TYPE:
+			case ARRAY_TYPE:
 			logError(_logger, "%s is an array", identifier);
-			currentCompilerState()->succeed = false;
+			free(identifier);
 			return NULL;
-		default:
+			default:
 			logError(_logger, "The identifier '%s' is not defined.", identifier);
-			currentCompilerState()->succeed = false;
+			free(identifier);
 			return NULL;
 	}
+
+	Factor * factor = calloc(1, sizeof(Factor));
+	factor->identifier = identifier;
+	factor->type = IDENTIFIER_FACTOR;
 	return factor;
 }
 
@@ -194,7 +195,7 @@ Program * SentencesProgramSemanticAction(CompilerState * compilerState, Sentence
 Sentences * EmptySentencesSemanticAction() {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Sentences * sentences = calloc(1, sizeof(Sentences));
-    // Initialize fields to represent an empty state, if necessary.
+
     return sentences;
 }
 
@@ -208,7 +209,7 @@ ExpressionList * FilledExpressionListSemanticAction(Expressions * expressions) {
 ExpressionList * EmptyExpressionListSemanticAction() {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     ExpressionList * expressionList = calloc(1, sizeof(ExpressionList));
-    // Initialize fields to represent an empty state, if necessary.
+
     return expressionList;
 }
 
@@ -300,18 +301,14 @@ Sentences * SentencesSemanticAction(Sentences * sentences, Sentence * sentence) 
 
 Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Sentence * sentence = calloc(1, sizeof(Sentence));
-	sentence->assignIdentifier = identifier;
-	sentence->assignExpression = expression;
-	sentence->type = ASSIGN_SENTENCE;
 
 	// Semantic Analysis
-	SymbolType expressionType = typeOfExpression(expression);
+	SymbolType expressionType = INVALID_TYPE;
+	expressionType = typeOfExpression(expression);
 	SymbolEntry symbolEntry = {
 		.identifier = identifier,
 		.type = expressionType, // Assuming the type of the expression is the type of the identifier
 	};
-	// printSymbolEntry(symbolEntry);
 	
 	const SymbolEntry currentEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
 	if (currentEntry.type != NULL_TYPE && currentEntry.type != expressionType) {
@@ -324,21 +321,28 @@ Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expressi
 	// Insert the identifier into the symbol table
 	switch (expressionType) {
 		case INTEGER_TYPE:
-			// symbolEntry.value.integerData = intValue(expression) //TODO
-			insertSymbol(currentCompilerState()->symbolTable, symbolEntry);
+			symbolEntry.value.integerData = intValueExpression(expression);
 			break;
 		case FLOAT_TYPE:
-			// symbolEntry.value.floatData = floatValue(expression) // TODO
-			insertSymbol(currentCompilerState()->symbolTable, symbolEntry);
+			symbolEntry.value.floatData = floatValueExpression(expression);
 			break;
 		case VECTOR_TYPE:
 		// symbolEntry.value.vectorData = vectorValue(expression), //TODO: beware that the return value of calculate should be correct
-			insertSymbol(currentCompilerState()->symbolTable, symbolEntry);
 			break;
 		default:
 			logError(_logger, "The identifier '%s' has invalid type", identifier);
+			currentCompilerState()->succeed = false;
+			free(identifier);
+			releaseExpression(expression);
 			return NULL;
 	}
+	insertSymbol(currentCompilerState()->symbolTable, symbolEntry);
+
+	Sentence * sentence = calloc(1, sizeof(Sentence));
+	sentence->assignIdentifier = identifier;
+	sentence->assignExpression = expression;
+	sentence->type = ASSIGN_SENTENCE;
+
 	return sentence;
 }
 

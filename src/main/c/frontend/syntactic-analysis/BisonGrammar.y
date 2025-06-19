@@ -166,7 +166,7 @@ program: sentences																	{ $$ = SentencesProgramSemanticAction(current
 	;
 
 
-sentences: sentences sentence														{ $$ = SentencesSemanticAction($1, $2); }
+sentences: sentences sentence 														{ $$ = SentencesSemanticAction($1, $2); }
 	| %empty                                                            			{ $$ = EmptySentencesSemanticAction(); }
 	;
 
@@ -176,8 +176,18 @@ sentence: IDENTIFIER ASSIGN expression SEMICOLON {
 			YYABORT; 
 		}
 	}
-	| IDENTIFIER OPEN_BRACKET CLOSE_BRACKET ASSIGN array SEMICOLON 				 	{ $$ = AssignArraySentenceSemanticAction($1, $5); }
-	| IDENTIFIER OPEN_BRACKET expression CLOSE_BRACKET ASSIGN expression SEMICOLON	{ $$ = AssignArrayElementSentenceSemanticAction($1, $3, $6); }
+	| IDENTIFIER OPEN_BRACKET CLOSE_BRACKET ASSIGN array SEMICOLON { 
+		$$ = AssignArraySentenceSemanticAction($1, $5); 
+		if ($$ == NULL) {
+			YYABORT; 
+		}
+	}
+	| IDENTIFIER OPEN_BRACKET expression CLOSE_BRACKET ASSIGN expression SEMICOLON { 
+		$$ = AssignArrayElementSentenceSemanticAction($1, $3, $6);
+		if ($$ == NULL) {
+			YYABORT;
+		}
+	}
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ $$ = IfSentenceSemanticAction($3, $5); }
 	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
 	| FOR IDENTIFIER IN array block													{ $$ = ForSentenceSemanticAction($2, $4, $5); }
@@ -240,7 +250,7 @@ expression: expression[left] ADD expression[right]									{ $$ = ArithmeticExpr
 	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS					{ $$ = FunctionExpressionSemanticAction($1, $3); }
 	;
 
-factor: IDENTIFIER																	{ $$ = IdentifierFactorSemanticAction($1); }
+factor: IDENTIFIER 																	{ $$ = IdentifierFactorSemanticAction($1); }
 	| INTEGER																		{ $$ = IntegerFactorSemanticAction($1); }
 	| DECIMAL																		{ $$ = DecimalFactorSemanticAction($1); }
 	| vector																		{ $$ = VectorFactorSemanticAction($1); }

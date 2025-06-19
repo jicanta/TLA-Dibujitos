@@ -208,10 +208,10 @@ SymbolType typeOfExpressionList(ExpressionList* expr_list) {
 
 SymbolType typeOfFactor(Factor *factor) {
     SymbolType leftType, rightType = INVALID_TYPE;
+    if(factor == NULL) return INVALID_TYPE; // Check for NULL factor
     switch (factor->type) {
         case IDENTIFIER_FACTOR:
             return getSymbolEntry(currentCompilerState()->symbolTable, factor->identifier).type;
-
             break;
         case INTEGER_FACTOR:
             return INTEGER_TYPE;
@@ -314,4 +314,102 @@ SymbolType typeOfExpression(Expression* expression) {
             break;
     }
     return INVALID_TYPE;
+}
+
+int intValueFactor(Factor* factor) {
+    switch (factor->type)  // Check the type of the factor
+    {
+    case IDENTIFIER_FACTOR:
+        return getSymbolEntry(currentCompilerState()->symbolTable, factor->identifier).value.integerData;
+    case INTEGER_FACTOR:
+        return factor->integerExpression;
+    case DECIMAL_FACTOR:
+        return (int)factor->floatExpression; // Convert float to int
+    case PARENTHESIS_FACTOR:
+        return intValueExpression(factor->expression);
+    case VECTOR_FACTOR:
+        // Assuming the vector has x and y as integer values
+        // return (int)factor->vector->x + (int)factor->vector->y; // Example: sum of x and y
+    default:
+        break;
+    }
+    return 0; // Default case if no valid factor is found
+}
+
+int intValueExpression(Expression* expression) {
+    switch (expression->type)  // Check the type of the factor
+    {
+    case ADDITION:
+        return intValueExpression(expression->leftExpression) + intValueExpression(expression->rightExpression);
+    case SUBTRACTION:
+        return intValueExpression(expression->leftExpression) - intValueExpression(expression->rightExpression);
+    case MULTIPLICATION:
+        return intValueExpression(expression->leftExpression) * intValueExpression(expression->rightExpression);
+    case DIVISION: // Note: Division by zero should be handled elsewhere
+        return intValueExpression(expression->leftExpression) / intValueExpression(expression->rightExpression);
+    case MODULUS:
+        return intValueExpression(expression->leftExpression) % intValueExpression(expression->rightExpression);
+    case FACTOR:
+        return intValueFactor(expression->factor);
+    case GET_X:
+        return expression->factor->vector->x; // Assuming the vector has x and y as integer values
+    case GET_Y:
+        return expression->factor->vector->y; // Assuming the vector has x and y as integer values
+    case ARRAY_ACCESS:
+        // Assuming the array is of type INTEGER_TYPE and the index is valid
+    case FUNCTION_EXPRESSION:
+        // Assuming the function returns an integer value
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
+float floatValueFactor(Factor* factor) {
+    switch (factor->type)  // Check the type of the factor
+    {
+    case IDENTIFIER_FACTOR:
+        return getSymbolEntry(currentCompilerState()->symbolTable, factor->identifier).value.floatData;
+    case INTEGER_FACTOR:
+        return (float)factor->integerExpression; // Convert int to float
+    case DECIMAL_FACTOR:
+        return factor->floatExpression;
+    case PARENTHESIS_FACTOR:
+        return floatValueExpression(factor->expression);
+    case VECTOR_FACTOR:
+        // Assuming the vector has x and y as float values
+        // return factor->vector->x + factor->vector->y; // Example: sum of x and y
+    default:
+        break;
+    }
+    return 0.0f; // Default case if no valid factor is found
+}
+
+float floatValueExpression(Expression* expression) {
+    switch (expression->type)  // Check the type of the factor
+    {
+    case ADDITION:
+        return floatValueExpression(expression->leftExpression) + floatValueExpression(expression->rightExpression);
+    case SUBTRACTION:
+        return floatValueExpression(expression->leftExpression) - floatValueExpression(expression->rightExpression);
+    case MULTIPLICATION:
+        return floatValueExpression(expression->leftExpression) * floatValueExpression(expression->rightExpression);
+    case DIVISION: // Note: Division by zero should be handled elsewhere
+        return floatValueExpression(expression->leftExpression) / floatValueExpression(expression->rightExpression);
+    case FACTOR:
+        return floatValueFactor(expression->factor);
+    case GET_X:
+        // return expression->factor->vector->x; // Assuming the vector has x and y as float values
+    case GET_Y:
+        // return expression->factor->vector->y; // Assuming the vector has x and y as float values
+    case ARRAY_ACCESS:
+        // Assuming the array is of type FLOAT_TYPE and the index is valid
+    case FUNCTION_EXPRESSION:
+        // Assuming the function returns a float value
+        break;
+    default:
+        break;
+    }
+    return 0.0f;
 }
