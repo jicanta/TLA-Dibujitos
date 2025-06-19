@@ -41,7 +41,7 @@ Notas Alex:
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
-#include "./../../frontend/syntactic-analysis/abstractSyntaxTree.h"
+#include "./../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "./../../frontend/syntactic-analysis/SyntacticAnalyzer.h"
 
 typedef enum {
@@ -117,6 +117,7 @@ int intValueExpression(Expression* expression);
 float floatValueExpression(Expression* expression);
 const char *symbolTypeToString(SymbolType type);
 VectorData vectorValueExpression(Expression *expression);
+char *stringValue(StringPartList *list);
 /* LISTA DE CONSTANTES PREDEFINIDAS
 z-layer-control:
     FRONT

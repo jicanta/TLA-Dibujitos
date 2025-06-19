@@ -197,7 +197,7 @@ sentence: IDENTIFIER ASSIGN expression SEMICOLON {
 	;
 
 string_part_list
-    : string_part_list string_part													{ $$ = appendStringPartList($1, $2); }
+    : string_part string_part_list 													{ $$ = appendStringPartList($2, $1); }
     | string_part																	{ $$ = createStringPartList($1); }
     ;
 

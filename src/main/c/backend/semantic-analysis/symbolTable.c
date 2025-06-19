@@ -179,6 +179,11 @@ void setDefaultColors(SymbolTable* symbolTable) {
         .type = INTEGER_TYPE,
         .value.integerData = 0x000000 // Hexadecimal representation of black color
     });
+    insertSymbol(symbolTable, (SymbolEntry){
+        .identifier = "INVISIBLE",
+        .type = INTEGER_TYPE,
+        .value.integerData = 0x000000 // Hexadecimal representation of black color
+    });
 }
 // Function to set all default functions
 void setDefaultFunctions(SymbolTable* symbolTable) {
@@ -534,4 +539,73 @@ VectorData vectorValueExpression(Expression *expression) {
         break;
     }
     return vectorData;
+}
+
+char *stringValue(StringPartList *list) {
+    if (!list) return NULL; // Check for NULL list
+    size_t length = 0;
+    StringPartList *current = list;
+    
+    // Calculate the total length of the string
+    while (current) {
+        switch (current->stringPart->type) 
+        {
+        case STRING_SEGMENT:
+            length += strlen(current->stringPart->string); 
+            break;
+        case IDENTIFIER_SEGMENT:
+            SymbolEntry identifierEntry = getSymbolEntry(currentCompilerState()->symbolTable, current->stringPart->identifier); 
+            switch (identifierEntry.type)
+            {
+            case INTEGER_TYPE:
+                length += snprintf(NULL, 0, "%d", identifierEntry.value.integerData); 
+                break;
+            case FLOAT_TYPE:
+                length += snprintf(NULL, 0, "%f", identifierEntry.value.floatData);
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+        current = current->next;
+    }
+    
+    char *result = calloc(length + 1, sizeof(char)); // +1 for the null terminator
+    if (!result) return NULL; // Check for memory allocation failure
+    
+    current = list;
+    
+    // Concatenate all parts into the result string
+    char *resultPtr = result;
+    while (current) {
+        switch (current->stringPart->type) 
+        {
+        case STRING_SEGMENT:
+            for(int i = 0; current->stringPart->string[i]; i++) {
+                *resultPtr++ = current->stringPart->string[i]; // Copy the string segment
+            }
+
+            break;
+        case IDENTIFIER_SEGMENT:
+            SymbolEntry identifierEntry = getSymbolEntry(currentCompilerState()->symbolTable, current->stringPart->identifier); 
+            switch (identifierEntry.type)
+            {
+            case INTEGER_TYPE:
+                resultPtr += sprintf(resultPtr, "%d", identifierEntry.value.integerData); 
+                break;
+            case FLOAT_TYPE:
+                resultPtr += sprintf(resultPtr, "%f", identifierEntry.value.floatData);
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+        current = current->next;
+    }
+    
+    return result; // Return the concatenated string
 }
