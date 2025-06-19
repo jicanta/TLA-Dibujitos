@@ -40,6 +40,17 @@ void insertSymbol(SymbolTable* symbolTable, const SymbolEntry data) {
     symbolTable->head = newNode;
 }
 
+const char *symbolTypeToString(SymbolType type) {
+    switch (type) {
+        case INTEGER_TYPE: return "INTEGER_TYPE";
+        case FLOAT_TYPE: return "FLOAT_TYPE";
+        case VECTOR_TYPE: return "VECTOR_TYPE";
+        case FUNCTION_TYPE: return "FUNCTION_TYPE";
+        case ARRAY_TYPE: return "ARRAY_TYPE";
+        case NULL_TYPE: return "NULL_TYPE";
+        default: return "UNKNOWN_TYPE";
+    }
+}
 // Function to print an element
 void printSymbolEntry(const SymbolEntry entry) {
     switch (entry.type) {
@@ -91,8 +102,8 @@ void freeSymbolTable(SymbolTable* symbolTable) {
         }
 
         // Free dynamically allocated arrays in FUNCTION_TYPE and ARRAY_TYPE
-        if (temp->entry.type == FUNCTION_TYPE && temp->entry.value.functionData.dataTypes != NULL) {
-            free(temp->entry.value.functionData.dataTypes);
+        if (temp->entry.type == FUNCTION_TYPE && temp->entry.value.functionData.parameterType != NULL) {
+            free(temp->entry.value.functionData.parameterType);
         }
         if (temp->entry.type == ARRAY_TYPE && temp->entry.value.arrayData.elements != NULL) {
             free(temp->entry.value.arrayData.elements);
@@ -135,63 +146,94 @@ int symbolExists(SymbolTable* symbolTable, const char* identifier) {
     return 0; // Symbol does not exist
 }
 
+void setDefaultColors(SymbolTable* symbolTable) {
+    SymbolEntry redColor = {
+        .identifier = "RED",
+        .type = INTEGER_TYPE,
+        .value.integerData = 0xFF0000 // Hexadecimal representation of red color
+    };
+    insertSymbol(symbolTable, redColor);
+
+    SymbolEntry greenColor = {
+        .identifier = "GREEN",
+        .type = INTEGER_TYPE,
+        .value.integerData = 0x00FF00 // Hexadecimal representation of green color
+    };
+    insertSymbol(symbolTable, greenColor);
+
+    SymbolEntry blueColor = {
+        .identifier = "BLUE",
+        .type = INTEGER_TYPE,
+        .value.integerData = 0x0000FF // Hexadecimal representation of blue color
+    };
+    insertSymbol(symbolTable, blueColor);
+
+    insertSymbol(symbolTable, (SymbolEntry) {
+        .identifier = "YELLOW",
+        .type = INTEGER_TYPE,
+        .value.integerData = 0xFFFF00 // Hexadecimal representation of yellow color
+    });
+
+    insertSymbol(symbolTable, (SymbolEntry){
+        .identifier = "BLACK",
+        .type = INTEGER_TYPE,
+        .value.integerData = 0x000000 // Hexadecimal representation of black color
+    });
+}
 // Function to set all default functions
 void setDefaultFunctions(SymbolTable* symbolTable) {
-    SymbolType* circleDataTypes = malloc(3 * sizeof(SymbolType));
+    setDefaultColors(symbolTable);
+    SymbolType* circleDataTypes = malloc(2 * sizeof(SymbolType));
     circleDataTypes[0] = VECTOR_TYPE;
     circleDataTypes[1] = FLOAT_TYPE;
-    circleDataTypes[2] = NULL_TYPE; // Null-terminated array of data types
     const SymbolEntry circleFunction = {
         .identifier = "circle",
         .type = FUNCTION_TYPE,
         .value.functionData = {
-            .dataTypes = circleDataTypes,
-            .hasInfiniteParameters = 0,
+            .parameterType = circleDataTypes,
+            .parameterCount = 2,
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
         }
     };
     insertSymbol(symbolTable, circleFunction);
 
-    SymbolType* curveDataTypes = malloc(2 * sizeof(SymbolType));
+    SymbolType* curveDataTypes = malloc(1 * sizeof(SymbolType));
     curveDataTypes[0] = VECTOR_TYPE;
-    curveDataTypes[1] = NULL_TYPE; // Null-terminated array of data types
     const SymbolEntry curveFunction = {
         .identifier = "curve",
         .type = FUNCTION_TYPE,
         .value.functionData = {
-            .dataTypes = curveDataTypes,
-            .hasInfiniteParameters = 1, // Indicates that the function can take an infinite number of parameters;
+            .parameterType = curveDataTypes,
+            .parameterCount = -1, // Indicates that the function can take an infinite number of parameters;
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
         }
     };
     insertSymbol(symbolTable, curveFunction);
 
-    SymbolType* fillDataTypes = malloc(2 * sizeof(SymbolType));
+    SymbolType* fillDataTypes = malloc(1 * sizeof(SymbolType));
     fillDataTypes[0] = INTEGER_TYPE; // TODO: replace with HEX data type
-    fillDataTypes[1] = NULL_TYPE; // Null-terminated array of data types
     const SymbolEntry fillFunction = {
         .identifier = "fill",
         .type = FUNCTION_TYPE,
         .value.functionData = {
-            .dataTypes = fillDataTypes,
-            .hasInfiniteParameters = 0,
+            .parameterType = fillDataTypes,
+            .parameterCount = 1,
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
         }
     };
     insertSymbol(symbolTable, fillFunction);
 
-    SymbolType* strokeDataTypes = malloc(2 * sizeof(SymbolType));
+    SymbolType* strokeDataTypes = malloc(1 * sizeof(SymbolType));
     strokeDataTypes[0] = INTEGER_TYPE;  // TODO: replace with HEX data type
-    strokeDataTypes[1] = NULL_TYPE; // Null-terminated array of data types
     const SymbolEntry strokeFunction = {
         .identifier = "stroke",
         .type = FUNCTION_TYPE,
         .value.functionData = {
-            .dataTypes = strokeDataTypes,
-            .hasInfiniteParameters = 0,
+            .parameterType = strokeDataTypes,
+            .parameterCount = 1,
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
         }
@@ -226,7 +268,7 @@ SymbolType typeOfFactor(Factor *factor) {
             leftType = typeOfExpression(factor->vector->x);
             rightType = typeOfExpression(factor->vector->y);
             if(leftType == rightType) {
-                return leftType; // Both expressions in the vector have the same type
+                return VECTOR_TYPE; // Both expressions in the vector have the same type
             }
             break;
     }
@@ -278,6 +320,9 @@ SymbolType typeOfExpression(Expression* expression) {
             } else if(resultType1 == FLOAT_TYPE || resultType2 == FLOAT_TYPE) {
                 return FLOAT_TYPE;
             } 
+            else if(resultType1 == VECTOR_TYPE && resultType2 == VECTOR_TYPE) {
+                return VECTOR_TYPE; // Both expressions are vectors
+            } 
             return INVALID_TYPE; // Incompatible types
             
             break;
@@ -287,7 +332,7 @@ SymbolType typeOfExpression(Expression* expression) {
             if (resultType1 != VECTOR_TYPE) {
                 return INVALID_TYPE; 
             } 
-            return VECTOR_TYPE; // Return the type of the vector
+            return FLOAT_TYPE; // TODO: Return the type of the vector
 
             break;
         case FACTOR:
@@ -352,9 +397,9 @@ int intValueExpression(Expression* expression) {
     case FACTOR:
         return intValueFactor(expression->factor);
     case GET_X:
-        return expression->factor->vector->x; // Assuming the vector has x and y as integer values
+        return intValueExpression(expression->factor->vector->x);
     case GET_Y:
-        return expression->factor->vector->y; // Assuming the vector has x and y as integer values
+        return intValueExpression(expression->factor->vector->y);
     case ARRAY_ACCESS:
         // Assuming the array is of type INTEGER_TYPE and the index is valid
     case FUNCTION_EXPRESSION:
@@ -378,8 +423,6 @@ float floatValueFactor(Factor* factor) {
     case PARENTHESIS_FACTOR:
         return floatValueExpression(factor->expression);
     case VECTOR_FACTOR:
-        // Assuming the vector has x and y as float values
-        // return factor->vector->x + factor->vector->y; // Example: sum of x and y
     default:
         break;
     }
@@ -400,11 +443,17 @@ float floatValueExpression(Expression* expression) {
     case FACTOR:
         return floatValueFactor(expression->factor);
     case GET_X:
-        // return expression->factor->vector->x; // Assuming the vector has x and y as float values
+        return floatValueExpression(expression->factor->vector->x);
     case GET_Y:
-        // return expression->factor->vector->y; // Assuming the vector has x and y as float values
+        return floatValueExpression(expression->factor->vector->y); 
     case ARRAY_ACCESS:
-        // Assuming the array is of type FLOAT_TYPE and the index is valid
+        int index = intValueExpression(expression->indexExpression);
+        Expressions* arrayElements = expression->array->expressionList->expressions;
+        while(index-- && arrayElements != NULL) {
+            arrayElements = arrayElements->next; // Move to the next element in the list
+        } // TODO
+        return floatValueExpression(arrayElements->expression);  
+
     case FUNCTION_EXPRESSION:
         // Assuming the function returns a float value
         break;
@@ -412,4 +461,77 @@ float floatValueExpression(Expression* expression) {
         break;
     }
     return 0.0f;
+}
+
+VectorData vectorValueFactor(Factor* factor) {
+    VectorData vectorData = {0.0f, 0.0f}; // Initialize to zero
+    switch (factor->type)  // Check the type of the factor
+    {
+    case IDENTIFIER_FACTOR:
+        return getSymbolEntry(currentCompilerState()->symbolTable, factor->identifier).value.vectorData;
+        break;
+    case INTEGER_TYPE:
+        vectorData.x = intValueExpression(factor->vector->x); // Convert int to float
+        vectorData.y = intValueExpression(factor->vector->y); // Assuming both x and y are the same for integer factor
+        break;
+    case FLOAT_TYPE:
+        vectorData.x = floatValueExpression(factor->vector->x); // Convert int to float
+        vectorData.y = floatValueExpression(factor->vector->y); // Assuming both x and y are the same for integer factor
+        break;
+    default:
+        break;
+    }
+
+    return vectorData;
+}
+
+VectorData vectorValueExpression(Expression *expression) {
+    VectorData vectorData = {0.0f, 0.0f}; // Initialize to zero
+    VectorData v1, v2; // Temporary variables for vector operations
+    switch (expression->type)  // Check the type of the factor
+    {
+    case ADDITION:
+        v1 = vectorValueExpression(expression->leftExpression);
+        v2 = vectorValueExpression(expression->rightExpression);
+        vectorData.x = v1.x + v2.x;
+        vectorData.y = v1.y + v2.y;
+        break;
+    case SUBTRACTION:
+        v1 = vectorValueExpression(expression->leftExpression);
+        v2 = vectorValueExpression(expression->rightExpression);
+        vectorData.x = v1.x - v2.x;
+        vectorData.y = v1.y - v2.y;
+        break;
+    case MULTIPLICATION:
+        v1 = vectorValueExpression(expression->leftExpression);
+        v2 = vectorValueExpression(expression->rightExpression);
+        // TODO
+        break;
+    case DIVISION: 
+        // TODO ERROR
+        break;
+    case FACTOR:
+        vectorData = vectorValueFactor(expression->factor);
+        break;
+    case GET_X:
+        // vectorData.x = floatValueFactor(expression->factor->vector->x);
+        break;
+    case GET_Y:
+        // vectorData.y = floatValueFactor(expression->factor->vector->y); 
+        break;
+    case ARRAY_ACCESS:
+        // Assuming the array is of type VECTOR_TYPE and the index is valid
+        int index = intValueExpression(expression->indexExpression);
+        Expressions* arrayElements = expression->array->expressionList->expressions;
+        while(index-- && arrayElements != NULL) {
+            arrayElements = arrayElements->next; // Move to the next element in the list
+        } // TODO
+        return vectorValueExpression(arrayElements->expression);  
+    case FUNCTION_EXPRESSION:
+        // Assuming the function returns a VectorData value
+        break;
+    default:
+        break;
+    }
+    return vectorData;
 }

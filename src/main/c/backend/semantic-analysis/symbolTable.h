@@ -80,8 +80,8 @@ typedef struct SymbolEntry {
         float floatData; // Float value for float identifiers
         VectorData vectorData; // Vector details
         struct {
-            SymbolType* dataTypes; // Data types for the function parameters (Null Terminated). Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
-            int hasInfiniteParameters; // Indicates if the function can take an infinite number of parameters (from the last data type)
+            SymbolType* parameterType; // Data types for the function parameters. Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
+            int parameterCount; // Number of parameters
             SymbolType returnType; // Type of the identifier
             void (*functionPointer)(); // Pointer to the function implementation
         } functionData; // Function details
@@ -115,8 +115,8 @@ void setDefaultFunctions(SymbolTable* symbolTable);
 SymbolType typeOfExpression(Expression* expression);
 int intValueExpression(Expression* expression);
 float floatValueExpression(Expression* expression);
-
-
+const char *symbolTypeToString(SymbolType type);
+VectorData vectorValueExpression(Expression *expression);
 /* LISTA DE CONSTANTES PREDEFINIDAS
 z-layer-control:
     FRONT

@@ -35,21 +35,6 @@ static void _logSyntacticAnalyzerAction(const char * functionName) {
 
 /* PUBLIC FUNCTIONS */
 
-// TODO: Delete. Right now, this is a dummy function to avoid compilation errors.
-SymbolType typeOfExpressionDummy(Expression* expression) {
-	return INTEGER_TYPE;
-}
-int intValue(Expression* expression) {
-	return 0;
-}
-float floatValue(Expression* expression) {
-	return 0.0f;
-}
-VectorData vectorValue(Expression* expression) {
-	VectorData vector = {0.0f, 0.0f};
-	return vector;
-};
-
 Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Expression * expression = calloc(1, sizeof(Expression));
@@ -227,46 +212,46 @@ int functionSemanticAnalyzerCheck(char * identifier, ExpressionList* functionArg
 	if (symbolEntry.type != FUNCTION_TYPE) {
 		logError(_logger, "The identifier '%s' is not a function.", identifier);
 		currentCompilerState()->succeed = false;
-		return 0;
+		return false;
 	}
 
-	const SymbolType* fnParameterTypes = symbolEntry.value.functionData.dataTypes;
+	const SymbolType* fnParameterTypes = symbolEntry.value.functionData.parameterType;
+	int parameterCount = symbolEntry.value.functionData.parameterCount;
 
 	// Case where the function has no parameters (ExpressionList should be empty)
-	if (fnParameterTypes[0] == NULL_TYPE) {
+	if (parameterCount == 0) {
 		if (functionArguments->expressions == NULL) {
-			return 1;
+			return true;
 		}
 		logError(_logger, "The function '%s' does not expect any parameters.", identifier);
 		currentCompilerState()->succeed = false;
-		return 0;
+		return false;
 	}
 
 	// Case where the function has parameters
 	const Expressions* expressionIndexer = functionArguments->expressions;
 	int i=0;
-	for (i=0; fnParameterTypes[i] != NULL_TYPE; i++) {
+	for (i=1; i <= parameterCount; i++) {
 		if (expressionIndexer == NULL) {
 			logError(_logger, "The function '%s' is being called with not enough parameters.", identifier);
-			currentCompilerState()->succeed = false;
-			return 0;
+			return false;
 		}
-
-		if (fnParameterTypes[i] != typeOfExpression(expressionIndexer->expression)) {
-			logError(_logger, "Invalid parameter in function '%s': Should be '%d'.", identifier, fnParameterTypes[i]);
-			currentCompilerState()->succeed = false;
-			return 0;
+		SymbolType paramenterType = fnParameterTypes[parameterCount - i];
+		SymbolType expressionType = typeOfExpression(expressionIndexer->expression);
+		if (paramenterType != expressionType) {
+			logError(_logger, "Invalid parameter in function '%s': Should be '%s' but found '%s'", identifier, symbolTypeToString(paramenterType), symbolTypeToString(expressionType));
+			return false;
 		}
 		expressionIndexer = expressionIndexer->next;
 	}
 	// Additional operations if the function has infinite parameters
-	if (symbolEntry.value.functionData.hasInfiniteParameters) {
+	if (parameterCount == -1) { // TODO: lo rompi :p
 		i--; // Adjust for the last parameter which can be infinite
 		while (expressionIndexer != NULL) {
 			if (fnParameterTypes[i] != typeOfExpression(expressionIndexer->expression)) {
-				logError(_logger, "Invalid parameter in function '%s': Should be '%d'.", identifier, fnParameterTypes[i]);
+				logError(_logger, "Invalid parameter in function '%s': Should be '%s'.", identifier, symbolTypeToString(fnParameterTypes[i]));
 				currentCompilerState()->succeed = false;
-				return 0;
+				return false;
 			}
 			expressionIndexer = expressionIndexer->next;
 		}
@@ -275,10 +260,10 @@ int functionSemanticAnalyzerCheck(char * identifier, ExpressionList* functionArg
 		if (expressionIndexer != NULL) {
 			logError(_logger, "The function '%s' is being called with too many parameters.", identifier);
 			currentCompilerState()->succeed = false;
-			return 0;
+			return false;
 		}
 	}
-	return 1;
+	return true;
 }
 
 Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * functionArguments) {
@@ -327,7 +312,7 @@ Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expressi
 			symbolEntry.value.floatData = floatValueExpression(expression);
 			break;
 		case VECTOR_TYPE:
-		// symbolEntry.value.vectorData = vectorValue(expression), //TODO: beware that the return value of calculate should be correct
+			symbolEntry.value.vectorData = vectorValueExpression(expression);
 			break;
 		default:
 			logError(_logger, "The identifier '%s' has invalid type", identifier);
@@ -373,18 +358,18 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 		BasicType* arrayElements = malloc(sizeof(SymbolEntry) * 100); // Assuming a maximum of 100 elements for simplicity
 
 		Expressions* expressionsIndex = array->expressionList->expressions;
-		SymbolType t = typeOfExpressionDummy(expressionsIndex->expression);
+		SymbolType t = typeOfExpression(expressionsIndex->expression);
 
 		// Check if all expressions in the array are of the same type
 		for (int i=0; expressionsIndex != NULL; i++) {
-			if (t != typeOfExpressionDummy(expressionsIndex->expression)) {
+			if (t != typeOfExpression(expressionsIndex->expression)) {
 				logError(_logger, "The array '%s' has elements of different types.", identifier);
 				currentCompilerState()->succeed = false;
 				return NULL;
 			}
 			BasicType arrayElement = {
 				.type = t, // Assuming the type of the array is the type of the elements
-				.value.integerData = intValue(expressionsIndex->expression), // Assuming integer for simplicity
+				.value.integerData = intValueExpression(expressionsIndex->expression), // Assuming integer for simplicity
 			};
 			arrayElements[i] = arrayElement;
 			expressionsIndex = expressionsIndex->next;
