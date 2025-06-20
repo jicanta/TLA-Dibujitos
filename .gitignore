@@ -22,3 +22,5 @@ BisonParser.c
 BisonParser.h
 FlexScanner.c
 /enunciado/*
+*.svg
+./*/*.svg

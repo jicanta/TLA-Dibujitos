@@ -72,7 +72,7 @@ add_library(CompilerLib STATIC
 
 # Create the main compiler executable
 add_executable(Compiler src/main/c/EntryPoint.c)
-target_link_libraries(Compiler CompilerLib)
+target_link_libraries(Compiler CompilerLib m)
 
 # Add tree visualizer executable
 add_executable(tree_visualizer
@@ -85,4 +85,5 @@ target_include_directories(tree_visualizer PRIVATE
 
 target_link_libraries(tree_visualizer
 	CompilerLib
+	m
 )

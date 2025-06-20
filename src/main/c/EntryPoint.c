@@ -9,6 +9,7 @@
 #include "shared/Logger.h"
 #include "shared/String.h"
 #include "backend/semantic-analysis/SymbolTable.h"
+#include <string.h>
 
 /**
  * The main entry-point of the entire application. If you use "strtok" to
@@ -18,13 +19,22 @@
 const int main(const int count, const char ** arguments) {
 	Logger * logger = createLogger("EntryPoint");
 
+	// Check for output file argument
+	const char* outputFile = NULL;
+	for (int i = 1; i < count; i++) {
+		if (strcmp(arguments[i], "-o") == 0 && i + 1 < count) {
+			outputFile = arguments[i + 1];
+			logDebugging(logger, "Output file specified: %s", outputFile);
+			break;
+		}
+	}
 
 	initializeFlexActionsModule();
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
 	// initializeCalculatorModule();
-	// initializeGeneratorModule();
+	initializeGeneratorModule();
 
 	// Logs the arguments of the application.
 	for (int k = 0; k < count; ++k) {
@@ -49,16 +59,14 @@ const int main(const int count, const char ** arguments) {
 		printSymbolTable(compilerState.symbolTable);
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... TODO: Descomentar ------------------------------------------
-		// logDebugging(logger, "Computing expression value...");
-		// ComputationResult computationResult = computeExpression(program->sentences);
-		// if (computationResult.succeed) {
-		// 	compilerState.value = computationResult.value;
-		// 	generate(&compilerState);
-		// }
-		// else {
-		// 	logError(logger, "The computation phase rejects the input program.");
-		// 	compilationStatus = FAILED;
-		// }
+		logDebugging(logger, "Generating SVG output...");
+		if (outputFile) {
+			logDebugging(logger, "Using output file: %s", outputFile);
+			generateToFile(&compilerState, outputFile);
+		} else {
+			logDebugging(logger, "No output file specified, using stdout");
+			generate(&compilerState);
+		}
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
 	}
@@ -71,7 +79,7 @@ const int main(const int count, const char ** arguments) {
 	logDebugging(logger, "Releasing modules resources...");
 
 	freeSymbolTable(compilerState.symbolTable);
-	// shutdownGeneratorModule();
+	shutdownGeneratorModule();
 	// shutdownCalculatorModule();
 	shutdownAbstractSyntaxTreeModule();
 	shutdownSyntacticAnalyzerModule();
