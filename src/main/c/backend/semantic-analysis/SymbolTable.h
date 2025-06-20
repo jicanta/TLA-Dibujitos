@@ -86,8 +86,9 @@ typedef struct SymbolEntry {
             void (*functionPointer)(); // Pointer to the function implementation
         } functionData; // Function details
         struct {
-            BasicType* elements; // Elements of the array of the same type (Null Terminated). Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
-            SymbolType dataType; // Data type for the array. Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
+            BasicType* elements; // Elements of the array of the same type. Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
+            int size; // Size of the array
+            ArrayType dataType; // Data type for the array. Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
         } arrayData; // Array details
     } value; // Value associated with the identifier
 
@@ -117,6 +118,8 @@ int intValueExpression(Expression* expression);
 float floatValueExpression(Expression* expression);
 const char *symbolTypeToString(SymbolType type);
 VectorData vectorValueExpression(Expression *expression);
+char *stringValue(StringPartList *list);
+void updateSymbol(SymbolTable* symbolTable, const SymbolEntry data);
 /* LISTA DE CONSTANTES PREDEFINIDAS
 z-layer-control:
     FRONT

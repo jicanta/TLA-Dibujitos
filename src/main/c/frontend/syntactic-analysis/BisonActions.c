@@ -2,7 +2,7 @@
 #include "../../shared/CompilerState.h"
 #include <math.h>
 #include "BisonParser.h"
-#include "../../backend/semantic-analysis/symbolTable.h"
+#include "../../backend/semantic-analysis/SymbolTable.h"
 
 /* MODULE INTERNAL STATE */
 

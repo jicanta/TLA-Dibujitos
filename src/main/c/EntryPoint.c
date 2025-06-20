@@ -8,7 +8,7 @@
 #include "shared/Environment.h"
 #include "shared/Logger.h"
 #include "shared/String.h"
-#include "backend/semantic-analysis/symbolTable.h"
+#include "backend/semantic-analysis/SymbolTable.h"
 
 /**
  * The main entry-point of the entire application. If you use "strtok" to
