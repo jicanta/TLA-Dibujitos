@@ -89,7 +89,7 @@ typedef struct SymbolEntry {
         struct {
             BasicType* elements; // Elements of the array of the same type. Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
             int size; // Size of the array
-            ArrayType dataType; // Data type for the array. Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
+            SymbolType dataType; // Data type for the array. Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
         } arrayData; // Array details
     } value; // Value associated with the identifier
     int scope;
@@ -122,7 +122,8 @@ VectorData vectorValueExpression(Expression *expression);
 char *stringValue(StringPartList *list);
 void updateSymbol(SymbolTable* symbolTable, const SymbolEntry data);
 SymbolEntry getSymbolEntryWithScope(const SymbolTable* symbolTable, const char* identifier, ScopesStack* stack);
-int boolValueExpression(BoolExpression *expression);
+int boolValueExpression(BoolExpression* expression);
+int boolExpressionIsValid(BoolExpression* expression);
 /* LISTA DE CONSTANTES PREDEFINIDAS
 z-layer-control:
     FRONT

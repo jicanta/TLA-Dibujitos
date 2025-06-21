@@ -118,30 +118,7 @@ void freeScopesStack(ScopesStack* stack) {
         free(stack);
     }
 }
-//
-// int main() {
-//     ScopesStack stack;
-//     // Initialize the stack
-//     initialize(&stack);
-//
-//     // Push elements onto the stack and print the stack after each push
-//     push(&stack, 3);
-//     printf("Top element: %d\n", peek(&stack));
-//
-//     push(&stack, 5);
-//     printf("Top element: %d\n", peek(&stack));
-//
-//     push(&stack, 2);
-//     printf("Top element: %d\n", peek(&stack));
-//
-//     push(&stack, 8);
-//     printf("Top element: %d\n", peek(&stack));
-//
-//     // Pop elements from the stack and print the stack after each pop
-//     while (!isEmpty(&stack)) {
-//         printf("Top element: %d\n", peek(&stack));
-//         printf("Popped element: %d\n", pop(&stack));
-//     }
-//
-//     return 0;
-// }
+
+int getNextScope(ScopesStack* stack) {
+    return stack->newScope;
+}

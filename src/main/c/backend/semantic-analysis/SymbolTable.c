@@ -125,10 +125,8 @@ void printSymbolTable(SymbolTable* symbolTable) {
     const SymbolEntryNode* temp = head;
     while (temp != NULL) {
         printSymbolEntry(temp->entry);
-        printf(" -> ");
         temp = temp->next;
     }
-    printf("NULL\n");
 }
 // Function to free the linked list
 void freeSymbolTable(SymbolTable* symbolTable) {
@@ -739,6 +737,8 @@ char *stringValue(StringPartList *list) {
     return NULL; // Return the concatenated string
 }
 
+
+
 int boolValueExpression(BoolExpression *expression) {
     if (!expression) return false; 
 
@@ -822,4 +822,48 @@ int boolValueExpression(BoolExpression *expression) {
             break;
     }
     return false; 
+}
+
+int boolExpressionIsValid(BoolExpression* expression) {
+    if (!expression) return 0; // NULL expression is invalid
+    
+    switch (expression->type) {
+        // Boolean operators
+        case AND_TYPE:
+        case OR_TYPE:
+            return boolExpressionIsValid(expression->leftBoolExpression) && 
+                   boolExpressionIsValid(expression->rightBoolExpression);
+        
+        case NOT_TYPE:
+            return boolExpressionIsValid(expression->boolExpression);
+        
+        // Comparison operators
+        case GREATER_OR_EQUAL:
+        case LESS_OR_EQUAL:
+        case GREATER_THAN:
+        case LESS_THAN:
+        case EQUAL_TO:
+        case NOT_EQUAL:
+            {
+                SymbolType leftType = typeOfExpression(expression->leftExpression);
+                SymbolType rightType = typeOfExpression(expression->rightExpression);
+                
+                // Check if both expressions are valid and have the same type
+                if (leftType == INVALID_TYPE || rightType == INVALID_TYPE) {
+                    return 0; // Invalid if either expression has an invalid type
+                }
+                
+                return leftType == rightType; // Valid only if both have the same type
+            }
+        
+        case BOOL_FACTOR:
+            // Handle the case where boolFactor contains a nested boolean expression
+            if (expression->boolFactor && expression->boolFactor->boolExpression) {
+                return boolExpressionIsValid(expression->boolFactor->boolExpression);
+            }
+            return 0; // Invalid if boolFactor is NULL or doesn't contain a boolean expression
+            
+        default:
+            return 0; // Unknown boolean expression type is invalid
+    }
 }

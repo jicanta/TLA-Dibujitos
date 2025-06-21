@@ -69,7 +69,6 @@ Expression * ArrayAccessExpressionSemanticAction(Array * array, Expression * ind
 
 	// Semantic Analysis
 
-	// TODO: Check if indexExpression is of type INTEGER_TYPE, not negative and less than the size of the array
 	// const SymbolEntry symbolEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, array->identifier, currentCompilerState()->scopesStack);
 	// BasicType* arrayElements = symbolEntry.value.arrayData.elements;
 	// int arraySize = 0;
@@ -133,17 +132,29 @@ Sentence * AssignArrayElementSentenceSemanticAction(char * identifier, Expressio
 	sentence->assignArrayIndexExpression = indexExpression;
 	sentence->assignArrayElementExpression = expression;
 	sentence->type = ASSIGN_ARRAY_ELEMENT_SENTENCE;
-	return sentence;
 	// TODO: Semantics needed
-	// nope
-	// const SymbolEntry symbolEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, identifier, currentCompilerState()->scopesStack);
-	// if (symbolEntry.type != INVALID_TYPE) {
-	// 	logError(_logger, "The identifier '%s' is already defined.", identifier);
-	// 	currentCompilerState()->succeed = false;
-	// 	return NULL;
-	// }
-	// BasicType* arrayElements = malloc(sizeof(SymbolEntry) * 100); // Assuming a maximum of 100 elements for simplicity
+	const SymbolEntry symbolEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, identifier, currentCompilerState()->scopesStack);
+	if (symbolEntry.type != ARRAY_TYPE) {
+		logError(_logger, "The identifier '%s' should be an array.", identifier);
+		currentCompilerState()->succeed = false;
+		return NULL;
+	}
+	if (typeOfExpression(indexExpression) != INTEGER_TYPE) {
+		printf("Index expression type: %s\n", symbolTypeToString(typeOfExpression(indexExpression)));
+		logError(_logger, "The index expression of the array '%s' should be an integer.", identifier);
+		currentCompilerState()->succeed = false;
+		return NULL;
+	}
+	if (typeOfExpression(expression) != symbolEntry.value.arrayData.dataType) {
+		printf("Expression type: %s\n", symbolTypeToString(typeOfExpression(expression)));
+		printf("Array type: %s\n", symbolTypeToString(symbolEntry.value.arrayData.dataType));
+		logError(_logger, "The expression of the array '%s' should be of type '%s'.", identifier, symbolTypeToString(symbolEntry.value.arrayData.dataType));
+		currentCompilerState()->succeed = false;
+		return NULL;
+	}
 	
+	return sentence;
+
 }
 
 Factor * VectorFactorSemanticAction(Vector * vector) {
@@ -410,7 +421,7 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 			.type = ARRAY_TYPE, // Assuming the type of the array is ARRAY_TYPE
 			.value.arrayData = {
 				.elements = arrayElements, // This will be filled later when the array is defined
-				.dataType = array->type, // Assuming the type of the array is the type of the identifier
+				.dataType = t, // Assuming the type of the array is the type of the identifier
 				.size = i // Set the size of the array
 			},
 			.scope = currentScope(currentCompilerState()->scopesStack)
@@ -454,6 +465,20 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 
 Sentence * LogSentenceSemanticAction(StringPartList * stringPartList) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
+
+	StringPartList *current = stringPartList;
+	while(current) {
+		if(current->stringPart->type == IDENTIFIER_SEGMENT) {
+			char *identifier = current->stringPart->identifier;
+			SymbolEntry entry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, identifier, currentCompilerState()->scopesStack);
+			if(entry.type == NULL_TYPE) {
+				logError(_logger, "the identifier '%s' doesnt exist. used in string part", identifier);
+				return NULL;
+			}
+		}
+		current = current->next;
+	} 
+
 	Sentence * logSentence = calloc(1, sizeof(Sentence));
 	logSentence->logString = stringPartList;
 	logSentence->type = LOG_SENTENCE;
@@ -494,35 +519,61 @@ Sentence * IfSentenceSemanticAction(BoolExpression * boolExpression, Block * blo
 	sentence->ifBoolExpression = boolExpression;
 	sentence->ifBlock = block;
 	sentence->type = IF_SENTENCE;
+
+	if(!boolExpressionIsValid(boolExpression)) {
+		logError(_logger, "The boolean expression is not valid.");
+		currentCompilerState()->succeed = false;
+		return NULL;
+	}
 	return sentence;
-	// TODO: Semantics needed
 }
 
-void InsertForLoopIterator(char * identifier, Array * array) {
+int InsertForLoopIterator(char * identifier, Array * array) {
 	SymbolType elementType = INVALID_TYPE;
 	switch (array->type)
 	{
-		case IDENTIFIER_ARRAY:
+	case IDENTIFIER_ARRAY:
 		SymbolEntry arrayEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, array->identifier, currentCompilerState()->scopesStack);
-		elementType = arrayEntry.value.arrayData.elements[0].type;
-		/* code */
+		if (arrayEntry.type == ARRAY_TYPE) {
+			elementType = arrayEntry.value.arrayData.elements[0].type;
+		}
 		break;
 	case INTERVAL_ARRAY:
-		/* code */
+		SymbolType leftType = typeOfExpression(array->leftExpression);
+		SymbolType rightType = typeOfExpression(array->rightExpression);
+		if(leftType == INTEGER_TYPE && rightType == INTEGER_TYPE) {
+			elementType = INTEGER_TYPE;
+		}
 		break;
 	case BASIC_ARRAY:
-		/* code */
+		elementType = typeOfExpression(array->expressionList->expressions->expression);
+		
+		// Check if all expressions in the array are of the same type (TODO: this code is repeated and could be refactored)
+		Expressions* expressionsIndex = array->expressionList->expressions;
+
+		int i = 0;
+		for (; expressionsIndex != NULL; i++) {
+			if (elementType != typeOfExpression(expressionsIndex->expression)) {
+				elementType = INVALID_TYPE;
+				break;
+			}
+			expressionsIndex = expressionsIndex->next;
+		}
 	default:
 		break;
 	}
+	if(elementType == INVALID_TYPE) {
+		return false;
+	}
 
 	insertSymbol(currentCompilerState()->symbolTable, (SymbolEntry) {
-		.scope = 0, //TODO: Set the correct scope
+		.scope = getNextScope(currentCompilerState()->scopesStack), 
 		.identifier = identifier,
 		.type = elementType, // Assuming the type of the array is ARRAY_TYPE
 		// .value.arrayData = arrayEntry.value.arrayData[0]
 	});
-	// addNewScope(currentCompilerState()->scopesStack);
+
+	return true;
 }
 
 Sentence * ForSentenceSemanticAction(char * identifier, Array * array, Block * block) {
@@ -532,10 +583,8 @@ Sentence * ForSentenceSemanticAction(char * identifier, Array * array, Block * b
 	sentence->forArray = array;
 	sentence->forBlock = block;
 	sentence->type = FOR_SENTENCE;
-	// Since it's called AFTER all the symbolTable operations, we can pop the scope
-	// popScopesStack(currentCompilerState()->scopesStack);
+
 	return sentence;
-	// TODO: Semantics needed
 }
 
 Sentence * IfElseSentenceSemanticAction(BoolExpression * boolExpression, Block * leftBlock, Block * rightBlock) {
@@ -545,8 +594,14 @@ Sentence * IfElseSentenceSemanticAction(BoolExpression * boolExpression, Block *
 	sentence->leftIfElseBlock = leftBlock;
 	sentence->rightIfElseBlock = rightBlock;
 	sentence->type = IF_ELSE_SENTENCE;
+
+	if(!boolExpressionIsValid(boolExpression)) {
+		logError(_logger, "The boolean expression is not valid.");
+		currentCompilerState()->succeed = false;
+		return NULL;
+	}
+
 	return sentence;
-	// TODO: Semantics needed
 }
 
 Block * BlockSemanticAction(Sentences * sentences) {
@@ -561,12 +616,7 @@ Block * BlockSemanticAction(Sentences * sentences) {
 }
 
 void StartScope() {
-	// Start Scope
 	addNewScope(currentCompilerState()->scopesStack);
-}
-
-void StartIfSentenceSemanticAction(BoolExpression * boolExpression) {
-	// It might be better 
 }
 
 

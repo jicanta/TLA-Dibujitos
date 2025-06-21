@@ -22,6 +22,7 @@ typedef struct {
 ScopesStack* initializeScopesStack();
 void addNewScope(ScopesStack *stack);
 int currentScope(ScopesStack *stack);
+int getNextScope(ScopesStack* stack);
 
 // generic stack functions
 int popScopesStack(ScopesStack *stack);

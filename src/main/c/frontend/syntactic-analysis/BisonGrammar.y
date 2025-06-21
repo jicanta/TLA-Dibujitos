@@ -190,18 +190,40 @@ sentence: IDENTIFIER ASSIGN expression SEMICOLON {
 			YYABORT;
 		}
 	}
-	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ $$ = IfSentenceSemanticAction($3, $5); }
-	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
+	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ 
+		$$ = IfSentenceSemanticAction($3, $5); 
+		if ($$ == NULL) {
+			YYABORT;
+		}
+	}
+	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ 
+		$$ = IfElseSentenceSemanticAction($3, $5, $7); 
+		if ($$ == NULL) {
+			YYABORT;
+		}
+	}
 	| FOR IDENTIFIER IN array {
-		InsertForLoopIterator($2, $4);
-	} block																			{ $$ = ForSentenceSemanticAction($2, $4, $6); }
+		if(!InsertForLoopIterator($2, $4)) {
+			YYABORT;
+		}
+	} block																			{ 
+		$$ = ForSentenceSemanticAction($2, $4, $6); 
+		if ($$ == NULL) {
+			YYABORT;
+		}
+	}
 	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ 
 		$$ = FunctionSentenceSemanticAction($1, $3); 
 		if ($$ == NULL) {
 			YYABORT; 
 		}
 	}
-	| LOG BEGIN_STRING string_part_list END_STRING SEMICOLON						{ $$ = LogSentenceSemanticAction($3); }
+	| LOG BEGIN_STRING string_part_list END_STRING SEMICOLON						{ 
+		$$ = LogSentenceSemanticAction($3); 
+		if ($$ == NULL) {
+			YYABORT; 
+		}
+	}
 	| IMPORT BEGIN_STRING string_part_list END_STRING SEMICOLON						{ $$ = ImportSentenceSemanticAction($3); }
 	;
 
