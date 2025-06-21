@@ -132,7 +132,7 @@ Sentence * AssignArrayElementSentenceSemanticAction(char * identifier, Expressio
 	sentence->assignArrayIndexExpression = indexExpression;
 	sentence->assignArrayElementExpression = expression;
 	sentence->type = ASSIGN_ARRAY_ELEMENT_SENTENCE;
-	// TODO: Semantics needed
+
 	const SymbolEntry symbolEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, identifier, currentCompilerState()->scopesStack);
 	if (symbolEntry.type != ARRAY_TYPE) {
 		logError(_logger, "The identifier '%s' should be an array.", identifier);
@@ -145,9 +145,9 @@ Sentence * AssignArrayElementSentenceSemanticAction(char * identifier, Expressio
 		currentCompilerState()->succeed = false;
 		return NULL;
 	}
-	if (typeOfExpression(expression) != symbolEntry.value.arrayData.dataType) {
+	if (typeOfExpression(expression) != symbolEntry.value.arrayData.elements[0].type) {
 		printf("Expression type: %s\n", symbolTypeToString(typeOfExpression(expression)));
-		printf("Array type: %s\n", symbolTypeToString(symbolEntry.value.arrayData.dataType));
+		printf("Array type: %s\n", symbolTypeToString(symbolEntry.value.arrayData.elements[0].type));
 		logError(_logger, "The expression of the array '%s' should be of type '%s'.", identifier, symbolTypeToString(symbolEntry.value.arrayData.dataType));
 		currentCompilerState()->succeed = false;
 		return NULL;
@@ -315,53 +315,17 @@ Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expressi
 	};
 	
 	const SymbolEntry currentEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, identifier, currentCompilerState()->scopesStack);
-	if (currentEntry.type != NULL_TYPE && currentEntry.type != expressionType) {
-		logError(_logger, "The identifier '%s' has type mismatch", identifier);
-		return NULL;
-	}
 	if (expressionType == INVALID_TYPE) {
 		return NULL;
 	}
-	// Insert the identifier into the symbol table
-	// switch (expressionType) {
-	// 	case INTEGER_TYPE:
-	// 		currentCompilerState()->succeed = true;
-	// 		symbolEntry.value.integerData = intValueExpression(expression);
-	// 		if(currentCompilerState()->succeed == false) {
-	// 			logError(_logger, "The integer '%s' has invalid value.", identifier);
-	// 			releaseExpression(expression);
-	// 			return NULL;
-	// 		}
-	// 		break;
-	// 	case FLOAT_TYPE:
-	// 		symbolEntry.value.floatData = floatValueExpression(expression);
-	// 		if(isnan(symbolEntry.value.floatData)) {
-	// 			logError(_logger, "The float '%s' has invalid value.", identifier);
-	// 			releaseExpression(expression);
-	// 			return NULL;
-	// 		}
-	// 		break;
-	// 	case VECTOR_TYPE:
-	// 		symbolEntry.value.vectorData = vectorValueExpression(expression);
-	// 		if (isnan(symbolEntry.value.vectorData.x)) {
-	// 			logError(_logger, "The vector '%s' has invalid values. ", identifier);
-	// 			releaseExpression(expression);
-	// 			return NULL;
-	// 		}
-	// 		break;
-	// 	default:
-	// 		break;
-	// 		logError(_logger, "The identifier '%s' has invalid type", identifier);
-	// 		free(identifier);
-	// 		releaseExpression(expression);
-	// 		return NULL;
-	// }
+
 	if (currentEntry.type == NULL_TYPE) {
 		insertSymbol(currentCompilerState()->symbolTable, symbolEntry);
 	}
-	// else {
-	// 	updateSymbol(currentCompilerState()->symbolTable, symbolEntry);
-	// }
+	else if (currentEntry.type != expressionType) {
+		logError(_logger, "The identifier '%s' has type mismatch", identifier);
+		return NULL;
+	}
 
 	Sentence * sentence = calloc(1, sizeof(Sentence));
 	sentence->assignIdentifier = identifier;
@@ -395,7 +359,7 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 			return NULL;
 		}
 
-		BasicType* arrayElements = malloc(sizeof(SymbolEntry) * 100); // Assuming a maximum of 100 elements for simplicity
+		BasicType* arrayElements = malloc(sizeof(SymbolEntry) * 256); // Assuming a maximum of 100 elements for simplicity
 
 		Expressions* expressionsIndex = array->expressionList->expressions;
 		SymbolType t = typeOfExpression(expressionsIndex->expression);
@@ -410,7 +374,6 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 			}
 			BasicType arrayElement = {
 				.type = t, // Assuming the type of the array is the type of the elements
-				.value.integerData = intValueExpression(expressionsIndex->expression), // Assuming integer for simplicity
 			};
 			arrayElements[i] = arrayElement;
 			expressionsIndex = expressionsIndex->next;
@@ -570,7 +533,6 @@ int InsertForLoopIterator(char * identifier, Array * array) {
 		.scope = getNextScope(currentCompilerState()->scopesStack), 
 		.identifier = identifier,
 		.type = elementType, // Assuming the type of the array is ARRAY_TYPE
-		// .value.arrayData = arrayEntry.value.arrayData[0]
 	});
 
 	return true;

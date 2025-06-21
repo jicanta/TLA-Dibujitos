@@ -393,12 +393,6 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
     insertSymbol(symbolTable, sqrtFunction);
 }
 
-
-SymbolType typeOfExpressionList(ExpressionList* expr_list) {
-    if (!expr_list) return INVALID_TYPE;
-    // TODO
-}
-
 SymbolType typeOfFactor(Factor *factor) {
     SymbolType leftType, rightType = INVALID_TYPE;
     if(factor == NULL) return INVALID_TYPE; // Check for NULL factor
@@ -446,7 +440,7 @@ static SymbolType typeOfArray(Array* array) {
             break;
         case BASIC_ARRAY:
             if (array->expressionList) {
-                return typeOfExpressionList(array->expressionList);
+                return ARRAY_TYPE;
             }
             break;
     }
@@ -512,231 +506,154 @@ SymbolType typeOfExpression(Expression* expression) {
     return INVALID_TYPE;
 }
 
-int intValueFactor(Factor* factor) {
-    switch (factor->type)  // Check the type of the factor
-    {
-    case IDENTIFIER_FACTOR:
-        return getSymbolEntry(currentCompilerState()->symbolTable, factor->identifier).value.integerData;
-    case INTEGER_FACTOR:
-        return factor->integerExpression;
-    case DECIMAL_FACTOR:
-        return (int)factor->floatExpression; // Convert float to int
-    case PARENTHESIS_FACTOR:
-        return intValueExpression(factor->expression);
-    case VECTOR_FACTOR:
-        // Assuming the vector has x and y as integer values
-        // return (int)factor->vector->x + (int)factor->vector->y; // Example: sum of x and y
-    default:
-        break;
-    }
-    return 0; // Default case if no valid factor is found
-}
+// int intValueFactor(Factor* factor) {
+//     switch (factor->type)  // Check the type of the factor
+//     {
+//     case IDENTIFIER_FACTOR:
+//         return getSymbolEntry(currentCompilerState()->symbolTable, factor->identifier).value.integerData;
+//     case INTEGER_FACTOR:
+//         return factor->integerExpression;
+//     case DECIMAL_FACTOR:
+//         return (int)factor->floatExpression; // Convert float to int
+//     case PARENTHESIS_FACTOR:
+//         return intValueExpression(factor->expression);
+//     case VECTOR_FACTOR:
+//         // Assuming the vector has x and y as integer values
+//         // return (int)factor->vector->x + (int)factor->vector->y; // Example: sum of x and y
+//     default:
+//         break;
+//     }
+//     return 0; // Default case if no valid factor is found
+// }
 
-int intValueExpression(Expression* expression) {
-    int divisor = 0; // Declare divisor outside the switch to avoid re-declaration
-    switch (expression->type)  // Check the type of the factor
-    {
-    case ADDITION:
-        return intValueExpression(expression->leftExpression) + intValueExpression(expression->rightExpression);
-    case SUBTRACTION:
-        return intValueExpression(expression->leftExpression) - intValueExpression(expression->rightExpression);
-    case MULTIPLICATION:
-        return intValueExpression(expression->leftExpression) * intValueExpression(expression->rightExpression);
-    case DIVISION: // Note: Division by zero should be handled elsewhere
-        divisor = intValueExpression(expression->rightExpression);
-        if (divisor == 0) { // int equals sin delta ????
-            currentCompilerState()->succeed = false; // Set the state to fail
-            return 0;
-        }
-        return intValueExpression(expression->leftExpression) / divisor;
-    case MODULUS:
-        divisor = intValueExpression(expression->rightExpression);
-        if (divisor == 0) { // int equals sin delta ????
-            currentCompilerState()->succeed = false; // Set the state to fail
-            return 0;
-        }
-        return intValueExpression(expression->leftExpression) % divisor;
-    case FACTOR:
-        return intValueFactor(expression->factor);
-    case GET_X:
-        return vectorValueExpression(expression->expression).x;
-    case GET_Y:
-        return vectorValueExpression(expression->expression).y;
-    case ARRAY_ACCESS:
-        SymbolEntry arrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, expression->array->identifier);
-        int index = intValueExpression(expression->indexExpression);
-        int size = arrayEntry.value.arrayData.size;
-        if (index < 0 || index >= size) {
-            //fprintf(stderr, "Index out of bounds for array[%d] accessed index %d\n", size, index);
-            currentCompilerState()->succeed = false;
-            return 0; // Handle
-        }
-        return arrayEntry.value.arrayData.elements[index].value.integerData; // Return the integer value at the index
-    case FUNCTION_EXPRESSION:
-        // Assuming the function returns an integer value
-        break;
-    default:
-        break;
-    }
-    return 0;
-}
+// int intValueExpression(Expression* expression) {
+//     int divisor = 0; // Declare divisor outside the switch to avoid re-declaration
+//     switch (expression->type)  // Check the type of the factor
+//     {
+//     case ADDITION:
+//         return intValueExpression(expression->leftExpression) + intValueExpression(expression->rightExpression);
+//     case SUBTRACTION:
+//         return intValueExpression(expression->leftExpression) - intValueExpression(expression->rightExpression);
+//     case MULTIPLICATION:
+//         return intValueExpression(expression->leftExpression) * intValueExpression(expression->rightExpression);
+//     case DIVISION: // Note: Division by zero should be handled elsewhere
+//         divisor = intValueExpression(expression->rightExpression);
+//         if (divisor == 0) { // int equals sin delta ????
+//             currentCompilerState()->succeed = false; // Set the state to fail
+//             return 0;
+//         }
+//         return intValueExpression(expression->leftExpression) / divisor;
+//     case MODULUS:
+//         divisor = intValueExpression(expression->rightExpression);
+//         if (divisor == 0) { // int equals sin delta ????
+//             currentCompilerState()->succeed = false; // Set the state to fail
+//             return 0;
+//         }
+//         return intValueExpression(expression->leftExpression) % divisor;
+//     case FACTOR:
+//         return intValueFactor(expression->factor);
+//     case GET_X:
+//         return vectorValueExpression(expression->expression).x;
+//     case GET_Y:
+//         return vectorValueExpression(expression->expression).y;
+//     case ARRAY_ACCESS:
+//         SymbolEntry arrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, expression->array->identifier);
+//         int index = intValueExpression(expression->indexExpression);
+//         int size = arrayEntry.value.arrayData.size;
+//         if (index < 0 || index >= size) {
+//             //fprintf(stderr, "Index out of bounds for array[%d] accessed index %d\n", size, index);
+//             currentCompilerState()->succeed = false;
+//             return 0; // Handle
+//         }
+//         return arrayEntry.value.arrayData.elements[index].value.integerData; // Return the integer value at the index
+//     case FUNCTION_EXPRESSION:
+//         // Assuming the function returns an integer value
+//         break;
+//     default:
+//         break;
+//     }
+//     return 0;
+// }
 
-float floatValueFactor(Factor* factor) {
-    switch (factor->type)  // Check the type of the factor
-    {
-    case IDENTIFIER_FACTOR:
-        return getSymbolEntry(currentCompilerState()->symbolTable, factor->identifier).value.floatData;
-    case INTEGER_FACTOR:
-        return (float)factor->integerExpression; // Convert int to float
-    case DECIMAL_FACTOR:
-        return factor->floatExpression;
-    case PARENTHESIS_FACTOR:
-        return floatValueExpression(factor->expression);
-    case VECTOR_FACTOR:
-    default:
-        break;
-    }
-    return 0.0f; // Default case if no valid factor is found
-}
+// float floatValueFactor(Factor* factor) {
+//     switch (factor->type)  // Check the type of the factor
+//     {
+//     case IDENTIFIER_FACTOR:
+//         return getSymbolEntry(currentCompilerState()->symbolTable, factor->identifier).value.floatData;
+//     case INTEGER_FACTOR:
+//         return (float)factor->integerExpression; // Convert int to float
+//     case DECIMAL_FACTOR:
+//         return factor->floatExpression;
+//     case PARENTHESIS_FACTOR:
+//         return floatValueExpression(factor->expression);
+//     case VECTOR_FACTOR:
+//     default:
+//         break;
+//     }
+//     return 0.0f; // Default case if no valid factor is found
+// }
 
-float floatValueExpression(Expression* expression) {
-    switch (expression->type)  // Check the type of the factor
-    {
-    case ADDITION:
-        return floatValueExpression(expression->leftExpression) + floatValueExpression(expression->rightExpression);
-    case SUBTRACTION:
-        return floatValueExpression(expression->leftExpression) - floatValueExpression(expression->rightExpression);
-    case MULTIPLICATION:
-        return floatValueExpression(expression->leftExpression) * floatValueExpression(expression->rightExpression);
-    case DIVISION: // Note: Division by zero should be handled elsewhere
-        float divisor = floatValueExpression(expression->rightExpression);
-        if (divisor == 0.0f) { // float equals sin delta ????
-            return NAN; // Handle division by zero
-        }
-        return floatValueExpression(expression->leftExpression) / divisor;
-    case FACTOR:
-        return floatValueFactor(expression->factor);
-    case GET_X:
-        return vectorValueExpression(expression->expression).x;
-    case GET_Y:
-        return vectorValueExpression(expression->expression).y;
-    case ARRAY_ACCESS:
-        SymbolEntry arrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, expression->array->identifier);
-        int index = intValueExpression(expression->indexExpression);
-        int size = arrayEntry.value.arrayData.size;
-        if (index < 0 || index >= size) {
-            //fprintf(stderr, "Index out of bounds for array[%d] accessed index %d\n", size, index);
-            return NAN; // Handle
-        }
-        return arrayEntry.value.arrayData.elements[index].value.floatData; // Return the integer value at the index
+// float floatValueExpression(Expression* expression) {
+//     switch (expression->type)  // Check the type of the factor
+//     {
+//     case ADDITION:
+//         return floatValueExpression(expression->leftExpression) + floatValueExpression(expression->rightExpression);
+//     case SUBTRACTION:
+//         return floatValueExpression(expression->leftExpression) - floatValueExpression(expression->rightExpression);
+//     case MULTIPLICATION:
+//         return floatValueExpression(expression->leftExpression) * floatValueExpression(expression->rightExpression);
+//     case DIVISION: // Note: Division by zero should be handled elsewhere
+//         float divisor = floatValueExpression(expression->rightExpression);
+//         if (divisor == 0.0f) { // float equals sin delta ????
+//             return NAN; // Handle division by zero
+//         }
+//         return floatValueExpression(expression->leftExpression) / divisor;
+//     case FACTOR:
+//         return floatValueFactor(expression->factor);
+//     case GET_X:
+//         return vectorValueExpression(expression->expression).x;
+//     case GET_Y:
+//         return vectorValueExpression(expression->expression).y;
+//     case ARRAY_ACCESS:
+//         SymbolEntry arrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, expression->array->identifier);
+//         int index = intValueExpression(expression->indexExpression);
+//         int size = arrayEntry.value.arrayData.size;
+//         if (index < 0 || index >= size) {
+//             //fprintf(stderr, "Index out of bounds for array[%d] accessed index %d\n", size, index);
+//             return NAN; // Handle
+//         }
+//         return arrayEntry.value.arrayData.elements[index].value.floatData; // Return the integer value at the index
 
-    case FUNCTION_EXPRESSION:
-        // Assuming the function returns a float value
-        break;
-    default:
-        break;
-    }
-    return 0.0f;
-}
+//     case FUNCTION_EXPRESSION:
+//         // Assuming the function returns a float value
+//         break;
+//     default:
+//         break;
+//     }
+//     return 0.0f;
+// }
 
-VectorData vectorValueFactor(Factor* factor) {
-    VectorData vectorData = {0.0f, 0.0f}; // Initialize to zero
-    switch (factor->type)  // Check the type of the factor
-    {
-    case IDENTIFIER_FACTOR:
-        return getSymbolEntry(currentCompilerState()->symbolTable, factor->identifier).value.vectorData;
-        break;
-    case INTEGER_TYPE:
-        vectorData.x = intValueExpression(factor->vector->x); // Convert int to float
-        vectorData.y = intValueExpression(factor->vector->y); // Assuming both x and y are the same for integer factor
-        break;
-    case FLOAT_TYPE:
-        vectorData.x = floatValueExpression(factor->vector->x); // Convert int to float
-        vectorData.y = floatValueExpression(factor->vector->y); // Assuming both x and y are the same for integer factor
-        break;
-    default:
-        break;
-    }
+// VectorData vectorValueFactor(Factor* factor) {
+//     VectorData vectorData = {0.0f, 0.0f}; // Initialize to zero
+//     switch (factor->type)  // Check the type of the factor
+//     {
+//     case IDENTIFIER_FACTOR:
+//         return getSymbolEntry(currentCompilerState()->symbolTable, factor->identifier).value.vectorData;
+//         break;
+//     case INTEGER_TYPE:
+//         vectorData.x = intValueExpression(factor->vector->x); // Convert int to float
+//         vectorData.y = intValueExpression(factor->vector->y); // Assuming both x and y are the same for integer factor
+//         break;
+//     case FLOAT_TYPE:
+//         vectorData.x = floatValueExpression(factor->vector->x); // Convert int to float
+//         vectorData.y = floatValueExpression(factor->vector->y); // Assuming both x and y are the same for integer factor
+//         break;
+//     default:
+//         break;
+//     }
 
-    return vectorData;
-}
-
-VectorData vectorValueExpression(Expression *expression) {
-    VectorData vectorData = {0.0f, 0.0f}; // Initialize to zero
-    VectorData v1, v2; // Temporary variables for vector operations
-    switch (expression->type)  // Check the type of the factor
-    {
-    case ADDITION:
-        v1 = vectorValueExpression(expression->leftExpression);
-        v2 = vectorValueExpression(expression->rightExpression);
-        vectorData.x = v1.x + v2.x;
-        vectorData.y = v1.y + v2.y;
-        break;
-    case SUBTRACTION:
-        v1 = vectorValueExpression(expression->leftExpression);
-        v2 = vectorValueExpression(expression->rightExpression);
-        vectorData.x = v1.x - v2.x;
-        vectorData.y = v1.y - v2.y;
-        break;
-    case MULTIPLICATION:
-        v1 = vectorValueExpression(expression->leftExpression);
-        v2 = vectorValueExpression(expression->rightExpression);
-        // TODO
-        break;
-    case DIVISION: 
-        vectorData.x = NAN;
-        break;
-    case FACTOR:
-        vectorData = vectorValueFactor(expression->factor);
-        break;
-    case GET_X:
-        // vectorData.x = floatValueFactor(expression->factor->vector->x);
-        break;
-    case GET_Y:
-        // vectorData.y = floatValueFactor(expression->factor->vector->y); 
-        break;
-    case ARRAY_ACCESS:
-        // Assuming the array is of type VECTOR_TYPE and the index is valid
-        int index = intValueExpression(expression->indexExpression);
-        Expressions* arrayElements = expression->array->expressionList->expressions;
-        while(index-- && arrayElements != NULL) {
-            arrayElements = arrayElements->next; // Move to the next element in the list
-        } // TODO
-        return vectorValueExpression(arrayElements->expression);  
-    case FUNCTION_EXPRESSION:
-        // Assuming the function returns a VectorData value
-        break;
-    default:
-        break;
-    }
-    return vectorData;
-}
-
-char *stringValue(StringPartList *list) {
-    StringPartList *current = list;
-    
-    while (current) {
-        switch (current->stringPart->type) 
-        {
-        case STRING_SEGMENT:
-            printf("%s", current->stringPart->string);
-            break;
-        case IDENTIFIER_SEGMENT:
-            SymbolEntry identifierEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, current->stringPart->identifier, currentCompilerState()->scopesStack); 
-            if(identifierEntry.type == NULL_TYPE) {
-                printf("Error: Identifier '%s' not found in symbol table.\n", current->stringPart->identifier);
-                return NULL; // Handle error appropriately
-            }
-            printSymbolValue(identifierEntry); 
-            break;
-        default:
-            break;
-        }
-        current = current->next;
-    }
-    
-    return NULL; // Return the concatenated string
-}
+//     return vectorData;
+// }
 
 
 int boolExpressionIsValid(BoolExpression* expression) {

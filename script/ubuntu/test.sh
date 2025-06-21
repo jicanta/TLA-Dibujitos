@@ -18,7 +18,7 @@ fi
 
 echo "Compiler should accept..."
 echo ""
-
+rm src/test/c/accept/*.svg
 for test in $(ls src/test/c/accept/); do
 	if [ "${SHOW_AST:-false}" = "true" ]; then
 		echo -e "\n${GREEN}Testing: $test${OFF}"

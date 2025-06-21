@@ -32,8 +32,8 @@ static void _generateSVGFooter(FILE* outputFile);
 static void _generateProgram(FILE* outputFile, Program * program);
 static void _generateSentences(FILE* outputFile, Sentences * sentences);
 static void _generateSentence(FILE* outputFile, Sentence * sentence);
-static void _generateExpression(Expression * expression);
-static void _generateFactor(Factor * factor);
+// static void _generateExpression(Expression * expression);
+// static void _generateFactor(Factor * factor);
 static void _generateFunctionCall(FILE* outputFile, char * functionName, ExpressionList * arguments);
 static void _generateCircle(FILE* outputFile, ExpressionList * arguments);
 static void _generateCurve(FILE* outputFile, ExpressionList * arguments);
@@ -180,8 +180,17 @@ static VectorData _evaluateExpressionAsVector(Expression * expression) {
                 result.y = left.y - right.y;
             }
             break;
-        default:
+        case MULTIPLICATION:
+            {
+                VectorData left = _evaluateExpressionAsVector(expression->leftExpression);
+                VectorData right = _evaluateExpressionAsVector(expression->rightExpression);
+                // Assuming multiplication is component-wise
+                result.x = left.x * right.x;
+                result.y = left.y * right.y;
+            }
             break;
+        default:
+            break; // TODO ERROR    
     }
     
     return result;
@@ -286,18 +295,18 @@ static void _generateLayer(ExpressionList * arguments) {
  * Generates log output (as SVG comment)
  */
 static void _generateLog(FILE* outputFile, StringPartList * stringParts) {
-    fprintf(outputFile, "  <!-- Log: ");
+    // fprintf(outputFile, "  <!-- Log: ");
     _generateStringOutput(outputFile, stringParts);
-    fprintf(outputFile, " -->\n");
+    // fprintf(outputFile, " -->\n");
 }
 
 /**
  * Generates import (as SVG comment)
  */
 static void _generateImport(FILE* outputFile, StringPartList * importPath) {
-    fprintf(outputFile, "  <!-- Import: ");
-    _generateStringOutput(outputFile, importPath);
-    fprintf(outputFile, " -->\n");
+    // fprintf(outputFile, "  <!-- Import: ");
+    // _generateStringOutput(outputFile, importPath);
+    // fprintf(outputFile, " -->\n");
 }
 
 /**
@@ -306,28 +315,25 @@ static void _generateImport(FILE* outputFile, StringPartList * importPath) {
 static void _generateStringOutput(FILE* outputFile, StringPartList * stringParts) {
     if (!stringParts) return;
     
-    _generateStringOutput(outputFile, stringParts->next);
-    
-    if (stringParts->stringPart) {
-        if (stringParts->stringPart->type == STRING_SEGMENT) {
-            fprintf(outputFile, "%s", stringParts->stringPart->string);
-        } else if (stringParts->stringPart->type == IDENTIFIER_SEGMENT) {
-            SymbolEntry entry = getSymbolEntry(currentCompilerState()->symbolTable, stringParts->stringPart->identifier);
-            switch (entry.type) {
-                case INTEGER_TYPE:
-                    fprintf(outputFile, "%d", entry.value.integerData);
-                    break;
-                case FLOAT_TYPE:
-                    fprintf(outputFile, "%.2f", entry.value.floatData);
-                    break;
-                case VECTOR_TYPE:
-                    fprintf(outputFile, "(%.2f, %.2f)", entry.value.vectorData.x, entry.value.vectorData.y);
-                    break;
-                default:
-                    fprintf(outputFile, "%s", stringParts->stringPart->identifier);
-                    break;
+    while(stringParts) {
+        if (stringParts->stringPart) {
+            if (stringParts->stringPart->type == STRING_SEGMENT) {
+                const char *src = stringParts->stringPart->string;
+                while (*src) {
+                    if (src[0] == '\\' && src[1] == 'n') {
+                        printf("\n");
+                        src += 2;
+                    } else {
+                        putchar(*src);
+                        src++;
+                    }
+                }
+            } else if (stringParts->stringPart->type == IDENTIFIER_SEGMENT) {
+                SymbolEntry entry = getSymbolEntry(currentCompilerState()->symbolTable, stringParts->stringPart->identifier);
+                printSymbolValue(entry); 
             }
         }
+        stringParts = stringParts->next;
     }
 }
 
@@ -569,7 +575,26 @@ void _generateForLoop(FILE* outputFile, char *iterator, Array *array, Sentences 
         break;
     }
     case BASIC_ARRAY: {
-            // TODO
+        Expressions *current = array->expressionList->expressions;
+        while (current) {
+            switch (typeOfExpression(current->expression))
+            {
+            case INTEGER_TYPE:
+                iteratorEntry.value.integerData = _evaluateExpressionAsInt(current->expression);
+                break;
+            case FLOAT_TYPE:
+                iteratorEntry.value.floatData = _evaluateExpressionAsFloat(current->expression);
+                break;
+            case VECTOR_TYPE:
+                iteratorEntry.value.vectorData = _evaluateExpressionAsVector(current->expression);
+                break;
+            default:
+                break;
+            }
+            updateSymbol(currentCompilerState()->symbolTable, iteratorEntry);
+            _generateSentences(outputFile, block);
+            current = current->next;
+        }
         break;
     }
     case INTERVAL_ARRAY: {
@@ -589,6 +614,42 @@ void _generateForLoop(FILE* outputFile, char *iterator, Array *array, Sentences 
     }
 }
 
+void _generateArrayElementAssignment(char *arrayIdentifier, Expression *arrayIndexExpression, Expression *arrayElementExpression) {
+    if (!arrayIdentifier || !arrayIndexExpression || !arrayElementExpression) return;
+    
+    SymbolEntry entry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, arrayIdentifier, currentCompilerState()->scopesStack);
+    if (entry.type == NULL_TYPE) {
+        logError(_logger, "Array identifier '%s' not found in symbol table.", arrayIdentifier);
+        return;
+    }
+    if (entry.type != ARRAY_TYPE) {
+        logError(_logger, "Identifier '%s' is not an array.", arrayIdentifier);
+        return;
+    }
+    
+    int index = _evaluateExpressionAsInt(arrayIndexExpression);
+    if (index < 0 || index >= entry.value.arrayData.size) {
+        logError(_logger, "Index %d out of bounds for array '%s'.", index, arrayIdentifier);
+        return; // TODO error
+    }
+    
+    switch (entry.value.arrayData.elements[index].type) {
+    case INTEGER_TYPE:
+        entry.value.arrayData.elements[index].value.integerData = _evaluateExpressionAsInt(arrayElementExpression);
+        break;
+    case FLOAT_TYPE:
+        entry.value.arrayData.elements[index].value.floatData = _evaluateExpressionAsFloat(arrayElementExpression);
+        break;
+    case VECTOR_TYPE:
+        entry.value.arrayData.elements[index].value.vectorData = _evaluateExpressionAsVector(arrayElementExpression);
+        break;
+    default:
+        logError(_logger, "Cannot assign to array '%s' of type %s.", arrayIdentifier, symbolTypeToString(entry.type));
+        return;
+    }
+        
+    updateSymbol(currentCompilerState()->symbolTable, entry);
+}
 /**
  * Generates a sentence
  */
@@ -611,8 +672,8 @@ static void _generateSentence(FILE* outputFile, Sentence * sentence) {
         case ASSIGN_ARRAY_SENTENCE:
             _generateArrayAssignment(sentence->assignArrayIdentifier, sentence->assignArray);
             break;
-        case ASSIGN_ARRAY_ELEMENT_SENTENCE: // TODO
-            // These don't generate visual output, but update the symbol table
+        case ASSIGN_ARRAY_ELEMENT_SENTENCE:
+            _generateArrayElementAssignment(sentence->assignArrayElemIdentifier, sentence->assignArrayIndexExpression, sentence->assignArrayElementExpression);
             break;
         case IF_SENTENCE:
             if (_evaluateExpressionAsBool(sentence->ifBoolExpression)) {

@@ -1,43 +1,3 @@
-/* "TODO"
-el objetivo de esta etapa seria:
-    - agregarle tipos de dato a las asignaciones (al final esto no hace falta xd)
-        ejemplo: float num = 3.3;
-        ejemplo: vector vec = (1,3);
-        ejemplo: int entero = 4;
-    - meter las variables declaradas
-    - resolver tipos de datos de las expresiones
-    - detectar el uso de variables inexistentes
-    - detectar operaciones incompatibles sobre tipos de datos
-        ejemplo: funcion + 3;
-        ejemplo: numero();
-    - ver si hacer scopes
-
-Despues
-    - crear las funciones default y meterlas en la tabla
-        - Crear archivo con todas las funciones
-
-TABLA DE SIMBOLOS:
-ID      TYPE        INITIALIZATION
-
-foo     FUNCTION    REF-funcion
-numero  INTEGER     3
-
-
-
-struct de funcion
-lista de tipos: int (retorno), float (param1), float (param2)
-
-
-Notas Alex:
-- Verificar tipos en funciones CON RETORNO
-- Manejar Scopes (FOR, IF ELSE)
-- - Leer el documento de scopes
-- Otros casos derivados:
-- - ¿Qué errores pueden aparecer al manejar arrays en FORs?
-- - Error de buscar en un array un valor demasiado alto
-- - Error de buscar en un array un valor negativo
-
-*/
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
@@ -119,11 +79,10 @@ int intValueExpression(Expression* expression);
 float floatValueExpression(Expression* expression);
 const char *symbolTypeToString(SymbolType type);
 VectorData vectorValueExpression(Expression *expression);
-char *stringValue(StringPartList *list);
 void updateSymbol(SymbolTable* symbolTable, const SymbolEntry data);
 SymbolEntry getSymbolEntryWithScope(const SymbolTable* symbolTable, const char* identifier, ScopesStack* stack);
-int boolValueExpression(BoolExpression* expression);
 int boolExpressionIsValid(BoolExpression* expression);
+void printSymbolValue(SymbolEntry entry);
 /* LISTA DE CONSTANTES PREDEFINIDAS
 z-layer-control:
     FRONT
