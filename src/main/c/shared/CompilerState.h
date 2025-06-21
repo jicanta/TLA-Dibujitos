@@ -19,7 +19,7 @@ struct SymbolTable; // forward declaration
  */
 typedef struct CompilerState {
 	// The root node of the AST.
-	void * abstractSyntaxtTree;
+	void* abstractSyntaxtTree;
 
 	// A flag that indicates the current state of the compilation so far.
 	boolean succeed;
@@ -28,7 +28,9 @@ typedef struct CompilerState {
 	// TODO: Add a symbol table.
 	// TODO: Add configuration.
 	// TODO: ...
-	struct SymbolTable *symbolTable;
+	struct SymbolTable* symbolTable;
+	int scopeLevel;
+	ScopesStack* scopesStack;
 
 	// The computed value of the entire program (only for the calculator).
 	int value;

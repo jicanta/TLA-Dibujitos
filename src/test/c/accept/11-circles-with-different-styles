@@ -1,5 +1,7 @@
+foo = 33.;
 colores[] = [RED, ORANGE, YELLOW, GREEN, BLUE, INDIGO, PURPLE];
-idx = 0;
+idx = 42;
+
 for c in colores {
     stroke(2);
     fill(c);

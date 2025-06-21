@@ -9,6 +9,7 @@
 #include "shared/Logger.h"
 #include "shared/String.h"
 #include "backend/semantic-analysis/SymbolTable.h"
+#include "backend/semantic-analysis/Scopes.h"
 #include <string.h>
 
 /**
@@ -46,10 +47,15 @@ const int main(const int count, const char ** arguments) {
 		.abstractSyntaxtTree = NULL,
 		.succeed = false,
 		.symbolTable = createSymbolTable(),
-		.value = 0
+		.value = 0,
+		.scopeLevel = 1, // TODO: remove
+		.scopesStack = initializeScopesStack()
 	};
 
-	setDefaultFunctions(compilerState.symbolTable);
+	addNewScope(compilerState.scopesStack);
+	const int initialScope = currentScope(compilerState.scopesStack);
+	
+	setDefaultFunctions(compilerState.symbolTable, initialScope);
 	
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
@@ -79,6 +85,7 @@ const int main(const int count, const char ** arguments) {
 	logDebugging(logger, "Releasing modules resources...");
 
 	freeSymbolTable(compilerState.symbolTable);
+	freeScopesStack(compilerState.scopesStack);
 	shutdownGeneratorModule();
 	// shutdownCalculatorModule();
 	shutdownAbstractSyntaxTreeModule();

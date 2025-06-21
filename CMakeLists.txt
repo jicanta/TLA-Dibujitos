@@ -58,6 +58,7 @@ add_library(CompilerLib STATIC
 	src/main/c/backend/code-generation/Generator.c
 	src/main/c/backend/domain-specific/Calculator.c
 	src/main/c/backend/semantic-analysis/SymbolTable.c
+	src/main/c/backend/semantic-analysis/Scopes.c
 	src/main/c/frontend/lexical-analysis/FlexActions.c
 	src/main/c/frontend/lexical-analysis/FlexScanner.c
 	src/main/c/frontend/lexical-analysis/LexicalAnalyzerContext.c
@@ -68,6 +69,7 @@ add_library(CompilerLib STATIC
 	src/main/c/shared/Environment.c
 	src/main/c/shared/Logger.c
 	src/main/c/shared/String.c
+		src/main/c/backend/semantic-analysis/Scopes.h
 )
 
 # Create the main compiler executable

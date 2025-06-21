@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "Scopes.h"
+
 /*
 // Hash function (by Daniel J. Bernstein)
 unsigned long hash(const char* str) {
@@ -51,26 +53,22 @@ const char *symbolTypeToString(SymbolType type) {
         default: return "UNKNOWN_TYPE";
     }
 }
-// Function to print an element
-void printSymbolEntry(const SymbolEntry entry) {
+
+void printSymbolValue(SymbolEntry entry) {
     switch (entry.type) {
         case INTEGER_TYPE:
-            printf("[(int) %s: {%d}]", entry.identifier, entry.value.integerData);
+            printf("%d", entry.value.integerData);
             break;
         case FLOAT_TYPE:
-            printf("[(float) %s: {%.2f}]", entry.identifier, entry.value.floatData);
+            printf("%f", entry.value.floatData);
             break;
         case VECTOR_TYPE:
-            printf("[(vector) %s: {%.2f, %.2f}]",
-                entry.identifier,
-                entry.value.vectorData.x,
-                entry.value.vectorData.y);
+            printf("(%f, %f)", entry.value.vectorData.x, entry.value.vectorData.y);
             break;
         case FUNCTION_TYPE:
-            printf("[(function) %s: {ret: %d, params: ...}]", entry.identifier, entry.value.functionData.returnType);
+            printf("{ret: %d, params: ...}", entry.value.functionData.returnType);
             break;
         case ARRAY_TYPE:
-            printf("[(array) %s: {type: %d, elems:", entry.identifier, entry.value.arrayData.dataType);
             switch (entry.value.arrayData.dataType) {
             case IDENTIFIER_ARRAY:
                 /* code */
@@ -91,10 +89,10 @@ void printSymbolEntry(const SymbolEntry entry) {
                             printf("%d", arrayElements[i].value.integerData);
                             break;
                         case FLOAT_TYPE:
-                            printf("%.2f", arrayElements[i].value.floatData);
+                            printf("%f", arrayElements[i].value.floatData);
                             break;
                         case VECTOR_TYPE:
-                            printf("{%.2f, %.2f}", arrayElements[i].value.vectorData.x, arrayElements[i].value.vectorData.y);
+                            printf("(%f, %f)", arrayElements[i].value.vectorData.x, arrayElements[i].value.vectorData.y);
                             break;
                         default:
                             printf("(unknown type)");
@@ -112,6 +110,13 @@ void printSymbolEntry(const SymbolEntry entry) {
             break;
     }
 }
+// Function to print an element
+void printSymbolEntry(const SymbolEntry entry) {
+    printf("[%s[%d]%s = ", entry.identifier, entry.scope, symbolTypeToString(entry.type));
+    printSymbolValue(entry);
+    puts("]");
+}
+
 
 // Function to print the LinkedList
 void printSymbolTable(SymbolTable* symbolTable) {
@@ -193,79 +198,110 @@ int symbolExists(SymbolTable* symbolTable, const char* identifier) {
     return 0; // Symbol does not exist
 }
 
-void setDefaultColors(SymbolTable* symbolTable) {
+SymbolEntry getSymbolEntryWithScope(const SymbolTable* symbolTable, const char* identifier, ScopesStack* stack) {
+    SymbolEntryNode* head = symbolTable->head;
+
+    while (head != NULL) {
+        if (strcmp(head->entry.identifier, identifier) == 0) {
+            SymbolEntry ret = head->entry; // Return the found entry
+            if (containsScopesStack(stack, ret.scope)) {
+                return ret; // Return the found entry if it matches the current scope
+            }
+        }
+        head = head->next;
+    }
+
+    SymbolEntry emptyEntry = {0}; // Initialize an empty SymbolEntry
+    emptyEntry.identifier = NULL;
+    emptyEntry.type = NULL_TYPE; // Set to an invalid type
+    // Initialize other fields of emptyEntry as needed
+    return emptyEntry;
+}
+
+void setDefaultColors(SymbolTable* symbolTable, int scopeInit) {
     SymbolEntry redColor = {
         .identifier = "RED",
         .type = INTEGER_TYPE,
-        .value.integerData = 0xFF0000 // Hexadecimal representation of red color
+        .value.integerData = 0xFF0000, // Hexadecimal representation of red color
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, redColor);
 
     SymbolEntry greenColor = {
         .identifier = "GREEN",
         .type = INTEGER_TYPE,
-        .value.integerData = 0x00FF00 // Hexadecimal representation of green color
+        .value.integerData = 0x00FF00, // Hexadecimal representation of green color
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, greenColor);
 
     SymbolEntry blueColor = {
         .identifier = "BLUE",
         .type = INTEGER_TYPE,
-        .value.integerData = 0x0000FF // Hexadecimal representation of blue color
+        .value.integerData = 0x0000FF, // Hexadecimal representation of blue color
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, blueColor);
 
     insertSymbol(symbolTable, (SymbolEntry) {
         .identifier = "YELLOW",
         .type = INTEGER_TYPE,
-        .value.integerData = 0xFFFF00 // Hexadecimal representation of yellow color
+        .value.integerData = 0xFFFF00, // Hexadecimal representation of yellow color
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "BLACK",
         .type = INTEGER_TYPE,
-        .value.integerData = 0x000000 // Hexadecimal representation of black color
+        .value.integerData = 0x000000, // Hexadecimal representation of black color
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "INVISIBLE",
         .type = INTEGER_TYPE,
-        .value.integerData = 0x000000 // TODO
+        .value.integerData = 0x000000, // TODO
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "ORANGE",
         .type = INTEGER_TYPE,
-        .value.integerData = 0xFFA500 // Hexadecimal representation of orange color
+        .value.integerData = 0xFFA500, // Hexadecimal representation of orange color
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "INDIGO",
         .type = INTEGER_TYPE,
-        .value.integerData = 0x4B0082 // Hexadecimal representation of indigo color
+        .value.integerData = 0x4B0082, // Hexadecimal representation of indigo color
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "PURPLE",
         .type = INTEGER_TYPE,
-        .value.integerData = 0x800080 // Hexadecimal representation of purple color
+        .value.integerData = 0x800080, // Hexadecimal representation of purple color
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "BACK",
         .type = INTEGER_TYPE,
-        .value.integerData = 0 
+        .value.integerData = 0,
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "FRONT",
         .type = INTEGER_TYPE,
-        .value.integerData = 1
+        .value.integerData = 1,
+        .scope = scopeInit
     });
 }
 // Function to set all default functions
-void setDefaultFunctions(SymbolTable* symbolTable) {
-    setDefaultColors(symbolTable);
+void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
+    setDefaultColors(symbolTable, scopeInit);
     SymbolType* circleDataTypes = malloc(2 * sizeof(SymbolType));
     circleDataTypes[0] = VECTOR_TYPE;
     circleDataTypes[1] = FLOAT_TYPE;
@@ -277,7 +313,8 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
             .parameterCount = 2,
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
-        }
+        },
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, circleFunction);
 
@@ -291,7 +328,8 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
             .parameterCount = -1, // Indicates that the function can take an infinite number of parameters;
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
-        }
+        },
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, curveFunction);
 
@@ -305,7 +343,8 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
             .parameterCount = 1,
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
-        }
+        },
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, fillFunction);
 
@@ -319,7 +358,8 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
             .parameterCount = 1,
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
-        }
+        },
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, strokeFunction);
 
@@ -333,7 +373,8 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
             .parameterCount = 1,
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
-        }
+        },
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, zFunction);
 
@@ -347,7 +388,8 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
             .parameterCount = 1,
             .returnType = FLOAT_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
-        }
+        },
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, sqrtFunction);
 }
@@ -672,29 +714,21 @@ VectorData vectorValueExpression(Expression *expression) {
 }
 
 char *stringValue(StringPartList *list) {
-    if (!list) return NULL; // Check for NULL list
-    size_t length = 0;
     StringPartList *current = list;
     
-    // Calculate the total length of the string
     while (current) {
         switch (current->stringPart->type) 
         {
         case STRING_SEGMENT:
-            length += strlen(current->stringPart->string); 
+            printf("%s", current->stringPart->string);
             break;
         case IDENTIFIER_SEGMENT:
-            SymbolEntry identifierEntry = getSymbolEntry(currentCompilerState()->symbolTable, current->stringPart->identifier); 
-            switch (identifierEntry.type)
-            {
-            case INTEGER_TYPE:
-                length += snprintf(NULL, 0, "%d", identifierEntry.value.integerData); 
-                break;
-            case FLOAT_TYPE:
-                length += snprintf(NULL, 0, "%f", identifierEntry.value.floatData);
-            default:
-                break;
+            SymbolEntry identifierEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, current->stringPart->identifier, currentCompilerState()->scopesStack); 
+            if(identifierEntry.type == NULL_TYPE) {
+                printf("Error: Identifier '%s' not found in symbol table.\n", current->stringPart->identifier);
+                return NULL; // Handle error appropriately
             }
+            printSymbolValue(identifierEntry); 
             break;
         default:
             break;
@@ -702,40 +736,90 @@ char *stringValue(StringPartList *list) {
         current = current->next;
     }
     
-    char *result = calloc(length + 1, sizeof(char)); // +1 for the null terminator
-    if (!result) return NULL; // Check for memory allocation failure
-    
-    current = list;
-    
-    // Concatenate all parts into the result string
-    char *resultPtr = result;
-    while (current) {
-        switch (current->stringPart->type) 
-        {
-        case STRING_SEGMENT:
-            for(int i = 0; current->stringPart->string[i]; i++) {
-                *resultPtr++ = current->stringPart->string[i]; // Copy the string segment
-            }
+    return NULL; // Return the concatenated string
+}
 
-            break;
-        case IDENTIFIER_SEGMENT:
-            SymbolEntry identifierEntry = getSymbolEntry(currentCompilerState()->symbolTable, current->stringPart->identifier); 
-            switch (identifierEntry.type)
-            {
-            case INTEGER_TYPE:
-                resultPtr += sprintf(resultPtr, "%d", identifierEntry.value.integerData); 
-                break;
-            case FLOAT_TYPE:
-                resultPtr += sprintf(resultPtr, "%f", identifierEntry.value.floatData);
-            default:
-                break;
+int boolValueExpression(BoolExpression *expression) {
+    if (!expression) return false; 
+
+    switch (expression->type) {
+        case GREATER_OR_EQUAL: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return intValueExpression(expression->leftExpression) >= intValueExpression(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return floatValueExpression(expression->leftExpression) >= floatValueExpression(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = vectorValueExpression(expression->leftExpression);
+                VectorData v2 = vectorValueExpression(expression->rightExpression);
+                return (v1.x >= v2.x && v1.y >= v2.y);
             }
-            break;
+            return false;
+        }
+        case LESS_OR_EQUAL: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return intValueExpression(expression->leftExpression) <= intValueExpression(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return floatValueExpression(expression->leftExpression) <= floatValueExpression(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = vectorValueExpression(expression->leftExpression);
+                VectorData v2 = vectorValueExpression(expression->rightExpression);
+                return (v1.x <= v2.x && v1.y <= v2.y);
+            }
+            return false;
+        }
+        case GREATER_THAN: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return intValueExpression(expression->leftExpression) > intValueExpression(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return floatValueExpression(expression->leftExpression) > floatValueExpression(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = vectorValueExpression(expression->leftExpression);
+                VectorData v2 = vectorValueExpression(expression->rightExpression);
+                return (v1.x > v2.x && v1.y > v2.y);
+            }
+            return false;
+        }
+        case LESS_THAN: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return intValueExpression(expression->leftExpression) < intValueExpression(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return floatValueExpression(expression->leftExpression) < floatValueExpression(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = vectorValueExpression(expression->leftExpression);
+                VectorData v2 = vectorValueExpression(expression->rightExpression);
+                return (v1.x < v2.x && v1.y < v2.y);
+            }
+            return false;
+        }
+        case EQUAL_TO: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return intValueExpression(expression->leftExpression) == intValueExpression(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return floatValueExpression(expression->leftExpression) == floatValueExpression(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = vectorValueExpression(expression->leftExpression);
+                VectorData v2 = vectorValueExpression(expression->rightExpression);
+                return (v1.x == v2.x && v1.y == v2.y);
+            }
+            return false;
+        }
+        case NOT_EQUAL:
+            return intValueExpression(expression->leftExpression) != intValueExpression(expression->rightExpression);
+        case AND_TYPE:
+            return boolValueExpression(expression->leftBoolExpression) && boolValueExpression(expression->rightBoolExpression);
+        case OR_TYPE:
+            return boolValueExpression(expression->leftBoolExpression) || boolValueExpression(expression->rightBoolExpression);
+        case NOT_TYPE:
+            return !boolValueExpression(expression->boolExpression);
+        case BOOL_FACTOR:
+            return boolValueExpression(expression->boolFactor->boolExpression);
         default:
             break;
-        }
-        current = current->next;
     }
-    
-    return result; // Return the concatenated string
+    return false; 
 }
