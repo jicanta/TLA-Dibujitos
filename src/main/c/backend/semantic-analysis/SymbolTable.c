@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "Scopes.h"
+
 /*
 // Hash function (by Daniel J. Bernstein)
 unsigned long hash(const char* str) {
@@ -193,79 +195,110 @@ int symbolExists(SymbolTable* symbolTable, const char* identifier) {
     return 0; // Symbol does not exist
 }
 
-void setDefaultColors(SymbolTable* symbolTable) {
+SymbolEntry getSymbolEntryWithScope(const SymbolTable* symbolTable, const char* identifier, ScopesStack* stack) {
+    SymbolEntryNode* head = symbolTable->head;
+
+    while (head != NULL) {
+        if (strcmp(head->entry.identifier, identifier) == 0) {
+            SymbolEntry ret = head->entry; // Return the found entry
+            if (containsScopesStack(stack, ret.scope)) {
+                return ret; // Return the found entry if it matches the current scope
+            }
+        }
+        head = head->next;
+    }
+
+    SymbolEntry emptyEntry = {0}; // Initialize an empty SymbolEntry
+    emptyEntry.identifier = NULL;
+    emptyEntry.type = NULL_TYPE; // Set to an invalid type
+    // Initialize other fields of emptyEntry as needed
+    return emptyEntry;
+}
+
+void setDefaultColors(SymbolTable* symbolTable, int scopeInit) {
     SymbolEntry redColor = {
         .identifier = "RED",
         .type = INTEGER_TYPE,
-        .value.integerData = 0xFF0000 // Hexadecimal representation of red color
+        .value.integerData = 0xFF0000, // Hexadecimal representation of red color
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, redColor);
 
     SymbolEntry greenColor = {
         .identifier = "GREEN",
         .type = INTEGER_TYPE,
-        .value.integerData = 0x00FF00 // Hexadecimal representation of green color
+        .value.integerData = 0x00FF00, // Hexadecimal representation of green color
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, greenColor);
 
     SymbolEntry blueColor = {
         .identifier = "BLUE",
         .type = INTEGER_TYPE,
-        .value.integerData = 0x0000FF // Hexadecimal representation of blue color
+        .value.integerData = 0x0000FF, // Hexadecimal representation of blue color
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, blueColor);
 
     insertSymbol(symbolTable, (SymbolEntry) {
         .identifier = "YELLOW",
         .type = INTEGER_TYPE,
-        .value.integerData = 0xFFFF00 // Hexadecimal representation of yellow color
+        .value.integerData = 0xFFFF00, // Hexadecimal representation of yellow color
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "BLACK",
         .type = INTEGER_TYPE,
-        .value.integerData = 0x000000 // Hexadecimal representation of black color
+        .value.integerData = 0x000000, // Hexadecimal representation of black color
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "INVISIBLE",
         .type = INTEGER_TYPE,
-        .value.integerData = 0x000000 // TODO
+        .value.integerData = 0x000000, // TODO
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "ORANGE",
         .type = INTEGER_TYPE,
-        .value.integerData = 0xFFA500 // Hexadecimal representation of orange color
+        .value.integerData = 0xFFA500, // Hexadecimal representation of orange color
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "INDIGO",
         .type = INTEGER_TYPE,
-        .value.integerData = 0x4B0082 // Hexadecimal representation of indigo color
+        .value.integerData = 0x4B0082, // Hexadecimal representation of indigo color
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "PURPLE",
         .type = INTEGER_TYPE,
-        .value.integerData = 0x800080 // Hexadecimal representation of purple color
+        .value.integerData = 0x800080, // Hexadecimal representation of purple color
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "BACK",
         .type = INTEGER_TYPE,
-        .value.integerData = 0 
+        .value.integerData = 0,
+        .scope = scopeInit
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "FRONT",
         .type = INTEGER_TYPE,
-        .value.integerData = 1
+        .value.integerData = 1,
+        .scope = scopeInit
     });
 }
 // Function to set all default functions
-void setDefaultFunctions(SymbolTable* symbolTable) {
-    setDefaultColors(symbolTable);
+void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
+    setDefaultColors(symbolTable, scopeInit);
     SymbolType* circleDataTypes = malloc(2 * sizeof(SymbolType));
     circleDataTypes[0] = VECTOR_TYPE;
     circleDataTypes[1] = FLOAT_TYPE;
@@ -277,7 +310,8 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
             .parameterCount = 2,
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
-        }
+        },
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, circleFunction);
 
@@ -291,7 +325,8 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
             .parameterCount = -1, // Indicates that the function can take an infinite number of parameters;
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
-        }
+        },
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, curveFunction);
 
@@ -305,7 +340,8 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
             .parameterCount = 1,
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
-        }
+        },
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, fillFunction);
 
@@ -319,7 +355,8 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
             .parameterCount = 1,
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
-        }
+        },
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, strokeFunction);
 
@@ -333,7 +370,8 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
             .parameterCount = 1,
             .returnType = NULL_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
-        }
+        },
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, zFunction);
 
@@ -347,7 +385,8 @@ void setDefaultFunctions(SymbolTable* symbolTable) {
             .parameterCount = 1,
             .returnType = FLOAT_TYPE,
             .functionPointer = NULL // Set to the actual function pointer later
-        }
+        },
+        .scope = scopeInit
     };
     insertSymbol(symbolTable, sqrtFunction);
 }

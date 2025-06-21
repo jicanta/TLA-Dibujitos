@@ -70,7 +70,7 @@ Expression * ArrayAccessExpressionSemanticAction(Array * array, Expression * ind
 	// Semantic Analysis
 
 	// TODO: Check if indexExpression is of type INTEGER_TYPE, not negative and less than the size of the array
-	// const SymbolEntry symbolEntry = getSymbolEntry(currentCompilerState()->symbolTable, array->identifier);
+	// const SymbolEntry symbolEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, array->identifier, currentCompilerState()->scopesStack);
 	// BasicType* arrayElements = symbolEntry.value.arrayData.elements;
 	// int arraySize = 0;
 	// for (; arrayElements[arraySize].type != NULL_TYPE; arraySize++) {
@@ -84,7 +84,7 @@ Factor * IdentifierFactorSemanticAction(char * identifier) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 
 	// Semantic Analysis
-	const SymbolEntry symbolEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
+	const SymbolEntry symbolEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, identifier, currentCompilerState()->scopesStack);
 	switch (symbolEntry.type) {
 		case INTEGER_TYPE:
 		case FLOAT_TYPE:
@@ -208,7 +208,7 @@ Expressions * ExpressionsSemanticAction(Expressions * expressions, Expression * 
 
 int functionSemanticAnalyzerCheck(char * identifier, ExpressionList* functionArguments) {
 	// Semantic Analysis
-	const SymbolEntry symbolEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
+	const SymbolEntry symbolEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, identifier, currentCompilerState()->scopesStack);
 	if (symbolEntry.type != FUNCTION_TYPE) {
 		logError(_logger, "The identifier '%s' is not a function.", identifier);
 		currentCompilerState()->succeed = false;
@@ -245,10 +245,9 @@ int functionSemanticAnalyzerCheck(char * identifier, ExpressionList* functionArg
 		expressionIndexer = expressionIndexer->next;
 	}
 	// Additional operations if the function has infinite parameters
-	if (parameterCount == -1) { // TODO: lo rompi :p
-		i = 0; // Adjust for the last parameter which can be infinite
+	if (parameterCount == -1) {
 		while (expressionIndexer != NULL) {
-			if (fnParameterTypes[i] != typeOfExpression(expressionIndexer->expression)) {
+			if (fnParameterTypes[0] != typeOfExpression(expressionIndexer->expression)) {
 				logError(_logger, "Invalid parameter in function '%s': Should be '%s'.", identifier, symbolTypeToString(fnParameterTypes[i]));
 				currentCompilerState()->succeed = false;
 				return false;
@@ -293,9 +292,10 @@ Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expressi
 	SymbolEntry symbolEntry = {
 		.identifier = identifier,
 		.type = expressionType, // Assuming the type of the expression is the type of the identifier
+		.scope = currentScope(currentCompilerState()->scopesStack),
 	};
 	
-	const SymbolEntry currentEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
+	const SymbolEntry currentEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, identifier, currentCompilerState()->scopesStack);
 	if (currentEntry.type != NULL_TYPE && currentEntry.type != expressionType) {
 		logError(_logger, "The identifier '%s' has type mismatch", identifier);
 		return NULL;
@@ -361,7 +361,7 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 	sentence->type = ASSIGN_ARRAY_SENTENCE;
 
 	// Check if the identifier is already defined in the symbol table
-	const SymbolEntry currentEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
+	const SymbolEntry currentEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, identifier, currentCompilerState()->scopesStack);
 	if (currentEntry.type != NULL_TYPE) {
 		logError(_logger, "The identifier '%s' is already defined.", identifier);
 		currentCompilerState()->succeed = false;
@@ -404,12 +404,13 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 				.elements = arrayElements, // This will be filled later when the array is defined
 				.dataType = array->type, // Assuming the type of the array is the type of the identifier
 				.size = i // Set the size of the array
-			}
+			},
+			.scope = currentCompilerState()->scopeLevel
 		};
 		insertSymbol(currentCompilerState()->symbolTable, entry);
 	} else if (array->type == IDENTIFIER_ARRAY) {
 
-		SymbolEntry otherArrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, array->identifier);
+		SymbolEntry otherArrayEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, array->identifier, currentCompilerState()->scopesStack);
 		if (otherArrayEntry.type == NULL_TYPE) {
 			logError(_logger, "The identifier '%s' is not defined.", otherArrayEntry.identifier);
 			currentCompilerState()->succeed = false;
@@ -422,7 +423,8 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 			.value.arrayData = {
 				.elements = otherArrayEntry.value.arrayData.elements, // Pointing to the same elements as the other array
 				.dataType = array->type // Assuming the type of the array is the type of the identifier
-			}
+			},
+			.scope = currentCompilerState()->scopeLevel
 		};
 		insertSymbol(currentCompilerState()->symbolTable, entry);
 	}
@@ -492,7 +494,7 @@ void InsertForLoopIterator(char * identifier, Array * array) {
 	switch (array->type)
 	{
 		case IDENTIFIER_ARRAY:
-		SymbolEntry arrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, array->identifier);
+		SymbolEntry arrayEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, array->identifier, currentCompilerState()->scopesStack);
 		elementType = arrayEntry.value.arrayData.elements[0].type;
 		/* code */
 		break;
@@ -504,8 +506,9 @@ void InsertForLoopIterator(char * identifier, Array * array) {
 	default:
 		break;
 	}
-	
+
 	insertSymbol(currentCompilerState()->symbolTable, (SymbolEntry) {
+		.scope = 0, //TODO: Set the correct scope
 		.identifier = identifier,
 		.type = elementType, // Assuming the type of the array is ARRAY_TYPE
 		// .value.arrayData = arrayEntry.value.arrayData[0]
@@ -557,7 +560,7 @@ Array * IdentifierArraySemanticAction(char * identifier) {
 	array->type = IDENTIFIER_ARRAY;
 
 	// Semantic Analysis
-	const SymbolEntry symbolEntry = getSymbolEntry(currentCompilerState()->symbolTable, identifier);
+	const SymbolEntry symbolEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, identifier, currentCompilerState()->scopesStack);
 	if (symbolEntry.type != ARRAY_TYPE) {
 		logError(_logger, "The identifier '%s' is not an array.", identifier);
 		currentCompilerState()->succeed = false;

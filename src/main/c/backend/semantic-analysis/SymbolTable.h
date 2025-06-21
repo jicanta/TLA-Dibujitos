@@ -41,6 +41,7 @@ Notas Alex:
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
+#include "Scopes.h"
 #include "./../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "./../../frontend/syntactic-analysis/SyntacticAnalyzer.h"
 
@@ -91,7 +92,7 @@ typedef struct SymbolEntry {
             ArrayType dataType; // Data type for the array. Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
         } arrayData; // Array details
     } value; // Value associated with the identifier
-
+    int scope;
 } SymbolEntry;
 
 // Define the Node structure
@@ -112,7 +113,7 @@ void insertSymbol(SymbolTable* symbolTable, SymbolEntry  data);
 void printSymbolTable( SymbolTable* symbolTable);
 void printSymbolEntry(const SymbolEntry entry);
 void freeSymbolTable( SymbolTable* symbolTable);
-void setDefaultFunctions(SymbolTable* symbolTable);
+void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit);
 SymbolType typeOfExpression(Expression* expression);
 int intValueExpression(Expression* expression);
 float floatValueExpression(Expression* expression);
@@ -120,6 +121,7 @@ const char *symbolTypeToString(SymbolType type);
 VectorData vectorValueExpression(Expression *expression);
 char *stringValue(StringPartList *list);
 void updateSymbol(SymbolTable* symbolTable, const SymbolEntry data);
+SymbolEntry getSymbolEntryWithScope(const SymbolTable* symbolTable, const char* identifier, ScopesStack* stack);
 /* LISTA DE CONSTANTES PREDEFINIDAS
 z-layer-control:
     FRONT

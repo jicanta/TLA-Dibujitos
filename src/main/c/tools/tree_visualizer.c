@@ -392,7 +392,8 @@ int main(int argc, char** argv) {
         .symbolTable = createSymbolTable(),
         .value = 0
     };
-    setDefaultFunctions(compilerState.symbolTable);
+    // TODO: Initialize scopes stack properly
+    setDefaultFunctions(compilerState.symbolTable, 0);
     const SyntacticAnalysisStatus status = parse(&compilerState);
     
     fclose(file);
