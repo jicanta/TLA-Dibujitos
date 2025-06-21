@@ -60,6 +60,8 @@ Array * BasicArraySemanticAction(ExpressionList * expressionList);
 Sentence * AssignArrayElementSentenceSemanticAction(char * identifier, Expression * indexExpression, Expression * expression);
 Sentence * ImportSentenceSemanticAction(StringPartList * importPath);
 void InsertForLoopIterator(char * identifier, Array * array);
-
+void StartIfSentenceSemanticAction(BoolExpression * boolExpression);
+void StartElseSentenceSemanticAction();
+void StartScope();
 
 #endif

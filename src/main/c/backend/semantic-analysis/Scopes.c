@@ -85,6 +85,11 @@ int peek(ScopesStack *stack) {
         return -1;
     }
     // Return the top element without removing it
+    printf("_________________stackscope (%d)=[", stack->top);
+    for(int i = 0; i <= stack->top ; i++) {
+        printf("%d ", stack->arr[i]);
+    }
+    puts("<- Ese era el stack");
     return stack->arr[stack->top];
 }
 
@@ -97,7 +102,7 @@ int currentScope(ScopesStack *stack) {
 int containsScopesStack(ScopesStack *stack, int value) {
     // Iterate through the stack to check for the value
     int i = 0;
-    for (; stack->arr[i] < value && i <= stack->top; i++);
+    for (; stack->arr[i] < value && i < stack->top; i++);
     if (stack->arr[i] == value) {
         printf("found scope %d\n", stack->arr[i]);
         return 1; // Value found

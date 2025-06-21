@@ -390,10 +390,14 @@ int main(int argc, char** argv) {
         .abstractSyntaxtTree = NULL,
         .succeed = false,
         .symbolTable = createSymbolTable(),
-        .value = 0
+        .value = 0,
+        .scopeLevel = 1, // TODO: remove
+		.scopesStack = initializeScopesStack()
     };
+    addNewScope(compilerState.scopesStack);
+	const int initialScope = currentScope(compilerState.scopesStack);
     // TODO: Initialize scopes stack properly
-    setDefaultFunctions(compilerState.symbolTable, 0);
+    setDefaultFunctions(compilerState.symbolTable, initialScope);
     const SyntacticAnalysisStatus status = parse(&compilerState);
     
     fclose(file);

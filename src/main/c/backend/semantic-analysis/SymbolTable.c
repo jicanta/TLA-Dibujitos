@@ -53,26 +53,22 @@ const char *symbolTypeToString(SymbolType type) {
         default: return "UNKNOWN_TYPE";
     }
 }
-// Function to print an element
-void printSymbolEntry(const SymbolEntry entry) {
+
+void printSymbolValue(SymbolEntry entry) {
     switch (entry.type) {
         case INTEGER_TYPE:
-            printf("[(int) %s: {%d}]", entry.identifier, entry.value.integerData);
+            printf("%d", entry.value.integerData);
             break;
         case FLOAT_TYPE:
-            printf("[(float) %s: {%.2f}]", entry.identifier, entry.value.floatData);
+            printf("%f", entry.value.floatData);
             break;
         case VECTOR_TYPE:
-            printf("[(vector) %s: {%.2f, %.2f}]",
-                entry.identifier,
-                entry.value.vectorData.x,
-                entry.value.vectorData.y);
+            printf("(%f, %f)", entry.value.vectorData.x, entry.value.vectorData.y);
             break;
         case FUNCTION_TYPE:
-            printf("[(function) %s: {ret: %d, params: ...}]", entry.identifier, entry.value.functionData.returnType);
+            printf("{ret: %d, params: ...}", entry.value.functionData.returnType);
             break;
         case ARRAY_TYPE:
-            printf("[(array) %s: {type: %d, elems:", entry.identifier, entry.value.arrayData.dataType);
             switch (entry.value.arrayData.dataType) {
             case IDENTIFIER_ARRAY:
                 /* code */
@@ -93,10 +89,10 @@ void printSymbolEntry(const SymbolEntry entry) {
                             printf("%d", arrayElements[i].value.integerData);
                             break;
                         case FLOAT_TYPE:
-                            printf("%.2f", arrayElements[i].value.floatData);
+                            printf("%f", arrayElements[i].value.floatData);
                             break;
                         case VECTOR_TYPE:
-                            printf("{%.2f, %.2f}", arrayElements[i].value.vectorData.x, arrayElements[i].value.vectorData.y);
+                            printf("(%f, %f)", arrayElements[i].value.vectorData.x, arrayElements[i].value.vectorData.y);
                             break;
                         default:
                             printf("(unknown type)");
@@ -114,6 +110,13 @@ void printSymbolEntry(const SymbolEntry entry) {
             break;
     }
 }
+// Function to print an element
+void printSymbolEntry(const SymbolEntry entry) {
+    printf("[%s[%d]%s = ", entry.identifier, entry.scope, symbolTypeToString(entry.type));
+    printSymbolValue(entry);
+    puts("]");
+}
+
 
 // Function to print the LinkedList
 void printSymbolTable(SymbolTable* symbolTable) {
@@ -711,29 +714,21 @@ VectorData vectorValueExpression(Expression *expression) {
 }
 
 char *stringValue(StringPartList *list) {
-    if (!list) return NULL; // Check for NULL list
-    size_t length = 0;
     StringPartList *current = list;
     
-    // Calculate the total length of the string
     while (current) {
         switch (current->stringPart->type) 
         {
         case STRING_SEGMENT:
-            length += strlen(current->stringPart->string); 
+            printf("%s", current->stringPart->string);
             break;
         case IDENTIFIER_SEGMENT:
-            SymbolEntry identifierEntry = getSymbolEntry(currentCompilerState()->symbolTable, current->stringPart->identifier); 
-            switch (identifierEntry.type)
-            {
-            case INTEGER_TYPE:
-                length += snprintf(NULL, 0, "%d", identifierEntry.value.integerData); 
-                break;
-            case FLOAT_TYPE:
-                length += snprintf(NULL, 0, "%f", identifierEntry.value.floatData);
-            default:
-                break;
+            SymbolEntry identifierEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, current->stringPart->identifier, currentCompilerState()->scopesStack); 
+            if(identifierEntry.type == NULL_TYPE) {
+                printf("Error: Identifier '%s' not found in symbol table.\n", current->stringPart->identifier);
+                return NULL; // Handle error appropriately
             }
+            printSymbolValue(identifierEntry); 
             break;
         default:
             break;
@@ -741,40 +736,90 @@ char *stringValue(StringPartList *list) {
         current = current->next;
     }
     
-    char *result = calloc(length + 1, sizeof(char)); // +1 for the null terminator
-    if (!result) return NULL; // Check for memory allocation failure
-    
-    current = list;
-    
-    // Concatenate all parts into the result string
-    char *resultPtr = result;
-    while (current) {
-        switch (current->stringPart->type) 
-        {
-        case STRING_SEGMENT:
-            for(int i = 0; current->stringPart->string[i]; i++) {
-                *resultPtr++ = current->stringPart->string[i]; // Copy the string segment
-            }
+    return NULL; // Return the concatenated string
+}
 
-            break;
-        case IDENTIFIER_SEGMENT:
-            SymbolEntry identifierEntry = getSymbolEntry(currentCompilerState()->symbolTable, current->stringPart->identifier); 
-            switch (identifierEntry.type)
-            {
-            case INTEGER_TYPE:
-                resultPtr += sprintf(resultPtr, "%d", identifierEntry.value.integerData); 
-                break;
-            case FLOAT_TYPE:
-                resultPtr += sprintf(resultPtr, "%f", identifierEntry.value.floatData);
-            default:
-                break;
+int boolValueExpression(BoolExpression *expression) {
+    if (!expression) return false; 
+
+    switch (expression->type) {
+        case GREATER_OR_EQUAL: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return intValueExpression(expression->leftExpression) >= intValueExpression(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return floatValueExpression(expression->leftExpression) >= floatValueExpression(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = vectorValueExpression(expression->leftExpression);
+                VectorData v2 = vectorValueExpression(expression->rightExpression);
+                return (v1.x >= v2.x && v1.y >= v2.y);
             }
-            break;
+            return false;
+        }
+        case LESS_OR_EQUAL: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return intValueExpression(expression->leftExpression) <= intValueExpression(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return floatValueExpression(expression->leftExpression) <= floatValueExpression(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = vectorValueExpression(expression->leftExpression);
+                VectorData v2 = vectorValueExpression(expression->rightExpression);
+                return (v1.x <= v2.x && v1.y <= v2.y);
+            }
+            return false;
+        }
+        case GREATER_THAN: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return intValueExpression(expression->leftExpression) > intValueExpression(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return floatValueExpression(expression->leftExpression) > floatValueExpression(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = vectorValueExpression(expression->leftExpression);
+                VectorData v2 = vectorValueExpression(expression->rightExpression);
+                return (v1.x > v2.x && v1.y > v2.y);
+            }
+            return false;
+        }
+        case LESS_THAN: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return intValueExpression(expression->leftExpression) < intValueExpression(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return floatValueExpression(expression->leftExpression) < floatValueExpression(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = vectorValueExpression(expression->leftExpression);
+                VectorData v2 = vectorValueExpression(expression->rightExpression);
+                return (v1.x < v2.x && v1.y < v2.y);
+            }
+            return false;
+        }
+        case EQUAL_TO: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return intValueExpression(expression->leftExpression) == intValueExpression(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return floatValueExpression(expression->leftExpression) == floatValueExpression(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = vectorValueExpression(expression->leftExpression);
+                VectorData v2 = vectorValueExpression(expression->rightExpression);
+                return (v1.x == v2.x && v1.y == v2.y);
+            }
+            return false;
+        }
+        case NOT_EQUAL:
+            return intValueExpression(expression->leftExpression) != intValueExpression(expression->rightExpression);
+        case AND_TYPE:
+            return boolValueExpression(expression->leftBoolExpression) && boolValueExpression(expression->rightBoolExpression);
+        case OR_TYPE:
+            return boolValueExpression(expression->leftBoolExpression) || boolValueExpression(expression->rightBoolExpression);
+        case NOT_TYPE:
+            return !boolValueExpression(expression->boolExpression);
+        case BOOL_FACTOR:
+            return boolValueExpression(expression->boolFactor->boolExpression);
         default:
             break;
-        }
-        current = current->next;
     }
-    
-    return result; // Return the concatenated string
+    return false; 
 }

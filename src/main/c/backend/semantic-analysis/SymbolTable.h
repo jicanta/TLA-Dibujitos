@@ -122,6 +122,7 @@ VectorData vectorValueExpression(Expression *expression);
 char *stringValue(StringPartList *list);
 void updateSymbol(SymbolTable* symbolTable, const SymbolEntry data);
 SymbolEntry getSymbolEntryWithScope(const SymbolTable* symbolTable, const char* identifier, ScopesStack* stack);
+int boolValueExpression(BoolExpression *expression);
 /* LISTA DE CONSTANTES PREDEFINIDAS
 z-layer-control:
     FRONT

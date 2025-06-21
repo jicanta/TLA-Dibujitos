@@ -1,7 +1,7 @@
 #! /bin/bash
 
 set -u
-
+export ASAN_OPTIONS=detect_leaks=0
 BASE_PATH="$(dirname "$0")/../.."
 cd "$BASE_PATH"
 

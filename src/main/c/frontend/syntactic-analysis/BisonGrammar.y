@@ -3,6 +3,8 @@
 #include "BisonActions.h"
 #include "AbstractSyntaxTree.h"
 
+
+
 %}
 
 // You touch this, and you die.
@@ -193,7 +195,12 @@ sentence: IDENTIFIER ASSIGN expression SEMICOLON {
 	| FOR IDENTIFIER IN array {
 		InsertForLoopIterator($2, $4);
 	} block																			{ $$ = ForSentenceSemanticAction($2, $4, $6); }
-	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ $$ = FunctionSentenceSemanticAction($1, $3); }
+	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ 
+		$$ = FunctionSentenceSemanticAction($1, $3); 
+		if ($$ == NULL) {
+			YYABORT; 
+		}
+	}
 	| LOG BEGIN_STRING string_part_list END_STRING SEMICOLON						{ $$ = LogSentenceSemanticAction($3); }
 	| IMPORT BEGIN_STRING string_part_list END_STRING SEMICOLON						{ $$ = ImportSentenceSemanticAction($3); }
 	;
@@ -208,7 +215,9 @@ string_part
     | OPEN_BRACES IDENTIFIER CLOSE_BRACES											{ $$ = createStringInterpolation($2); }
     ;
 
-block: OPEN_BRACES sentences CLOSE_BRACES											{ $$ = BlockSemanticAction($2); }
+block: OPEN_BRACES {
+		StartScope();
+	} sentences CLOSE_BRACES														{ $$ = BlockSemanticAction($3); }
 	;
 
 array: OPEN_BRACKET expression_list CLOSE_BRACKET									{ $$ = BasicArraySemanticAction($2); }

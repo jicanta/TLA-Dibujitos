@@ -38,12 +38,13 @@ const int main(const int count, const char ** arguments) {
 		.succeed = false,
 		.symbolTable = createSymbolTable(),
 		.value = 0,
-		.scopeLevel = 1,
+		.scopeLevel = 1, // TODO: remove
 		.scopesStack = initializeScopesStack()
 	};
 
 	addNewScope(compilerState.scopesStack);
 	const int initialScope = currentScope(compilerState.scopesStack);
+	
 	setDefaultFunctions(compilerState.symbolTable, initialScope);
 	
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);

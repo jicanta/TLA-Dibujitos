@@ -135,6 +135,15 @@ Sentence * AssignArrayElementSentenceSemanticAction(char * identifier, Expressio
 	sentence->type = ASSIGN_ARRAY_ELEMENT_SENTENCE;
 	return sentence;
 	// TODO: Semantics needed
+	// nope
+	// const SymbolEntry symbolEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, identifier, currentCompilerState()->scopesStack);
+	// if (symbolEntry.type != INVALID_TYPE) {
+	// 	logError(_logger, "The identifier '%s' is already defined.", identifier);
+	// 	currentCompilerState()->succeed = false;
+	// 	return NULL;
+	// }
+	// BasicType* arrayElements = malloc(sizeof(SymbolEntry) * 100); // Assuming a maximum of 100 elements for simplicity
+	
 }
 
 Factor * VectorFactorSemanticAction(Vector * vector) {
@@ -230,8 +239,7 @@ int functionSemanticAnalyzerCheck(char * identifier, ExpressionList* functionArg
 
 	// Case where the function has parameters
 	const Expressions* expressionIndexer = functionArguments->expressions;
-	int i=0;
-	for (i=0; i < parameterCount; i++) {
+	for (int i=0; i < parameterCount; i++) {
 		if (expressionIndexer == NULL) {
 			logError(_logger, "The function '%s' is being called with not enough parameters.", identifier);
 			return false;
@@ -248,7 +256,7 @@ int functionSemanticAnalyzerCheck(char * identifier, ExpressionList* functionArg
 	if (parameterCount == -1) {
 		while (expressionIndexer != NULL) {
 			if (fnParameterTypes[0] != typeOfExpression(expressionIndexer->expression)) {
-				logError(_logger, "Invalid parameter in function '%s': Should be '%s'.", identifier, symbolTypeToString(fnParameterTypes[i]));
+				logError(_logger, "Invalid parameter in function '%s': Should be '%s'.", identifier, symbolTypeToString(fnParameterTypes[0]));
 				currentCompilerState()->succeed = false;
 				return false;
 			}
@@ -405,8 +413,9 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 				.dataType = array->type, // Assuming the type of the array is the type of the identifier
 				.size = i // Set the size of the array
 			},
-			.scope = currentCompilerState()->scopeLevel
+			.scope = currentScope(currentCompilerState()->scopesStack)
 		};
+		printf("Inserting array '%s' with %d elements of type %s\n", identifier, i, symbolTypeToString(t));
 		insertSymbol(currentCompilerState()->symbolTable, entry);
 	} else if (array->type == IDENTIFIER_ARRAY) {
 
@@ -424,7 +433,7 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 				.elements = otherArrayEntry.value.arrayData.elements, // Pointing to the same elements as the other array
 				.dataType = array->type // Assuming the type of the array is the type of the identifier
 			},
-			.scope = currentCompilerState()->scopeLevel
+			.scope = currentScope(currentCompilerState()->scopesStack)
 		};
 		insertSymbol(currentCompilerState()->symbolTable, entry);
 	}
@@ -513,6 +522,7 @@ void InsertForLoopIterator(char * identifier, Array * array) {
 		.type = elementType, // Assuming the type of the array is ARRAY_TYPE
 		// .value.arrayData = arrayEntry.value.arrayData[0]
 	});
+	// addNewScope(currentCompilerState()->scopesStack);
 }
 
 Sentence * ForSentenceSemanticAction(char * identifier, Array * array, Block * block) {
@@ -522,6 +532,8 @@ Sentence * ForSentenceSemanticAction(char * identifier, Array * array, Block * b
 	sentence->forArray = array;
 	sentence->forBlock = block;
 	sentence->type = FOR_SENTENCE;
+	// Since it's called AFTER all the symbolTable operations, we can pop the scope
+	// popScopesStack(currentCompilerState()->scopesStack);
 	return sentence;
 	// TODO: Semantics needed
 }
@@ -541,8 +553,22 @@ Block * BlockSemanticAction(Sentences * sentences) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Block * block = calloc(1, sizeof(Block));
 	block->sentences = sentences;
+
+	// End Scope
+	popScopesStack(currentCompilerState()->scopesStack);
+
 	return block;
 }
+
+void StartScope() {
+	// Start Scope
+	addNewScope(currentCompilerState()->scopesStack);
+}
+
+void StartIfSentenceSemanticAction(BoolExpression * boolExpression) {
+	// It might be better 
+}
+
 
 Array * IntervalArraySemanticAction(Expression * leftExpression, Expression * rightExpression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
