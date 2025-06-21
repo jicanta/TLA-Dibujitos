@@ -1,5 +1,6 @@
 #include "Generator.h"
-
+#include "../../shared/CompilerState.h"
+#include "../semantic-analysis/SymbolTable.h"
 /* MODULE INTERNAL STATE */
 
 static Logger * _logger = NULL;
@@ -347,6 +348,247 @@ static void _generateFunctionCall(FILE* outputFile, char * functionName, Express
     }
 }
 
+void _generateAssignment(char* assignIdentifier, Expression *assignExpression) {
+    if (!assignIdentifier || !assignExpression) return;
+    
+    SymbolEntry entry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, assignIdentifier, currentCompilerState()->scopesStack);
+    if (entry.type == NULL_TYPE) {
+        logError(_logger, "Identifier '%s' not found in symbol table.", assignIdentifier);
+        return;
+    }
+    
+    switch (entry.type) {
+        case INTEGER_TYPE:
+            entry.value.integerData = _evaluateExpressionAsInt(assignExpression);
+            break;
+        case FLOAT_TYPE:
+            entry.value.floatData = _evaluateExpressionAsFloat(assignExpression);
+            break;
+        case VECTOR_TYPE:
+            entry.value.vectorData = _evaluateExpressionAsVector(assignExpression);
+            break;
+        default:
+            logError(_logger, "Cannot assign to identifier '%s' of type %s.", assignIdentifier, symbolTypeToString(entry.type));
+            return;
+    }
+    
+    updateSymbol(currentCompilerState()->symbolTable, entry);
+}
+
+int _evaluateExpressionAsBool(BoolExpression *expression) {
+    if (!expression) return false; 
+
+    switch (expression->type) {
+        case GREATER_OR_EQUAL: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return _evaluateExpressionAsInt(expression->leftExpression) >= _evaluateExpressionAsInt(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return _evaluateExpressionAsFloat(expression->leftExpression) >= _evaluateExpressionAsFloat(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = _evaluateExpressionAsVector(expression->leftExpression);
+                VectorData v2 = _evaluateExpressionAsVector(expression->rightExpression);
+                return (v1.x >= v2.x && v1.y >= v2.y);
+            }
+            return false;
+        }
+        case LESS_OR_EQUAL: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return _evaluateExpressionAsInt(expression->leftExpression) <= _evaluateExpressionAsInt(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return _evaluateExpressionAsFloat(expression->leftExpression) <= _evaluateExpressionAsFloat(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = _evaluateExpressionAsVector(expression->leftExpression);
+                VectorData v2 = _evaluateExpressionAsVector(expression->rightExpression);
+                return (v1.x <= v2.x && v1.y <= v2.y);
+            }
+            return false;
+        }
+        case GREATER_THAN: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return _evaluateExpressionAsInt(expression->leftExpression) > _evaluateExpressionAsInt(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return _evaluateExpressionAsFloat(expression->leftExpression) > _evaluateExpressionAsFloat(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = _evaluateExpressionAsVector(expression->leftExpression);
+                VectorData v2 = _evaluateExpressionAsVector(expression->rightExpression);
+                return (v1.x > v2.x && v1.y > v2.y);
+            }
+            return false;
+        }
+        case LESS_THAN: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return _evaluateExpressionAsInt(expression->leftExpression) < _evaluateExpressionAsInt(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return _evaluateExpressionAsFloat(expression->leftExpression) < _evaluateExpressionAsFloat(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = _evaluateExpressionAsVector(expression->leftExpression);
+                VectorData v2 = _evaluateExpressionAsVector(expression->rightExpression);
+                return (v1.x < v2.x && v1.y < v2.y);
+            }
+            return false;
+        }
+        case EQUAL_TO: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return _evaluateExpressionAsInt(expression->leftExpression) == _evaluateExpressionAsInt(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return _evaluateExpressionAsFloat(expression->leftExpression) == _evaluateExpressionAsFloat(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = _evaluateExpressionAsVector(expression->leftExpression);
+                VectorData v2 = _evaluateExpressionAsVector(expression->rightExpression);
+                return (v1.x == v2.x && v1.y == v2.y);
+            }
+            return false;
+        }
+        case NOT_EQUAL: {
+            SymbolType leftType = typeOfExpression(expression->leftExpression);
+            if (leftType == INTEGER_TYPE) {
+                return _evaluateExpressionAsInt(expression->leftExpression) != _evaluateExpressionAsInt(expression->rightExpression);
+            } else if (leftType == FLOAT_TYPE) {
+                return _evaluateExpressionAsFloat(expression->leftExpression) != _evaluateExpressionAsFloat(expression->rightExpression);
+            } else if (leftType == VECTOR_TYPE) {
+                VectorData v1 = _evaluateExpressionAsVector(expression->leftExpression);
+                VectorData v2 = _evaluateExpressionAsVector(expression->rightExpression);
+                return (v1.x != v2.x || v1.y != v2.y);
+            }
+            return false;
+        }
+        case AND_TYPE:
+            return _evaluateExpressionAsBool(expression->leftBoolExpression) && _evaluateExpressionAsBool(expression->rightBoolExpression);
+        case OR_TYPE:
+            return _evaluateExpressionAsBool(expression->leftBoolExpression) || _evaluateExpressionAsBool(expression->rightBoolExpression);
+        case NOT_TYPE:
+            return !_evaluateExpressionAsBool(expression->boolExpression);
+        case BOOL_FACTOR:
+            return _evaluateExpressionAsBool(expression->boolFactor->boolExpression);
+        default:
+            break;
+        }
+        return false;
+}
+
+void _generateArrayAssignment(char *arrayIdentifier, Array *array) { // TODO
+    if (!arrayIdentifier || !array) return;
+    SymbolEntry entry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, arrayIdentifier, currentCompilerState()->scopesStack);
+    if (entry.type == NULL_TYPE) {
+        logError(_logger, "Array identifier '%s' not found in symbol table.", arrayIdentifier);
+        return;
+    }
+    if (entry.type != ARRAY_TYPE) {
+        logError(_logger, "Identifier '%s' is not an array.", arrayIdentifier);
+        return;
+    }
+
+    switch (array->type)
+    {
+    case IDENTIFIER_ARRAY:
+        // TODO
+        break;
+    case INTERVAL_ARRAY:
+        // TODO
+        break;
+    case BASIC_ARRAY:
+        if (!array->expressionList) {
+            logError(_logger, "Array '%s' has no elements.", arrayIdentifier);
+            return;
+        }
+        entry.value.arrayData.dataType = typeOfExpression(array->expressionList->expressions->expression);
+        entry.value.arrayData.elements = malloc(sizeof(BasicType) * entry.value.arrayData.size);
+        int i = 0;
+        Expressions *current = array->expressionList->expressions;
+        while (current) {
+            switch (typeOfExpression(current->expression))
+            {
+            case FLOAT_TYPE:
+                entry.value.arrayData.elements[i].type = FLOAT_TYPE;
+                entry.value.arrayData.elements[i].value.floatData = _evaluateExpressionAsFloat(current->expression);
+                break;
+            case INTEGER_TYPE:
+                entry.value.arrayData.elements[i].type = INTEGER_TYPE;
+                entry.value.arrayData.elements[i].value.integerData = _evaluateExpressionAsInt(current->expression);
+                break;
+            case VECTOR_TYPE:
+                entry.value.arrayData.elements[i].type = VECTOR_TYPE;
+                entry.value.arrayData.elements[i].value.vectorData = _evaluateExpressionAsVector(current->expression);
+                break;
+            default:
+                break; // WTF
+            }
+            current = current->next;
+            i++;
+        }
+        entry.value.arrayData.dataType = BASIC_ARRAY;
+        entry.value.arrayData.size = i;
+
+        break;
+    default:
+        break;
+    }
+
+    updateSymbol(currentCompilerState()->symbolTable, entry);
+}
+
+void _generateForLoop(FILE* outputFile, char *iterator, Array *array, Sentences *block) {
+    if (!iterator || !array || !block) return;    
+
+    SymbolEntry iteratorEntry = getSymbolEntry(currentCompilerState()->symbolTable, iterator);
+    if (iteratorEntry.type == NULL_TYPE) {
+        logError(_logger, "Loop variable '%s' not found in symbol table.", iterator);
+        return;
+    }
+
+    switch (array->type) {
+    case IDENTIFIER_ARRAY: {
+        SymbolEntry arrayEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, array->identifier, currentCompilerState()->scopesStack);
+        if (arrayEntry.type != ARRAY_TYPE) {
+            logError(_logger, "Identifier '%s' is not an array.", array->identifier);
+            return;
+        }
+        for (int i = 0; i < arrayEntry.value.arrayData.size; i++) {
+            switch (arrayEntry.value.arrayData.elements[i].type)
+            {
+            case INTEGER_TYPE:
+                iteratorEntry.value.integerData = arrayEntry.value.arrayData.elements[i].value.integerData;
+                break;
+            case FLOAT_TYPE:
+                iteratorEntry.value.floatData = arrayEntry.value.arrayData.elements[i].value.floatData;
+                break;
+            case VECTOR_TYPE:
+                iteratorEntry.value.vectorData = arrayEntry.value.arrayData.elements[i].value.vectorData;
+                break;
+            default:
+                break;
+            }
+            updateSymbol(currentCompilerState()->symbolTable, iteratorEntry);
+            _generateSentences(outputFile, block);
+        }
+        break;
+    }
+    case BASIC_ARRAY: {
+            // TODO
+        break;
+    }
+    case INTERVAL_ARRAY: {
+        int start = _evaluateExpressionAsInt(array->leftExpression);
+        int end = _evaluateExpressionAsInt(array->rightExpression);
+        while(start <= end) {
+            iteratorEntry.value.integerData = start;
+            updateSymbol(currentCompilerState()->symbolTable, iteratorEntry);
+            _generateSentences(outputFile, block);
+            start++;
+        }
+        break;
+    }
+    
+    default:
+        break;
+    }
+}
+
 /**
  * Generates a sentence
  */
@@ -364,29 +606,29 @@ static void _generateSentence(FILE* outputFile, Sentence * sentence) {
             _generateImport(outputFile, sentence->importPath);
             break;
         case ASSIGN_SENTENCE:
+            _generateAssignment(sentence->assignIdentifier, sentence->assignExpression);
+            break;
         case ASSIGN_ARRAY_SENTENCE:
-        case ASSIGN_ARRAY_ELEMENT_SENTENCE:
+            _generateArrayAssignment(sentence->assignArrayIdentifier, sentence->assignArray);
+            break;
+        case ASSIGN_ARRAY_ELEMENT_SENTENCE: // TODO
             // These don't generate visual output, but update the symbol table
             break;
         case IF_SENTENCE:
-            // For simplicity, always execute the IF block in SVG generation
-            // In a full implementation, you'd evaluate the boolean condition
-            if (sentence->ifBlock) {
+            if (_evaluateExpressionAsBool(sentence->ifBoolExpression)) {
                 _generateSentences(outputFile, sentence->ifBlock->sentences);
             }
             break;
         case IF_ELSE_SENTENCE:
-            // For simplicity, always execute the IF block in SVG generation
-            if (sentence->leftIfElseBlock) {
+            if (_evaluateExpressionAsBool(sentence->ifBoolExpression)) {
                 _generateSentences(outputFile, sentence->leftIfElseBlock->sentences);
+            }
+            else {
+                _generateSentences(outputFile, sentence->rightIfElseBlock->sentences);
             }
             break;
         case FOR_SENTENCE:
-            // For simplicity, skip FOR loops in SVG generation for now
-            // In a full implementation, you'd iterate through the array
-            if (sentence->forBlock) {
-                _generateSentences(outputFile, sentence->forBlock->sentences);
-            }
+            _generateForLoop(outputFile, sentence->forIdentifier, sentence->forArray, sentence->forBlock->sentences);
             break;
     }
 }

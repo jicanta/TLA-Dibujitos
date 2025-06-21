@@ -80,6 +80,7 @@ void printSymbolValue(SymbolEntry entry) {
                 break;
             case BASIC_ARRAY:
                 BasicType *arrayElements = entry.value.arrayData.elements;
+                printf(" (basic) {size: %d, elements: ", entry.value.arrayData.size);
                 for(int i = 0; i < entry.value.arrayData.size; i++) {
                     if (i > 0) {
                         printf(", ");
@@ -737,92 +738,6 @@ char *stringValue(StringPartList *list) {
     return NULL; // Return the concatenated string
 }
 
-
-
-int boolValueExpression(BoolExpression *expression) {
-    if (!expression) return false; 
-
-    switch (expression->type) {
-        case GREATER_OR_EQUAL: {
-            SymbolType leftType = typeOfExpression(expression->leftExpression);
-            if (leftType == INTEGER_TYPE) {
-                return intValueExpression(expression->leftExpression) >= intValueExpression(expression->rightExpression);
-            } else if (leftType == FLOAT_TYPE) {
-                return floatValueExpression(expression->leftExpression) >= floatValueExpression(expression->rightExpression);
-            } else if (leftType == VECTOR_TYPE) {
-                VectorData v1 = vectorValueExpression(expression->leftExpression);
-                VectorData v2 = vectorValueExpression(expression->rightExpression);
-                return (v1.x >= v2.x && v1.y >= v2.y);
-            }
-            return false;
-        }
-        case LESS_OR_EQUAL: {
-            SymbolType leftType = typeOfExpression(expression->leftExpression);
-            if (leftType == INTEGER_TYPE) {
-                return intValueExpression(expression->leftExpression) <= intValueExpression(expression->rightExpression);
-            } else if (leftType == FLOAT_TYPE) {
-                return floatValueExpression(expression->leftExpression) <= floatValueExpression(expression->rightExpression);
-            } else if (leftType == VECTOR_TYPE) {
-                VectorData v1 = vectorValueExpression(expression->leftExpression);
-                VectorData v2 = vectorValueExpression(expression->rightExpression);
-                return (v1.x <= v2.x && v1.y <= v2.y);
-            }
-            return false;
-        }
-        case GREATER_THAN: {
-            SymbolType leftType = typeOfExpression(expression->leftExpression);
-            if (leftType == INTEGER_TYPE) {
-                return intValueExpression(expression->leftExpression) > intValueExpression(expression->rightExpression);
-            } else if (leftType == FLOAT_TYPE) {
-                return floatValueExpression(expression->leftExpression) > floatValueExpression(expression->rightExpression);
-            } else if (leftType == VECTOR_TYPE) {
-                VectorData v1 = vectorValueExpression(expression->leftExpression);
-                VectorData v2 = vectorValueExpression(expression->rightExpression);
-                return (v1.x > v2.x && v1.y > v2.y);
-            }
-            return false;
-        }
-        case LESS_THAN: {
-            SymbolType leftType = typeOfExpression(expression->leftExpression);
-            if (leftType == INTEGER_TYPE) {
-                return intValueExpression(expression->leftExpression) < intValueExpression(expression->rightExpression);
-            } else if (leftType == FLOAT_TYPE) {
-                return floatValueExpression(expression->leftExpression) < floatValueExpression(expression->rightExpression);
-            } else if (leftType == VECTOR_TYPE) {
-                VectorData v1 = vectorValueExpression(expression->leftExpression);
-                VectorData v2 = vectorValueExpression(expression->rightExpression);
-                return (v1.x < v2.x && v1.y < v2.y);
-            }
-            return false;
-        }
-        case EQUAL_TO: {
-            SymbolType leftType = typeOfExpression(expression->leftExpression);
-            if (leftType == INTEGER_TYPE) {
-                return intValueExpression(expression->leftExpression) == intValueExpression(expression->rightExpression);
-            } else if (leftType == FLOAT_TYPE) {
-                return floatValueExpression(expression->leftExpression) == floatValueExpression(expression->rightExpression);
-            } else if (leftType == VECTOR_TYPE) {
-                VectorData v1 = vectorValueExpression(expression->leftExpression);
-                VectorData v2 = vectorValueExpression(expression->rightExpression);
-                return (v1.x == v2.x && v1.y == v2.y);
-            }
-            return false;
-        }
-        case NOT_EQUAL:
-            return intValueExpression(expression->leftExpression) != intValueExpression(expression->rightExpression);
-        case AND_TYPE:
-            return boolValueExpression(expression->leftBoolExpression) && boolValueExpression(expression->rightBoolExpression);
-        case OR_TYPE:
-            return boolValueExpression(expression->leftBoolExpression) || boolValueExpression(expression->rightBoolExpression);
-        case NOT_TYPE:
-            return !boolValueExpression(expression->boolExpression);
-        case BOOL_FACTOR:
-            return boolValueExpression(expression->boolFactor->boolExpression);
-        default:
-            break;
-    }
-    return false; 
-}
 
 int boolExpressionIsValid(BoolExpression* expression) {
     if (!expression) return 0; // NULL expression is invalid

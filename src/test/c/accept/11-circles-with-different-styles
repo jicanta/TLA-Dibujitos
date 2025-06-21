@@ -1,10 +1,9 @@
-foo = 33.;
 colores[] = [RED, ORANGE, YELLOW, GREEN, BLUE, INDIGO, PURPLE];
-idx = 42;
+radius = 70.;
 
 for c in colores {
-    stroke(2);
     fill(c);
-    circle((0,0), 70. - idx*10);
-    idx = idx + 1;
+
+    circle((0,0), radius);
+    radius = radius - 10;
 }

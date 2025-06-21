@@ -323,45 +323,45 @@ Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expressi
 		return NULL;
 	}
 	// Insert the identifier into the symbol table
-	switch (expressionType) {
-		case INTEGER_TYPE:
-			currentCompilerState()->succeed = true;
-			symbolEntry.value.integerData = intValueExpression(expression);
-			if(currentCompilerState()->succeed == false) {
-				logError(_logger, "The integer '%s' has invalid value.", identifier);
-				releaseExpression(expression);
-				return NULL;
-			}
-			break;
-		case FLOAT_TYPE:
-			symbolEntry.value.floatData = floatValueExpression(expression);
-			if(isnan(symbolEntry.value.floatData)) {
-				logError(_logger, "The float '%s' has invalid value.", identifier);
-				releaseExpression(expression);
-				return NULL;
-			}
-			break;
-		case VECTOR_TYPE:
-			symbolEntry.value.vectorData = vectorValueExpression(expression);
-			if (isnan(symbolEntry.value.vectorData.x)) {
-				logError(_logger, "The vector '%s' has invalid values. ", identifier);
-				releaseExpression(expression);
-				return NULL;
-			}
-			break;
-		default:
-			break;
-			logError(_logger, "The identifier '%s' has invalid type", identifier);
-			free(identifier);
-			releaseExpression(expression);
-			return NULL;
-	}
+	// switch (expressionType) {
+	// 	case INTEGER_TYPE:
+	// 		currentCompilerState()->succeed = true;
+	// 		symbolEntry.value.integerData = intValueExpression(expression);
+	// 		if(currentCompilerState()->succeed == false) {
+	// 			logError(_logger, "The integer '%s' has invalid value.", identifier);
+	// 			releaseExpression(expression);
+	// 			return NULL;
+	// 		}
+	// 		break;
+	// 	case FLOAT_TYPE:
+	// 		symbolEntry.value.floatData = floatValueExpression(expression);
+	// 		if(isnan(symbolEntry.value.floatData)) {
+	// 			logError(_logger, "The float '%s' has invalid value.", identifier);
+	// 			releaseExpression(expression);
+	// 			return NULL;
+	// 		}
+	// 		break;
+	// 	case VECTOR_TYPE:
+	// 		symbolEntry.value.vectorData = vectorValueExpression(expression);
+	// 		if (isnan(symbolEntry.value.vectorData.x)) {
+	// 			logError(_logger, "The vector '%s' has invalid values. ", identifier);
+	// 			releaseExpression(expression);
+	// 			return NULL;
+	// 		}
+	// 		break;
+	// 	default:
+	// 		break;
+	// 		logError(_logger, "The identifier '%s' has invalid type", identifier);
+	// 		free(identifier);
+	// 		releaseExpression(expression);
+	// 		return NULL;
+	// }
 	if (currentEntry.type == NULL_TYPE) {
 		insertSymbol(currentCompilerState()->symbolTable, symbolEntry);
 	}
-	else {
-		updateSymbol(currentCompilerState()->symbolTable, symbolEntry);
-	}
+	// else {
+	// 	updateSymbol(currentCompilerState()->symbolTable, symbolEntry);
+	// }
 
 	Sentence * sentence = calloc(1, sizeof(Sentence));
 	sentence->assignIdentifier = identifier;
@@ -421,7 +421,7 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 			.type = ARRAY_TYPE, // Assuming the type of the array is ARRAY_TYPE
 			.value.arrayData = {
 				.elements = arrayElements, // This will be filled later when the array is defined
-				.dataType = t, // Assuming the type of the array is the type of the identifier
+				.dataType = BASIC_ARRAY, // Assuming the type of the array is the type of the identifier
 				.size = i // Set the size of the array
 			},
 			.scope = currentScope(currentCompilerState()->scopesStack)
