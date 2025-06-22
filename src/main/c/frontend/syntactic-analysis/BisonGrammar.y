@@ -246,7 +246,12 @@ expression: expression[left] ADD expression[right]									{ $$ = ArithmeticExpr
 	| expression DOT X_PARAM														{ $$ = DotExpressionSemanticAction($1, GET_X); }
 	| expression DOT Y_PARAM														{ $$ = DotExpressionSemanticAction($1, GET_Y); }
 	| factor																		{ $$ = FactorExpressionSemanticAction($1); }
-	| array OPEN_BRACKET expression CLOSE_BRACKET									{ $$ = ArrayAccessExpressionSemanticAction($1, $3); }
+	| array OPEN_BRACKET expression CLOSE_BRACKET									{ 
+		$$ = ArrayAccessExpressionSemanticAction($1, $3); 
+		if($$ == NULL) {
+			YYABORT;
+		}
+	}
 	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS					{ $$ = FunctionExpressionSemanticAction($1, $3); }
 	;
 

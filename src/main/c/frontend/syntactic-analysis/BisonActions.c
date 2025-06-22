@@ -68,13 +68,16 @@ Expression * ArrayAccessExpressionSemanticAction(Array * array, Expression * ind
 	expression->type = ARRAY_ACCESS;
 
 	// Semantic Analysis
-
-	// const SymbolEntry symbolEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, array->identifier, currentCompilerState()->scopesStack);
-	// BasicType* arrayElements = symbolEntry.value.arrayData.elements;
-	// int arraySize = 0;
-	// for (; arrayElements[arraySize].type != NULL_TYPE; arraySize++) {
-	// 	// Count the number of elements in the array
-	// }
+	const SymbolEntry symbolEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, array->identifier, currentCompilerState()->scopesStack);
+	if(symbolEntry.type != ARRAY_TYPE) {
+		logError(_logger, "cant index something thats not an array");
+		return NULL;
+	}
+	SymbolType indexType = typeOfExpression(indexExpression);
+	if(indexType != INTEGER_TYPE) {
+		logError(_logger, "array index has to be INTEGER but found %s", symbolTypeToString(indexType));
+		return NULL;
+	}
 	
 	return expression;
 }
@@ -382,14 +385,18 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 			return NULL;
 		}
 
-		BasicType* arrayElements = malloc(sizeof(SymbolEntry) * 256); // TODO esto es MUY rancio y hay que cambiarlo
-
 		Expressions* expressionsIndex = array->expressionList->expressions;
+		int arraySize = 0;
+		for(arraySize = 0; expressionsIndex; arraySize++) {
+			expressionsIndex = expressionsIndex->next;
+		}
+		BasicType* arrayElements = malloc(sizeof(SymbolEntry) * arraySize);
+		
+		expressionsIndex = array->expressionList->expressions;
 		SymbolType t = typeOfExpression(expressionsIndex->expression);
 
 		// Check if all expressions in the array are of the same type
-		int i = 0;
-		for (; expressionsIndex != NULL; i++) {
+		for (int i = 0; expressionsIndex; i++) {
 			if (t != typeOfExpression(expressionsIndex->expression)) {
 				logError(_logger, "The array '%s' has elements of different types.", identifier);
 				currentCompilerState()->succeed = false;
@@ -408,11 +415,10 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 			.value.arrayData = {
 				.elements = arrayElements, // This will be filled later when the array is defined
 				.dataType = BASIC_ARRAY, // Assuming the type of the array is the type of the identifier
-				.size = i // Set the size of the array
+				.size = arraySize // Set the size of the array
 			},
 			.scope = currentScope(currentCompilerState()->scopesStack)
 		};
-		printf("Inserting array '%s' with %d elements of type %s\n", identifier, i, symbolTypeToString(t));
 		insertSymbol(currentCompilerState()->symbolTable, entry);
 	} else if (array->type == IDENTIFIER_ARRAY) {
 		SymbolEntry otherArrayEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, array->identifier, currentCompilerState()->scopesStack);
