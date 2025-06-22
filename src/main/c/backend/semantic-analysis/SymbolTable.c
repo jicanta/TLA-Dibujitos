@@ -433,6 +433,19 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
         },
         .scope = scopeInit
     });
+
+    SymbolType* polygonDataTypes = malloc(1 * sizeof(SymbolType));
+    polygonDataTypes[0] = VECTOR_TYPE;
+    insertSymbol(symbolTable, (SymbolEntry) {
+        .identifier = "polygon",
+        .type = FUNCTION_TYPE,
+        .value.functionData = {
+            .parameterType = polygonDataTypes,
+            .parameterCount = -1, // Indicates that the function can take an infinite number of vector parameters
+            .returnType = NULL_TYPE,
+        },
+        .scope = scopeInit
+    });
 }
 
 SymbolType typeOfFactor(Factor *factor) {

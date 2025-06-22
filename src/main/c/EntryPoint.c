@@ -1,5 +1,4 @@
 #include "backend/code-generation/Generator.h"
-#include "backend/domain-specific/Calculator.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "frontend/syntactic-analysis/BisonActions.h"
@@ -34,7 +33,6 @@ const int main(const int count, const char ** arguments) {
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
-	// initializeCalculatorModule();
 	initializeGeneratorModule();
 
 	// Logs the arguments of the application.

@@ -56,7 +56,6 @@ endif ()
 # The header files (*.h extension), are automatically included from the source-codes.
 add_library(CompilerLib STATIC
 	src/main/c/backend/code-generation/Generator.c
-	src/main/c/backend/domain-specific/Calculator.c
 	src/main/c/backend/semantic-analysis/SymbolTable.c
 	src/main/c/backend/semantic-analysis/Scopes.c
 	src/main/c/frontend/lexical-analysis/FlexActions.c

@@ -38,4 +38,9 @@ typedef struct {
     int layer;
 } SVGContext;
 
+/**
+ * Generates a polygon from a list of vector points
+ */
+static void _generatePolygon(FILE* outputFile, ExpressionList * arguments);
+
 #endif

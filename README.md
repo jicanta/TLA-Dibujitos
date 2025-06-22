@@ -4,7 +4,7 @@
 
 ## Project Description
 
-Dibujitos is a domain-specific language (DSL) designed for creating 2D drawings using geometric figures and mathematical expressions. The language aims to provide a simple yet expressive syntax that allows users to define designs, patterns, and figures. A key feature is the ability to name points for reuse throughout the design.
+Dibujitos is a domain-specific language (DSL) designed for creating 2D drawings using geometric figures and mathematical expressions. The language aims to provide a simple yet expressive syntax that allows users to define designs, patterns, and figures. Key features include the ability to name points for reuse throughout the design and create complex shapes like polygons from multiple coordinate points.
 
 The output is generated in SVG format, ensuring compatibility with web browsers, graphic editors, and other SVG-supporting tools. This DSL bridges the gap between programming and visual design, making it valuable for educational, artistic, and technical contexts where graphical expression is needed.
 

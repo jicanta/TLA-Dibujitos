@@ -41,6 +41,7 @@ static void _generateCurve(FILE* outputFile, ExpressionList * arguments);
 static void _generateStroke(ExpressionList * arguments);
 static void _generateFill(ExpressionList * arguments);
 static void _generateLayer(ExpressionList * arguments);
+static void _generatePolygon(FILE* outputFile, ExpressionList * arguments);
 static void _generateLog(FILE* outputFile, StringPartList * stringParts);
 static void _generateImport(FILE* outputFile, StringPartList * importPath);
 static float _evaluateExpressionAsFloat(Expression * expression);
@@ -339,6 +340,57 @@ static void _generateCurve(FILE* outputFile, ExpressionList * arguments) {
 }
 
 /**
+ * Generates a polygon element
+ */
+static void _generatePolygon(FILE* outputFile, ExpressionList * arguments) {
+    if (!arguments || !arguments->expressions) return;
+    
+    // Need at least 3 points to form a polygon
+    Expressions* expr = arguments->expressions;
+    int pointCount = 0;
+    Expressions* temp = expr;
+    
+    // Count the number of points
+    while (temp) {
+        pointCount++;
+        temp = temp->next;
+    }
+    
+    if (pointCount < 3) {
+        // Not enough points for a polygon, skip
+        return;
+    }
+    
+    char* fillColor = _colorToHex(_svgContext.fillColor);
+    char* strokeColor = _colorToHex(_svgContext.strokeColor);
+    
+    fprintf(outputFile, "  <polygon points=\"");
+    
+    // Generate all points
+    while (expr) {
+        VectorData point = _evaluateExpressionAsVector(expr->expression);
+        
+        // Convert to SVG coordinates
+        float svgX = _centerX + point.x;
+        float svgY = _centerY - point.y; // Flip Y axis
+        
+        fprintf(outputFile, "%.2f,%.2f", svgX, svgY);
+        
+        expr = expr->next;
+        if (expr) {
+            fprintf(outputFile, " ");
+        }
+    }
+    
+    fprintf(outputFile, "\" fill=\"%s\" stroke=\"%s\" stroke-width=\"%d\" class=\"%s-layer\"/>\n",
+            fillColor, strokeColor, _svgContext.strokeWidth,
+            _svgContext.layer == 1 ? "front" : "back");
+    
+    free(fillColor);
+    free(strokeColor);
+}
+
+/**
  * Sets the stroke color
  */
 static void _generateStroke(ExpressionList * arguments) {
@@ -424,6 +476,8 @@ static void _generateFunctionCall(FILE* outputFile, char * functionName, Express
         _generateLine(outputFile, arguments);
     } else if (strcmp(functionName, "curve") == 0) {
         _generateCurve(outputFile, arguments);
+    } else if (strcmp(functionName, "polygon") == 0) {
+        _generatePolygon(outputFile, arguments);
     } else if (strcmp(functionName, "stroke") == 0) {
         _generateStroke(arguments);
     } else if (strcmp(functionName, "fill") == 0) {
