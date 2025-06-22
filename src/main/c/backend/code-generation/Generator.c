@@ -131,6 +131,18 @@ static float _evaluateExpressionAsFloat(Expression * expression) {
                     return sqrtf(arg);
                 }
             }
+            else if(strcmp(expression->functionIdentifier, "cos") == 0) {
+                if (expression->functionArguments && expression->functionArguments->expressions) {
+                    float arg = _evaluateExpressionAsFloat(expression->functionArguments->expressions->expression);
+                    return cos(arg);
+                }
+            }
+            else if(strcmp(expression->functionIdentifier, "sin") == 0) {
+                if (expression->functionArguments && expression->functionArguments->expressions) {
+                    float arg = _evaluateExpressionAsFloat(expression->functionArguments->expressions->expression);
+                    return sin(arg);
+                }
+            }
             return 0.0f;
         default:
             return 0.0f;
@@ -357,7 +369,7 @@ static void _generateFunctionCall(FILE* outputFile, char * functionName, Express
 void _generateAssignment(char* assignIdentifier, Expression *assignExpression) {
     if (!assignIdentifier || !assignExpression) return;
     
-    SymbolEntry entry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, assignIdentifier, currentCompilerState()->scopesStack);
+    SymbolEntry entry = getSymbolEntry(currentCompilerState()->symbolTable, assignIdentifier);
     if (entry.type == NULL_TYPE) {
         logError(_logger, "Identifier '%s' not found in symbol table.", assignIdentifier);
         return;
@@ -479,7 +491,7 @@ int _evaluateExpressionAsBool(BoolExpression *expression) {
 
 void _generateArrayAssignment(char *arrayIdentifier, Array *array) { // TODO
     if (!arrayIdentifier || !array) return;
-    SymbolEntry entry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, arrayIdentifier, currentCompilerState()->scopesStack);
+    SymbolEntry entry = getSymbolEntry(currentCompilerState()->symbolTable, arrayIdentifier);
     if (entry.type == NULL_TYPE) {
         logError(_logger, "Array identifier '%s' not found in symbol table.", arrayIdentifier);
         return;
@@ -549,7 +561,7 @@ void _generateForLoop(FILE* outputFile, char *iterator, Array *array, Sentences 
 
     switch (array->type) {
     case IDENTIFIER_ARRAY: {
-        SymbolEntry arrayEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, array->identifier, currentCompilerState()->scopesStack);
+        SymbolEntry arrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, array->identifier);
         if (arrayEntry.type != ARRAY_TYPE) {
             logError(_logger, "Identifier '%s' is not an array.", array->identifier);
             return;
@@ -617,7 +629,7 @@ void _generateForLoop(FILE* outputFile, char *iterator, Array *array, Sentences 
 void _generateArrayElementAssignment(char *arrayIdentifier, Expression *arrayIndexExpression, Expression *arrayElementExpression) {
     if (!arrayIdentifier || !arrayIndexExpression || !arrayElementExpression) return;
     
-    SymbolEntry entry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, arrayIdentifier, currentCompilerState()->scopesStack);
+    SymbolEntry entry = getSymbolEntry(currentCompilerState()->symbolTable, arrayIdentifier);
     if (entry.type == NULL_TYPE) {
         logError(_logger, "Array identifier '%s' not found in symbol table.", arrayIdentifier);
         return;
