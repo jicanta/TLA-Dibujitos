@@ -93,11 +93,11 @@ Factor * IdentifierFactorSemanticAction(char * identifier) {
 			logError(_logger, "%s is a function", identifier);
 			free(identifier);
 			return NULL;
-			case ARRAY_TYPE:
+		case ARRAY_TYPE:
 			logError(_logger, "%s is an array", identifier);
 			free(identifier);
 			return NULL;
-			default:
+		default:
 			logError(_logger, "The identifier '%s' is not defined.", identifier);
 			free(identifier);
 			return NULL;
@@ -284,6 +284,28 @@ int functionSemanticAnalyzerCheck(char * identifier, ExpressionList* functionArg
 	return true;
 }
 
+Sentence * AssignVectorComponentSemanticAction(char *identifier, Expression *expression, ExpressionType type) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+
+	SymbolEntry vector = getSymbolEntryWithScope(currentCompilerState()->symbolTable, identifier, currentCompilerState()->scopesStack);
+	if(vector.type != VECTOR_TYPE) {
+		logError(_logger, "cant assign component unless its vector type");
+		return NULL;
+	}
+	SymbolType expressionType = typeOfExpression(expression);
+	if(expressionType != INTEGER_TYPE && expressionType != FLOAT_TYPE) {
+		logError(_logger, "vector component only can be int or float");
+		return NULL;
+	}
+
+	Sentence * assignVectorComponent = calloc(1, sizeof(Sentence));
+	assignVectorComponent->assignVectorComponentIdentifier = identifier;
+	assignVectorComponent->vectorComponentExpression = expression;
+	assignVectorComponent->type = (type == GET_X) ? ASSIGN_VECTOR_X_SENTENCE : ASSIGN_VECTOR_Y_SENTENCE;
+
+	return assignVectorComponent;
+}
+
 Sentence * FunctionSentenceSemanticAction(char * identifier, ExpressionList * functionArguments) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Sentence * sentence = calloc(1, sizeof(Sentence));
@@ -316,6 +338,7 @@ Sentence * AssignSentenceSemanticAction(char * identifier, Expression * expressi
 	
 	const SymbolEntry currentEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, identifier, currentCompilerState()->scopesStack);
 	if (expressionType == INVALID_TYPE) {
+		logError(_logger, "assignment has invalid type %s", identifier);
 		return NULL;
 	}
 

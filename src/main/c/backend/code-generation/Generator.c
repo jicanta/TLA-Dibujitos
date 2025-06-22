@@ -749,6 +749,34 @@ void _generateArrayElementAssignment(char *arrayIdentifier, Expression *arrayInd
         
     updateSymbol(currentCompilerState()->symbolTable, entry);
 }
+
+void _generateVectorComponentAssignment(char *vectorIdentifier, Expression *expression, SentenceType assignmentType) {
+    SymbolEntry vector = getSymbolEntry(currentCompilerState()->symbolTable, vectorIdentifier);
+    switch (typeOfExpression(expression))
+    {
+    case INTEGER_TYPE:
+        if(assignmentType == ASSIGN_VECTOR_X_SENTENCE) {
+            vector.value.vectorData.x = _evaluateExpressionAsInt(expression);
+        }
+        else {
+            vector.value.vectorData.y = _evaluateExpressionAsInt(expression);
+        }
+        break;
+    case FLOAT_TYPE:
+        if(assignmentType == ASSIGN_VECTOR_X_SENTENCE) {
+            vector.value.vectorData.x = _evaluateExpressionAsFloat(expression);
+        }
+        else {
+            vector.value.vectorData.y = _evaluateExpressionAsFloat(expression);
+        }
+        break;
+    default:
+        break;
+    }
+
+    updateSymbol(currentCompilerState()->symbolTable, vector);
+}
+
 /**
  * Generates a sentence
  */
@@ -789,6 +817,12 @@ static void _generateSentence(FILE* outputFile, Sentence * sentence) {
             break;
         case FOR_SENTENCE:
             _generateForLoop(outputFile, sentence->forIdentifier, sentence->forArray, sentence->forBlock->sentences);
+            break;
+        case ASSIGN_VECTOR_X_SENTENCE:
+        case ASSIGN_VECTOR_Y_SENTENCE:
+            _generateVectorComponentAssignment(sentence->assignVectorComponentIdentifier, sentence->vectorComponentExpression, sentence->type);
+            break;
+        default:
             break;
     }
 }

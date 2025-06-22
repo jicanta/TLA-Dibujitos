@@ -168,62 +168,29 @@ program: sentences																	{ $$ = SentencesProgramSemanticAction(current
 	;
 
 
-sentences: sentences sentence 														{ $$ = SentencesSemanticAction($1, $2); }
+sentences: sentences sentence 														{ 
+		if($2 == NULL) {
+			YYABORT;
+		}
+		$$ = SentencesSemanticAction($1, $2); 
+	}
 	| %empty                                                            			{ $$ = EmptySentencesSemanticAction(); }
 	;
 
-sentence: IDENTIFIER ASSIGN expression SEMICOLON { 
-		$$ = AssignSentenceSemanticAction($1, $3); 
-		if ($$ == NULL) {
-			YYABORT; 
-		}
-	}
-	| IDENTIFIER OPEN_BRACKET CLOSE_BRACKET ASSIGN array SEMICOLON { 
-		$$ = AssignArraySentenceSemanticAction($1, $5); 
-		if ($$ == NULL) {
-			YYABORT; 
-		}
-	}
-	| IDENTIFIER OPEN_BRACKET expression CLOSE_BRACKET ASSIGN expression SEMICOLON { 
-		$$ = AssignArrayElementSentenceSemanticAction($1, $3, $6);
-		if ($$ == NULL) {
-			YYABORT;
-		}
-	}
-	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ 
-		$$ = IfSentenceSemanticAction($3, $5); 
-		if ($$ == NULL) {
-			YYABORT;
-		}
-	}
-	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ 
-		$$ = IfElseSentenceSemanticAction($3, $5, $7); 
-		if ($$ == NULL) {
-			YYABORT;
-		}
-	}
+sentence: IDENTIFIER ASSIGN expression SEMICOLON 									{ $$ = AssignSentenceSemanticAction($1, $3); }
+	| IDENTIFIER OPEN_BRACKET CLOSE_BRACKET ASSIGN array SEMICOLON 					{ $$ = AssignArraySentenceSemanticAction($1, $5); }
+	| IDENTIFIER OPEN_BRACKET expression CLOSE_BRACKET ASSIGN expression SEMICOLON  { $$ = AssignArrayElementSentenceSemanticAction($1, $3, $6); }
+	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block					{ $$ = IfSentenceSemanticAction($3, $5); }
+	| IF OPEN_PARENTHESIS bool_expression CLOSE_PARENTHESIS block ELSE block		{ $$ = IfElseSentenceSemanticAction($3, $5, $7); }
 	| FOR IDENTIFIER IN array {
 		if(!InsertForLoopIterator($2, $4)) {
 			YYABORT;
 		}
-	} block																			{ 
-		$$ = ForSentenceSemanticAction($2, $4, $6); 
-		if ($$ == NULL) {
-			YYABORT;
-		}
-	}
-	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ 
-		$$ = FunctionSentenceSemanticAction($1, $3); 
-		if ($$ == NULL) {
-			YYABORT; 
-		}
-	}
-	| LOG BEGIN_STRING string_part_list END_STRING SEMICOLON						{ 
-		$$ = LogSentenceSemanticAction($3); 
-		if ($$ == NULL) {
-			YYABORT; 
-		}
-	}
+	} block																			{ $$ = ForSentenceSemanticAction($2, $4, $6); }
+	| IDENTIFIER OPEN_PARENTHESIS expression_list CLOSE_PARENTHESIS	SEMICOLON		{ $$ = FunctionSentenceSemanticAction($1, $3); }
+	| LOG BEGIN_STRING string_part_list END_STRING SEMICOLON						{ $$ = LogSentenceSemanticAction($3); }
+	| IDENTIFIER DOT X_PARAM ASSIGN expression SEMICOLON							{ $$ = AssignVectorComponentSemanticAction($1, $5, GET_X); }
+	| IDENTIFIER DOT Y_PARAM ASSIGN expression SEMICOLON							{ $$ = AssignVectorComponentSemanticAction($1, $5, GET_Y); }
 	| IMPORT BEGIN_STRING string_part_list END_STRING SEMICOLON						{ $$ = ImportSentenceSemanticAction($3); }
 	;
 

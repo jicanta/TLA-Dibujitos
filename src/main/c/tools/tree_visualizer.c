@@ -73,6 +73,8 @@ static const char* sentence_type_to_string(SentenceType type) {
         case ASSIGN_ARRAY_ELEMENT_SENTENCE: return "ASSIGN_ARRAY_ELEMENT";
         case LOG_SENTENCE: return "LOG";
         case IMPORT_SENTENCE: return "IMPORT";
+        case ASSIGN_VECTOR_X_SENTENCE: return "ASSIGN_VECTOR_X_SENTENCE";
+        case ASSIGN_VECTOR_Y_SENTENCE: return "ASSIGN_VECTOR_Y_SENTENCE";
         default: return "UNKNOWN";
     }
 }
@@ -292,6 +294,18 @@ static void print_sentence(Sentence* sentence, int level, bool is_last) {
             if (sentence->importPath) {
                 print_string_part_list(sentence->importPath, level + 1, true);
             }
+            break;
+        case ASSIGN_VECTOR_X_SENTENCE:
+            print_indent(level + 1, true);
+            printf("VEC_ASSIGN_X\n"); 
+            printf("%s\n", sentence->assignVectorComponentIdentifier);
+            print_expression(sentence->vectorComponentExpression, level + 1, true);
+            break;
+        case ASSIGN_VECTOR_Y_SENTENCE:
+            print_indent(level + 1, true);
+            printf("VEC_ASSIGN_Y\n"); 
+            printf("%s\n", sentence->assignVectorComponentIdentifier);
+            print_expression(sentence->vectorComponentExpression, level + 1, true);
             break;
     }
 }

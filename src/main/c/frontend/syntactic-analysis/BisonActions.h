@@ -59,9 +59,8 @@ Array * IdentifierArraySemanticAction(char * identifier);
 Array * BasicArraySemanticAction(ExpressionList * expressionList);
 Sentence * AssignArrayElementSentenceSemanticAction(char * identifier, Expression * indexExpression, Expression * expression);
 Sentence * ImportSentenceSemanticAction(StringPartList * importPath);
+Sentence * AssignVectorComponentSemanticAction(char *identifier, Expression *expression, ExpressionType type);
 int InsertForLoopIterator(char * identifier, Array * array);
-void StartIfSentenceSemanticAction(BoolExpression * boolExpression);
-void StartElseSentenceSemanticAction();
 void StartScope();
 
 #endif

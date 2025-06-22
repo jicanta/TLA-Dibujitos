@@ -7,12 +7,12 @@
 
 
 // Define the maximim capacity of the stack
-#define MAX_SIZE 100
+#define MAX_SCOPE_DEPTH 2048
 
 // Define a structure for the stack
 typedef struct {
     // Array to store stack elements
-    int arr[MAX_SIZE];
+    int arr[MAX_SCOPE_DEPTH];
     // Index of the top element in the stack
     int top;
     int newScope;

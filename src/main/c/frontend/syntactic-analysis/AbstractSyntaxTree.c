@@ -148,6 +148,11 @@ void releaseSentence(Sentence * sentence){
 			case IMPORT_SENTENCE:
 				releaseStringPartList(sentence->importPath);
 				break;
+			case ASSIGN_VECTOR_X_SENTENCE:
+			case ASSIGN_VECTOR_Y_SENTENCE:
+				releaseExpression(sentence->vectorComponentExpression);
+				free(sentence->assignVectorComponentIdentifier);
+				break;
 		}
 		free(sentence);
 	}

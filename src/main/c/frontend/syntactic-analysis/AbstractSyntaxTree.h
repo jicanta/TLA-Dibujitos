@@ -113,6 +113,8 @@ enum SentenceType {
 	ASSIGN_ARRAY_ELEMENT_SENTENCE,
 	LOG_SENTENCE,
 	IMPORT_SENTENCE,
+	ASSIGN_VECTOR_X_SENTENCE,
+	ASSIGN_VECTOR_Y_SENTENCE,
 };
 
 enum ArrayType {
@@ -168,6 +170,10 @@ struct Sentence {
 		};
 		struct {
 			StringPartList * importPath;
+		};
+		struct {
+			char *assignVectorComponentIdentifier;
+			Expression *vectorComponentExpression;
 		};
 	};
 	SentenceType type;

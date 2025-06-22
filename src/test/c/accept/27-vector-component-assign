@@ -1,0 +1,6 @@
+vec = (3, 5);
+log "ANTES {vec}\n";
+
+vec.x = 42 - vec.y;
+
+log "DESPUES {vec}\n";

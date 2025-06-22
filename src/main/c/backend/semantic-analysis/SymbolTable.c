@@ -66,7 +66,15 @@ void printSymbolValue(SymbolEntry entry) {
             printf("(%f, %f)", entry.value.vectorData.x, entry.value.vectorData.y);
             break;
         case FUNCTION_TYPE:
-            printf("{ret: %d, params: ...}", entry.value.functionData.returnType);
+            printf("{ret: %s, params: ", symbolTypeToString(entry.value.functionData.returnType));
+            if(entry.value.functionData.parameterCount == -1) {
+                printf("infinite %s }", symbolTypeToString(entry.value.functionData.parameterType[0]));
+                break;
+            }
+            for(int i = 0; i < entry.value.functionData.parameterCount; i++) {
+                printf("%s, ", symbolTypeToString(entry.value.functionData.parameterType[i]));
+            }
+            printf(" }");
             break;
         case ARRAY_TYPE:
             switch (entry.value.arrayData.dataType) {
@@ -311,7 +319,6 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
             .parameterType = circleDataTypes,
             .parameterCount = 2,
             .returnType = NULL_TYPE,
-            .functionPointer = NULL // Set to the actual function pointer later
         },
         .scope = scopeInit
     };
@@ -327,7 +334,6 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
             .parameterType = lineDataTypes,
             .parameterCount = 2,
             .returnType = NULL_TYPE,
-            .functionPointer = NULL
         },
         .scope = scopeInit
     });
@@ -341,14 +347,13 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
             .parameterType = curveDataTypes,
             .parameterCount = -1, // Indicates that the function can take an infinite number of parameters;
             .returnType = NULL_TYPE,
-            .functionPointer = NULL // Set to the actual function pointer later
         },
         .scope = scopeInit
     };
     insertSymbol(symbolTable, curveFunction);
 
     SymbolType* fillDataTypes = malloc(1 * sizeof(SymbolType));
-    fillDataTypes[0] = INTEGER_TYPE; // TODO: replace with HEX data type
+    fillDataTypes[0] = INTEGER_TYPE;
     const SymbolEntry fillFunction = {
         .identifier = "fill",
         .type = FUNCTION_TYPE,
@@ -356,14 +361,13 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
             .parameterType = fillDataTypes,
             .parameterCount = 1,
             .returnType = NULL_TYPE,
-            .functionPointer = NULL // Set to the actual function pointer later
         },
         .scope = scopeInit
     };
     insertSymbol(symbolTable, fillFunction);
 
     SymbolType* strokeDataTypes = malloc(1 * sizeof(SymbolType));
-    strokeDataTypes[0] = INTEGER_TYPE;  // TODO: replace with HEX data type
+    strokeDataTypes[0] = INTEGER_TYPE;  
     const SymbolEntry strokeFunction = {
         .identifier = "stroke",
         .type = FUNCTION_TYPE,
@@ -371,14 +375,13 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
             .parameterType = strokeDataTypes,
             .parameterCount = 1,
             .returnType = NULL_TYPE,
-            .functionPointer = NULL // Set to the actual function pointer later
         },
         .scope = scopeInit
     };
     insertSymbol(symbolTable, strokeFunction);
 
     SymbolType* zDataTypes = malloc(1 * sizeof(SymbolType));
-    zDataTypes[0] = INTEGER_TYPE;  // TODO: replace with HEX data type
+    zDataTypes[0] = INTEGER_TYPE;  
     const SymbolEntry zFunction = {
         .identifier = "layer",
         .type = FUNCTION_TYPE,
@@ -386,14 +389,13 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
             .parameterType = zDataTypes,
             .parameterCount = 1,
             .returnType = NULL_TYPE,
-            .functionPointer = NULL // Set to the actual function pointer later
         },
         .scope = scopeInit
     };
     insertSymbol(symbolTable, zFunction);
 
     SymbolType* sqrtDataTypes = malloc(1 * sizeof(SymbolType));
-    sqrtDataTypes[0] = FLOAT_TYPE;  // TODO: replace with HEX data type
+    sqrtDataTypes[0] = FLOAT_TYPE;  
     const SymbolEntry sqrtFunction = {
         .identifier = "sqrt",
         .type = FUNCTION_TYPE,
@@ -401,14 +403,13 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
             .parameterType = sqrtDataTypes,
             .parameterCount = 1,
             .returnType = FLOAT_TYPE,
-            .functionPointer = NULL // Set to the actual function pointer later
         },
         .scope = scopeInit
     };
     insertSymbol(symbolTable, sqrtFunction);
 
     SymbolType* cosDataTypes = malloc(1 * sizeof(SymbolType));
-    cosDataTypes[0] = FLOAT_TYPE;  // TODO: replace with HEX data type
+    cosDataTypes[0] = FLOAT_TYPE;
     insertSymbol(symbolTable, (SymbolEntry) {
         .identifier = "cos",
         .type = FUNCTION_TYPE,
@@ -416,13 +417,12 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
             .parameterType = cosDataTypes,
             .parameterCount = 1,
             .returnType = FLOAT_TYPE,
-            .functionPointer = NULL // Set to the actual function pointer later
         },
         .scope = scopeInit
     });
 
     SymbolType* sinDataTypes = malloc(1 * sizeof(SymbolType));
-    sinDataTypes[0] = FLOAT_TYPE;  // TODO: replace with HEX data type
+    sinDataTypes[0] = FLOAT_TYPE;
     insertSymbol(symbolTable, (SymbolEntry) {
         .identifier = "sin",
         .type = FUNCTION_TYPE,
@@ -430,7 +430,6 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
             .parameterType = sinDataTypes,
             .parameterCount = 1,
             .returnType = FLOAT_TYPE,
-            .functionPointer = NULL // Set to the actual function pointer later
         },
         .scope = scopeInit
     });
@@ -438,7 +437,7 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
 
 SymbolType typeOfFactor(Factor *factor) {
     SymbolType leftType, rightType = INVALID_TYPE;
-    if(factor == NULL) return INVALID_TYPE; // Check for NULL factor
+    if(factor == NULL) return INVALID_TYPE;
     switch (factor->type) {
         case IDENTIFIER_FACTOR:
             return getSymbolEntry(currentCompilerState()->symbolTable, factor->identifier).type;

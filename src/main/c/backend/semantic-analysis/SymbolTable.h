@@ -44,7 +44,6 @@ typedef struct SymbolEntry {
             SymbolType* parameterType; // Data types for the function parameters. Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
             int parameterCount; // Number of parameters
             SymbolType returnType; // Type of the identifier
-            void (*functionPointer)(); // Pointer to the function implementation
         } functionData; // Function details
         struct {
             BasicType* elements; // Elements of the array of the same type. Must be only INTEGER_TYPE, FLOAT_TYPE, VECTOR_TYPE
@@ -69,47 +68,18 @@ typedef struct SymbolTable {
 
 SymbolTable *createSymbolTable();
 SymbolEntry getSymbolEntry(SymbolTable* symbolTable, const char* identifier);
+SymbolEntry getSymbolEntryWithScope(const SymbolTable* symbolTable, const char* identifier, ScopesStack* stack);
+void updateSymbol(SymbolTable* symbolTable, const SymbolEntry data);
 void insertSymbol(SymbolTable* symbolTable, SymbolEntry  data);
-void printSymbolTable( SymbolTable* symbolTable);
-void printSymbolEntry(const SymbolEntry entry);
 void freeSymbolTable( SymbolTable* symbolTable);
 void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit);
-SymbolType typeOfExpression(Expression* expression);
-int intValueExpression(Expression* expression);
-float floatValueExpression(Expression* expression);
-const char *symbolTypeToString(SymbolType type);
-VectorData vectorValueExpression(Expression *expression);
-void updateSymbol(SymbolTable* symbolTable, const SymbolEntry data);
-SymbolEntry getSymbolEntryWithScope(const SymbolTable* symbolTable, const char* identifier, ScopesStack* stack);
-int boolExpressionIsValid(BoolExpression* expression);
+
 void printSymbolValue(SymbolEntry entry);
-/* LISTA DE CONSTANTES PREDEFINIDAS
-z-layer-control:
-    FRONT
-    BACK
+void printSymbolTable( SymbolTable* symbolTable);
+void printSymbolEntry(const SymbolEntry entry);
 
-colores:
-    INVISIBLE
-    RED
-    GREEN
-    BLUE
-    YELLOW
-    BLACK
-    WHITE
-    GRAY
-    ORANGE
-
-
-funciones que dibujan pero no retornan valor:
-    circle
-    stroke
-    fill
-    curve
-
-funciones que retornan valor pero no dibujan:
-    sqrt
-    dist
-*/
-
+SymbolType typeOfExpression(Expression* expression);
+const char *symbolTypeToString(SymbolType type);
+int boolExpressionIsValid(BoolExpression* expression);
 
 #endif
