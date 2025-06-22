@@ -5,10 +5,10 @@
 
 static Logger * _logger = NULL;
 static SVGContext _svgContext;
-static int _svgWidth = 800;
-static int _svgHeight = 600;
-static int _centerX = 400;
-static int _centerY = 300;
+static const int _svgWidth = 1000;
+static const int _svgHeight = 1000;
+static const int _centerX = _svgWidth/2;
+static const int _centerY = _svgHeight/2;
 
 void initializeGeneratorModule() {
 	_logger = createLogger("Generator");
@@ -102,6 +102,9 @@ static float _evaluateExpressionAsFloat(Expression * expression) {
                     }
                     return 0.0f;
                 }
+                case PARENTHESIS_FACTOR: {
+                    return _evaluateExpressionAsFloat(expression->factor->expression);
+                }
                 default:
                     return 0.0f;
             }
@@ -147,6 +150,45 @@ static float _evaluateExpressionAsFloat(Expression * expression) {
                     return sin(arg);
                 }
             }
+            else if(strcmp(expression->functionIdentifier, "tan") == 0) {
+                if (expression->functionArguments && expression->functionArguments->expressions) {
+                    float arg = _evaluateExpressionAsFloat(expression->functionArguments->expressions->expression);
+                    return tan(arg);
+                }
+            }
+            else if(strcmp(expression->functionIdentifier, "abs") == 0) {
+                if (expression->functionArguments && expression->functionArguments->expressions) {
+                    float arg = _evaluateExpressionAsFloat(expression->functionArguments->expressions->expression);
+                    return fabsf(arg);
+                }
+            }
+            else if(strcmp(expression->functionIdentifier, "logf") == 0) {
+                if (expression->functionArguments && expression->functionArguments->expressions) {
+                    float arg = _evaluateExpressionAsFloat(expression->functionArguments->expressions->expression);
+                    if (arg <= 0.0f) {
+                        currentCompilerState()->succeed = false;
+                        logError(_logger, "LOGARITHM OF NON-POSITIVE NUMBER");
+                        return 0.0f;
+                    }
+                    return logf(arg);
+                }
+            }
+            else if (strcmp(expression->functionIdentifier, "powf") == 0){
+                if (expression->functionArguments && expression->functionArguments->expressions) {
+                    float base = _evaluateExpressionAsFloat(expression->functionArguments->expressions->expression);
+                    if (expression->functionArguments->expressions->next) {
+                        float exponent = _evaluateExpressionAsFloat(expression->functionArguments->expressions->next->expression);
+                        return powf(base, exponent);
+                    }
+                }
+            }
+            else if (strcmp(expression->functionIdentifier, "roundf") == 0) {
+                if (expression->functionArguments && expression->functionArguments->expressions) {
+                    float arg = _evaluateExpressionAsFloat(expression->functionArguments->expressions->expression);
+                    return roundf(arg);
+                }
+            }
+            
             return 0.0f;
         case ARRAY_ACCESS: {
             int index = _evaluateExpressionAsInt(expression->indexExpression);
@@ -208,6 +250,8 @@ static VectorData _evaluateExpressionAsVector(Expression * expression) {
                 if (entry.type == VECTOR_TYPE) {
                     result = entry.value.vectorData;
                 }
+            } else if (expression->factor->type == PARENTHESIS_FACTOR) {   
+                result = _evaluateExpressionAsVector(expression->factor->expression);
             }
             break;
         case ADDITION:

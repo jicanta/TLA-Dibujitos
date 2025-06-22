@@ -1,1 +1,53 @@
 foo = (87);
+log "Integer in parentheses: {foo}\n";
+
+bar = (3.14159);
+log "Float in parentheses: {bar}\n";
+
+p1 = (0, 1);
+p2 = (1, 2);
+log "Vector p1: {p1}\n";
+log "Vector p2: {p2}\n";
+
+pn = p1 + p2;
+log "Vector addition p1 + p2 = {pn}\n";
+
+nested_int = ((5 + 3) * 2);
+log "Nested integer arithmetic ((5 + 3) * 2) = {nested_int}\n";
+
+nested_float = ((2.5 + 1.5) / 2.0);
+log "Nested float arithmetic ((2.5 + 1.5) / 2.0) = {nested_float}\n";
+
+p3 = ((1, 2) + (3, 4));
+log "Parentheses in vector expression ((1, 2) + (3, 4)) = {p3}\n";
+
+x_comp = (p1 + p2).x;
+y_comp = (p1 + p2).y;
+log "X component of (p1 + p2): {x_comp}\n";
+log "Y component of (p1 + p2): {y_comp}\n";
+
+sqrt_result = sqrt((16.0));
+log "sqrt((16.0)) = {sqrt_result}\n";
+
+complex_vec = ((1, 2) + (3, 4)) + ((5, 6) - (1, 1));
+log "Complex vector expression: {complex_vec}\n";
+
+precedence_test = (2 + 3) * (4 + 1);
+log "Precedence test (2 + 3) * (4 + 1) = {precedence_test}\n";
+
+fill(RED);
+circle(p1, 5.0);
+
+fill(BLUE);
+circle(p2, 5.0);
+
+fill(GREEN);
+circle(pn, 5.0);
+
+fill(YELLOW);
+circle(p3, 5.0);
+
+fill(PURPLE);
+circle(complex_vec, 5.0);
+
+log "Test completed - check visual output for correctness\n";

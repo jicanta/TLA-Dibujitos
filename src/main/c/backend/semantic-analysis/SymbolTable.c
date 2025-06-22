@@ -434,6 +434,72 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
         .scope = scopeInit
     });
 
+    SymbolType* tanDataTypes = malloc(1 * sizeof(SymbolType));
+    tanDataTypes[0] = FLOAT_TYPE;
+    insertSymbol(symbolTable, (SymbolEntry) {
+        .identifier = "tan",
+        .type = FUNCTION_TYPE,
+        .value.functionData = {
+            .parameterType = tanDataTypes,
+            .parameterCount = 1,
+            .returnType = FLOAT_TYPE,
+        },
+        .scope = scopeInit
+    });
+
+    SymbolType* absDataTypes = malloc(1 * sizeof(SymbolType));
+    absDataTypes[0] = FLOAT_TYPE;
+    insertSymbol(symbolTable, (SymbolEntry) {
+        .identifier = "abs",
+        .type = FUNCTION_TYPE,
+        .value.functionData = {
+            .parameterType = absDataTypes,
+            .parameterCount = 1,
+            .returnType = FLOAT_TYPE,
+        },
+        .scope = scopeInit
+    });
+
+    SymbolType* logfDataTypes = malloc(1 * sizeof(SymbolType));
+    logfDataTypes[0] = FLOAT_TYPE;
+    insertSymbol(symbolTable, (SymbolEntry) {
+        .identifier = "logf",
+        .type = FUNCTION_TYPE,
+        .value.functionData = {
+            .parameterType = logfDataTypes,
+            .parameterCount = 1,
+            .returnType = FLOAT_TYPE,
+        },
+        .scope = scopeInit
+    });
+
+    SymbolType* powfDataTypes = malloc(2 * sizeof(SymbolType));
+    powfDataTypes[0] = FLOAT_TYPE;
+    powfDataTypes[1] = FLOAT_TYPE;
+    insertSymbol(symbolTable, (SymbolEntry) {
+        .identifier = "powf",
+        .type = FUNCTION_TYPE,
+        .value.functionData = {
+            .parameterType = powfDataTypes,
+            .parameterCount = 2,
+            .returnType = FLOAT_TYPE,
+        },
+        .scope = scopeInit
+    });
+
+    SymbolType* roundfDataTypes = malloc(1 * sizeof(SymbolType));
+    roundfDataTypes[0] = FLOAT_TYPE;
+    insertSymbol(symbolTable, (SymbolEntry) {
+        .identifier = "roundf",
+        .type = FUNCTION_TYPE,
+        .value.functionData = {
+            .parameterType = roundfDataTypes,
+            .parameterCount = 1,
+            .returnType = FLOAT_TYPE,
+        },
+        .scope = scopeInit
+    });
+
     SymbolType* polygonDataTypes = malloc(1 * sizeof(SymbolType));
     polygonDataTypes[0] = VECTOR_TYPE;
     insertSymbol(symbolTable, (SymbolEntry) {
@@ -446,6 +512,7 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
         },
         .scope = scopeInit
     });
+    
 }
 
 SymbolType typeOfFactor(Factor *factor) {
