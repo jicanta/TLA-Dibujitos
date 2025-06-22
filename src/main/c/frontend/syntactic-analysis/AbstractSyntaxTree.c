@@ -98,7 +98,6 @@ void releaseVector(Vector * vector) {
 	}
 }
 
-// TODO: Crear todas las funciones RELEASE
 void releaseSentences(Sentences * sentences){
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (sentences != NULL) {

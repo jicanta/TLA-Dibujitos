@@ -24,10 +24,6 @@ typedef struct CompilerState {
 	// A flag that indicates the current state of the compilation so far.
 	boolean succeed;
 
-	// TODO: Add an stack to handle nested scopes.
-	// TODO: Add a symbol table.
-	// TODO: Add configuration.
-	// TODO: ...
 	struct SymbolTable* symbolTable;
 	int scopeLevel;
 	ScopesStack* scopesStack;

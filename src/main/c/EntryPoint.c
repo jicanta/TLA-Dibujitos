@@ -63,7 +63,7 @@ const int main(const int count, const char ** arguments) {
 		printSymbolTable(compilerState.symbolTable);
 		compilerState.succeed = true;
 		// ----------------------------------------------------------------------------------------
-		// Beginning of the Backend... TODO: Descomentar ------------------------------------------
+		// Beginning of the Backend...-------------------------------------------------------------
 		logDebugging(logger, "Generating SVG output...");
 		if (outputFile) {
 			logDebugging(logger, "Using output file: %s", outputFile);
@@ -90,7 +90,6 @@ const int main(const int count, const char ** arguments) {
 	freeSymbolTable(compilerState.symbolTable);
 	freeScopesStack(compilerState.scopesStack);
 	shutdownGeneratorModule();
-	// shutdownCalculatorModule();
 	shutdownAbstractSyntaxTreeModule();
 	shutdownSyntacticAnalyzerModule();
 	shutdownBisonActionsModule();

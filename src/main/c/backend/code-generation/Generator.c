@@ -5,7 +5,7 @@
 
 static Logger * _logger = NULL;
 static SVGContext _svgContext;
-static const int _svgWidth = 1000;
+static const int _svgWidth = 1000; //TODO Agregar forma de que esto sea adjustable ya sea en compilacion o runtime
 static const int _svgHeight = 1000;
 static const int _centerX = _svgWidth/2;
 static const int _centerY = _svgHeight/2;

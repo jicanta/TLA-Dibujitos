@@ -265,13 +265,6 @@ void setDefaultColors(SymbolTable* symbolTable, int scopeInit) {
     });
 
     insertSymbol(symbolTable, (SymbolEntry){
-        .identifier = "INVISIBLE",
-        .type = INTEGER_TYPE,
-        .value.integerData = 0x000000, // TODO
-        .scope = scopeInit
-    });
-
-    insertSymbol(symbolTable, (SymbolEntry){
         .identifier = "ORANGE",
         .type = INTEGER_TYPE,
         .value.integerData = 0xFFA500, // Hexadecimal representation of orange color
