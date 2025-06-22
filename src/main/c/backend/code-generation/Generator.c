@@ -36,6 +36,7 @@ static void _generateSentence(FILE* outputFile, Sentence * sentence);
 // static void _generateFactor(Factor * factor);
 static void _generateFunctionCall(FILE* outputFile, char * functionName, ExpressionList * arguments);
 static void _generateCircle(FILE* outputFile, ExpressionList * arguments);
+static void _generateLine(FILE* outputFile, ExpressionList * arguments);
 static void _generateCurve(FILE* outputFile, ExpressionList * arguments);
 static void _generateStroke(ExpressionList * arguments);
 static void _generateFill(ExpressionList * arguments);
@@ -239,6 +240,36 @@ static void _generateCircle(FILE* outputFile, ExpressionList * arguments) {
 }
 
 /**
+ * Generates a line element
+ */
+static void _generateLine(FILE* outputFile, ExpressionList * arguments) {
+    if (!arguments || !arguments->expressions) return;
+    
+    // First argument should be start position (vector)
+    VectorData startPos = _evaluateExpressionAsVector(arguments->expressions->expression);
+    
+    // Second argument should be end position (vector)
+    VectorData endPos = {0.0f, 0.0f}; // default
+    if (arguments->expressions->next) {
+        endPos = _evaluateExpressionAsVector(arguments->expressions->next->expression);
+    }
+    
+    // Convert to SVG coordinates (center the drawing)
+    float svgX1 = _centerX + startPos.x;
+    float svgY1 = _centerY - startPos.y; // Flip Y axis
+    float svgX2 = _centerX + endPos.x;
+    float svgY2 = _centerY - endPos.y; // Flip Y axis
+    
+    char* strokeColor = _colorToHex(_svgContext.strokeColor);
+    
+    fprintf(outputFile, "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"%s\" stroke-width=\"%d\" class=\"%s-layer\"/>\n",
+            svgX1, svgY1, svgX2, svgY2, strokeColor, _svgContext.strokeWidth,
+            _svgContext.layer == 1 ? "front" : "back");
+    
+    free(strokeColor);
+}
+
+/**
  * Generates a curve (Bezier path)
  */
 static void _generateCurve(FILE* outputFile, ExpressionList * arguments) {
@@ -355,6 +386,8 @@ static void _generateStringOutput(FILE* outputFile, StringPartList * stringParts
 static void _generateFunctionCall(FILE* outputFile, char * functionName, ExpressionList * arguments) {
     if (strcmp(functionName, "circle") == 0) {
         _generateCircle(outputFile, arguments);
+    } else if (strcmp(functionName, "line") == 0) {
+        _generateLine(outputFile, arguments);
     } else if (strcmp(functionName, "curve") == 0) {
         _generateCurve(outputFile, arguments);
     } else if (strcmp(functionName, "stroke") == 0) {
@@ -693,7 +726,7 @@ static void _generateSentence(FILE* outputFile, Sentence * sentence) {
             }
             break;
         case IF_ELSE_SENTENCE:
-            if (_evaluateExpressionAsBool(sentence->ifBoolExpression)) {
+            if (_evaluateExpressionAsBool(sentence->ifElseBoolExpression)) {
                 _generateSentences(outputFile, sentence->leftIfElseBlock->sentences);
             }
             else {

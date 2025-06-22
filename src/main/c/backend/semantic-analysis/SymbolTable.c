@@ -317,6 +317,21 @@ void setDefaultFunctions(SymbolTable* symbolTable, int scopeInit) {
     };
     insertSymbol(symbolTable, circleFunction);
 
+    SymbolType* lineDataTypes = malloc(2 * sizeof(SymbolType));
+    lineDataTypes[0] = VECTOR_TYPE;
+    lineDataTypes[1] = VECTOR_TYPE;
+    insertSymbol(symbolTable, (SymbolEntry) {
+        .identifier = "line",
+        .type = FUNCTION_TYPE,
+        .value.functionData = {
+            .parameterType = lineDataTypes,
+            .parameterCount = 2,
+            .returnType = NULL_TYPE,
+            .functionPointer = NULL
+        },
+        .scope = scopeInit
+    });
+
     SymbolType* curveDataTypes = malloc(1 * sizeof(SymbolType));
     curveDataTypes[0] = VECTOR_TYPE;
     const SymbolEntry curveFunction = {
