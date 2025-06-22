@@ -546,7 +546,8 @@ int InsertForLoopIterator(char * identifier, Array * array) {
 	case BASIC_ARRAY:
 		elementType = typeOfExpression(array->expressionList->expressions->expression);
 		
-		// Check if all expressions in the array are of the same type (TODO: this code is repeated and could be refactored)
+		// Check if all expressions in the array are of the same type 
+		// TODO: this code is repeated and could be refactored
 		Expressions* expressionsIndex = array->expressionList->expressions;
 
 		int i = 0;
