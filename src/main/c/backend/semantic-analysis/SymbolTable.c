@@ -80,7 +80,7 @@ void printSymbolValue(SymbolEntry entry) {
                 break;
             case BASIC_ARRAY:
                 BasicType *arrayElements = entry.value.arrayData.elements;
-                printf(" (basic) {size: %d, elements: ", entry.value.arrayData.size);
+                printf("%s[%d]{", symbolTypeToString(entry.value.arrayData.elements[0].type), entry.value.arrayData.size);
                 for(int i = 0; i < entry.value.arrayData.size; i++) {
                     if (i > 0) {
                         printf(", ");
@@ -104,7 +104,7 @@ void printSymbolValue(SymbolEntry entry) {
             default:
                 break;
             }
-            printf("}]");
+            printf("}");
             break;
         default:
             printf("[(unknown) %s]", entry.identifier);

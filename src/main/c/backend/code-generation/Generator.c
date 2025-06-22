@@ -115,6 +115,8 @@ static float _evaluateExpressionAsFloat(Expression * expression) {
             if (right != 0.0f) {
                 return _evaluateExpressionAsFloat(expression->leftExpression) / right;
             }
+            currentCompilerState()->succeed = false;
+            logError(_logger, "DIVISION BY ZERO");
             return 0.0f;
         }
         case GET_X: {
@@ -145,6 +147,36 @@ static float _evaluateExpressionAsFloat(Expression * expression) {
                 }
             }
             return 0.0f;
+        case ARRAY_ACCESS: {
+            int index = _evaluateExpressionAsInt(expression->indexExpression);
+            if (expression->array->type != IDENTIFIER_ARRAY) {
+                logError(_logger, "ARRAY ACCESS MUST BE OF TYPE IDENTIFIER");
+                currentCompilerState()->succeed = false;
+                return 0.;
+            }
+            char *arrayIdentifier = expression->array->identifier;
+            SymbolEntry arrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, arrayIdentifier);
+            int arraySize = arrayEntry.value.arrayData.size;
+            if (index < 0 || index >= arraySize) {
+                logError(_logger, "ARRAY OUT OF BOUNDS %s[%d] of size %d", arrayIdentifier, index, arraySize);
+                currentCompilerState()->succeed = false;
+                return 0.;
+            }
+            BasicType element = arrayEntry.value.arrayData.elements[index];
+            switch (element.type)
+            {
+            case FLOAT_TYPE:
+                return element.value.floatData;
+            case INTEGER_TYPE:
+                return element.value.integerData;
+            case VECTOR_TYPE:
+                // ????
+            default:
+                logError(_logger, "INVALID ARRAY ACCESS TYPE");
+                currentCompilerState()->succeed = false;
+                break;
+            }
+        }
         default:
             return 0.0f;
     }
@@ -203,7 +235,9 @@ static VectorData _evaluateExpressionAsVector(Expression * expression) {
             }
             break;
         default:
-            break; // TODO ERROR    
+            currentCompilerState()->succeed = false;
+            logError(_logger, "VECTOR INVALID OPERATION");
+            break; 
     }
     
     return result;
@@ -522,7 +556,7 @@ int _evaluateExpressionAsBool(BoolExpression *expression) {
         return false;
 }
 
-void _generateArrayAssignment(char *arrayIdentifier, Array *array) { // TODO
+void _generateArrayAssignment(char *arrayIdentifier, Array *array) { 
     if (!arrayIdentifier || !array) return;
     SymbolEntry entry = getSymbolEntry(currentCompilerState()->symbolTable, arrayIdentifier);
     if (entry.type == NULL_TYPE) {
@@ -537,11 +571,31 @@ void _generateArrayAssignment(char *arrayIdentifier, Array *array) { // TODO
     switch (array->type)
     {
     case IDENTIFIER_ARRAY:
-        // TODO
+        SymbolEntry cloneArray = getSymbolEntry(currentCompilerState()->symbolTable, array->identifier);
+        int size = cloneArray.value.arrayData.size;
+        entry.value.arrayData.elements = malloc(sizeof(BasicType) * size);
+        entry.value.arrayData.size = size;
+        memcpy(entry.value.arrayData.elements, cloneArray.value.arrayData.elements, size * sizeof(BasicType));
+
         break;
-    case INTERVAL_ARRAY:
-        // TODO
+    case INTERVAL_ARRAY: {
+        int startInterval = _evaluateExpressionAsInt(array->leftExpression);
+        int endInterval = _evaluateExpressionAsInt(array->rightExpression);
+        int size = (endInterval - startInterval) + 1;
+        if(size < 0) {
+            logError(_logger, "invalid interval (%d, %d)", startInterval, endInterval);
+            currentCompilerState()->succeed = false;
+            return;
+        }
+
+        entry.value.arrayData.elements = malloc(sizeof(BasicType) * size);
+        for(int i = 0; i < size; i++) {
+            entry.value.arrayData.elements[i].value.integerData = i + startInterval;
+            entry.value.arrayData.elements[i].type = INTEGER_TYPE;
+        }
+        entry.value.arrayData.size = size;
         break;
+    }
     case BASIC_ARRAY:
         if (!array->expressionList) {
             logError(_logger, "Array '%s' has no elements.", arrayIdentifier);
@@ -572,13 +626,13 @@ void _generateArrayAssignment(char *arrayIdentifier, Array *array) { // TODO
             current = current->next;
             i++;
         }
-        entry.value.arrayData.dataType = BASIC_ARRAY;
         entry.value.arrayData.size = i;
-
+        
         break;
     default:
         break;
     }
+    entry.value.arrayData.dataType = BASIC_ARRAY;
 
     updateSymbol(currentCompilerState()->symbolTable, entry);
 }
@@ -653,7 +707,6 @@ void _generateForLoop(FILE* outputFile, char *iterator, Array *array, Sentences 
         }
         break;
     }
-    
     default:
         break;
     }
@@ -675,7 +728,8 @@ void _generateArrayElementAssignment(char *arrayIdentifier, Expression *arrayInd
     int index = _evaluateExpressionAsInt(arrayIndexExpression);
     if (index < 0 || index >= entry.value.arrayData.size) {
         logError(_logger, "Index %d out of bounds for array '%s'.", index, arrayIdentifier);
-        return; // TODO error
+        currentCompilerState()->succeed = false;
+        return;
     }
     
     switch (entry.value.arrayData.elements[index].type) {

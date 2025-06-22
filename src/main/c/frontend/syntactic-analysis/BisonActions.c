@@ -359,7 +359,7 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 			return NULL;
 		}
 
-		BasicType* arrayElements = malloc(sizeof(SymbolEntry) * 256); // Assuming a maximum of 100 elements for simplicity
+		BasicType* arrayElements = malloc(sizeof(SymbolEntry) * 256); // TODO esto es MUY rancio y hay que cambiarlo
 
 		Expressions* expressionsIndex = array->expressionList->expressions;
 		SymbolType t = typeOfExpression(expressionsIndex->expression);
@@ -392,7 +392,6 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 		printf("Inserting array '%s' with %d elements of type %s\n", identifier, i, symbolTypeToString(t));
 		insertSymbol(currentCompilerState()->symbolTable, entry);
 	} else if (array->type == IDENTIFIER_ARRAY) {
-
 		SymbolEntry otherArrayEntry = getSymbolEntryWithScope(currentCompilerState()->symbolTable, array->identifier, currentCompilerState()->scopesStack);
 		if (otherArrayEntry.type == NULL_TYPE) {
 			logError(_logger, "The identifier '%s' is not defined.", otherArrayEntry.identifier);
@@ -400,7 +399,7 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 			return NULL;
 		}
 
-		 SymbolEntry entry = {
+		SymbolEntry entry = {
 			.identifier = identifier,
 			.type = ARRAY_TYPE, // Assuming the type of the array is ARRAY_TYPE
 			.value.arrayData = {
@@ -412,16 +411,23 @@ Sentence * AssignArraySentenceSemanticAction(char * identifier, Array * array) {
 		insertSymbol(currentCompilerState()->symbolTable, entry);
 	}
 	else if (array->type == INTERVAL_ARRAY) {
-		// Interval arrays are not supported yet
-		logError(_logger, "Interval arrays are not supported yet.");
-		currentCompilerState()->succeed = false;
-		return NULL;
+		BasicType* arrayElements = malloc(sizeof(SymbolEntry));
+		arrayElements[0].type = INTEGER_TYPE;
+		SymbolEntry entry = {
+			.identifier = identifier,
+			.type = ARRAY_TYPE, // Assuming the type of the array is ARRAY_TYPE
+			.value.arrayData = {
+				.elements = arrayElements, // Pointing to the same elements as the other array
+				.dataType = array->type // Assuming the type of the array is the type of the identifier
+			},
+			.scope = currentScope(currentCompilerState()->scopesStack)
+		};
+		insertSymbol(currentCompilerState()->symbolTable, entry);
 	} else {
 		logError(_logger, "The array '%s' is invalid.", identifier);
 		currentCompilerState()->succeed = false;
 		return NULL;
 	}
-
 
 	return sentence;
 }

@@ -63,6 +63,7 @@ const int main(const int count, const char ** arguments) {
 	if (syntacticAnalysisStatus == ACCEPT) {
 
 		printSymbolTable(compilerState.symbolTable);
+		compilerState.succeed = true;
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... TODO: Descomentar ------------------------------------------
 		logDebugging(logger, "Generating SVG output...");
@@ -72,6 +73,10 @@ const int main(const int count, const char ** arguments) {
 		} else {
 			logDebugging(logger, "No output file specified, using stdout");
 			generate(&compilerState);
+		}
+		if (!compilerState.succeed) {
+			logError(logger, "The code-generation rejects the input program.");
+			compilationStatus = FAILED;
 		}
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
