@@ -14,6 +14,7 @@ Key features include:
 - **String interpolation**: Dynamic text generation with variable substitution
 - **Type inference**: Static typing with automatic type inference
 - **SVG output**: High-quality scalable vector graphics generation
+- **Configurable canvas**: Customizable width and height for SVG output
 
 The output is generated in SVG format, ensuring compatibility with web browsers, graphic editors, and other SVG-supporting tools. This DSL bridges the gap between programming and visual design, making it valuable for:
 - Educational contexts (teaching programming through visual feedback)
@@ -34,6 +35,29 @@ for i in [1:10] {
     circle((x, y), i * 2.0);
 }
 ```
+
+### Command Line Options
+
+The compiler supports several command-line options:
+
+```bash
+# Basic usage with default 1000x1000 canvas
+cat input.dib | ./build/Compiler > output.svg
+
+# Specify output file
+cat input.dib | ./build/Compiler -o output.svg
+
+# Custom canvas dimensions
+cat input.dib | ./build/Compiler -w 800 -h 600 -o output.svg
+
+# Using long form options
+cat input.dib | ./build/Compiler --width 1920 --height 1080 -o output.svg
+```
+
+**Available Options:**
+- `-o <file>` - Specify output SVG file (default: stdout)
+- `-w <width>` or `--width <width>` - Set SVG canvas width (default: 1000)
+- `-h <height>` or `--height <height>` - Set SVG canvas height (default: 1000)
 
 ### Tree Visualizer
 
@@ -123,9 +147,9 @@ The project supports multiple platforms and installation methods:
    make all
    ```
 
-3. **Run a test**
+3. **Run a test with custom dimensions**
    ```bash
-   ./tree_visualizer src/test/c/accept/06-parenthesis
+   ./script/ubuntu/start.sh src/test/c/accept/06-parenthesis -w 800 -h 600
    ```
 
 4. **View the generated SVG**

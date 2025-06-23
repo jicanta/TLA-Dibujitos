@@ -5,18 +5,26 @@
 
 static Logger * _logger = NULL;
 static SVGContext _svgContext;
-static const int _svgWidth = 1000; //TODO Agregar forma de que esto sea adjustable ya sea en compilacion o runtime
-static const int _svgHeight = 1000;
-static const int _centerX = _svgWidth/2;
-static const int _centerY = _svgHeight/2;
 
 void initializeGeneratorModule() {
 	_logger = createLogger("Generator");
-	// Initialize default SVG context
 	_svgContext.fillColor = 0x000000; // Black
 	_svgContext.strokeColor = 0x000000; // Black
 	_svgContext.strokeWidth = 1;
 	_svgContext.layer = 0; // Back layer by default
+	// Set default dimensions
+	_svgContext.width = 1000;
+	_svgContext.height = 1000;
+	_svgContext.centerX = _svgContext.width / 2;
+	_svgContext.centerY = _svgContext.height / 2;
+}
+
+void setSVGDimensions(int width, int height) {
+	_svgContext.width = width;
+	_svgContext.height = height;
+	_svgContext.centerX = width / 2;
+	_svgContext.centerY = height / 2;
+	logDebugging(_logger, "SVG dimensions set to %dx%d", width, height);
 }
 
 void shutdownGeneratorModule() {
@@ -32,8 +40,6 @@ static void _generateSVGFooter(FILE* outputFile);
 static void _generateProgram(FILE* outputFile, Program * program);
 static void _generateSentences(FILE* outputFile, Sentences * sentences);
 static void _generateSentence(FILE* outputFile, Sentence * sentence);
-// static void _generateExpression(Expression * expression);
-// static void _generateFactor(Factor * factor);
 static void _generateFunctionCall(FILE* outputFile, char * functionName, ExpressionList * arguments);
 static void _generateCircle(FILE* outputFile, ExpressionList * arguments);
 static void _generateLine(FILE* outputFile, ExpressionList * arguments);
@@ -63,7 +69,7 @@ static char* _colorToHex(int color) {
  * Generates the SVG header with basic structure
  */
 static void _generateSVGHeader(FILE* outputFile) {
-    fprintf(outputFile, "<svg width=\"%d\" height=\"%d\" xmlns=\"http://www.w3.org/2000/svg\">\n", _svgWidth, _svgHeight);
+    fprintf(outputFile, "<svg width=\"%d\" height=\"%d\" xmlns=\"http://www.w3.org/2000/svg\">\n", _svgContext.width, _svgContext.height);
     fprintf(outputFile, "  <defs>\n");
     fprintf(outputFile, "    <style>\n");
     fprintf(outputFile, "      .back-layer { z-index: 0; }\n");
@@ -127,7 +133,7 @@ static float _evaluateExpressionAsFloat(Expression * expression) {
             float right = _evaluateExpressionAsFloat(expression->rightExpression);
             if (right != 0.0f) {
                 return  (float) ( (int) _evaluateExpressionAsFloat(expression->leftExpression) % (int) right);
-            } // Do not question this operation
+            }
             currentCompilerState()->succeed = false;
             logError(_logger, "DIVISION BY ZERO");
             return 0.0f;
@@ -313,8 +319,8 @@ static void _generateCircle(FILE* outputFile, ExpressionList * arguments) {
     }
     
     // Convert to SVG coordinates (center the drawing)
-    float svgX = _centerX + position.x;
-    float svgY = _centerY - position.y; // Flip Y axis
+    float svgX = _svgContext.centerX + position.x;
+    float svgY = _svgContext.centerY - position.y; // Flip Y axis
     
     char* fillColor = _colorToHex(_svgContext.fillColor);
     char* strokeColor = _colorToHex(_svgContext.strokeColor);
@@ -343,10 +349,10 @@ static void _generateLine(FILE* outputFile, ExpressionList * arguments) {
     }
     
     // Convert to SVG coordinates (center the drawing)
-    float svgX1 = _centerX + startPos.x;
-    float svgY1 = _centerY - startPos.y; // Flip Y axis
-    float svgX2 = _centerX + endPos.x;
-    float svgY2 = _centerY - endPos.y; // Flip Y axis
+    float svgX1 = _svgContext.centerX + startPos.x;
+    float svgY1 = _svgContext.centerY - startPos.y; // Flip Y axis
+    float svgX2 = _svgContext.centerX + endPos.x;
+    float svgY2 = _svgContext.centerY - endPos.y; // Flip Y axis
     
     char* strokeColor = _colorToHex(_svgContext.strokeColor);
     
@@ -372,14 +378,14 @@ static void _generateCurve(FILE* outputFile, ExpressionList * arguments) {
     VectorData p2 = _evaluateExpressionAsVector(expr->next->next->next->expression);
     
     // Convert to SVG coordinates
-    float x1 = _centerX + p1.x;
-    float y1 = _centerY - p1.y;
-    float cx1 = _centerX + cp1.x;
-    float cy1 = _centerY - cp1.y;
-    float cx2 = _centerX + cp2.x;
-    float cy2 = _centerY - cp2.y;
-    float x2 = _centerX + p2.x;
-    float y2 = _centerY - p2.y;
+    float x1 = _svgContext.centerX + p1.x;
+    float y1 = _svgContext.centerY - p1.y;
+    float cx1 = _svgContext.centerX + cp1.x;
+    float cy1 = _svgContext.centerY - cp1.y;
+    float cx2 = _svgContext.centerX + cp2.x;
+    float cy2 = _svgContext.centerY - cp2.y;
+    float x2 = _svgContext.centerX + p2.x;
+    float y2 = _svgContext.centerY - p2.y;
     
     char* fillColor = _colorToHex(_svgContext.fillColor);
     char* strokeColor = _colorToHex(_svgContext.strokeColor);
@@ -424,8 +430,8 @@ static void _generatePolygon(FILE* outputFile, ExpressionList * arguments) {
         VectorData point = _evaluateExpressionAsVector(expr->expression);
         
         // Convert to SVG coordinates
-        float svgX = _centerX + point.x;
-        float svgY = _centerY - point.y; // Flip Y axis
+        float svgX = _svgContext.centerX + point.x;
+        float svgY = _svgContext.centerY - point.y; // Flip Y axis
         
         fprintf(outputFile, "%.2f,%.2f", svgX, svgY);
         
@@ -477,18 +483,13 @@ static void _generateLayer(ExpressionList * arguments) {
  * Generates log output (as SVG comment)
  */
 static void _generateLog(FILE* outputFile, StringPartList * stringParts) {
-    // fprintf(outputFile, "  <!-- Log: ");
-    _generateStringOutput(outputFile, stringParts);
-    // fprintf(outputFile, " -->\n");
 }
 
 /**
  * Generates import (as SVG comment)
  */
 static void _generateImport(FILE* outputFile, StringPartList * importPath) {
-    // fprintf(outputFile, "  <!-- Import: ");
-    // _generateStringOutput(outputFile, importPath);
-    // fprintf(outputFile, " -->\n");
+    // TODO
 }
 
 /**

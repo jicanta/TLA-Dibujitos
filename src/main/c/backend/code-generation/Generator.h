@@ -29,6 +29,11 @@ void generate(CompilerState * compilerState);
 void generateToFile(CompilerState * compilerState, const char * outputPath);
 
 /**
+ * Sets the SVG canvas dimensions
+ */
+void setSVGDimensions(int width, int height);
+
+/**
  * SVG Generation Context to maintain drawing state
  */
 typedef struct {
@@ -36,6 +41,10 @@ typedef struct {
     int strokeColor;
     int strokeWidth;
     int layer;
+    int width;
+    int height;
+    int centerX;
+    int centerY;
 } SVGContext;
 
 /**

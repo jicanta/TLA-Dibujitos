@@ -19,13 +19,52 @@
 const int main(const int count, const char ** arguments) {
 	Logger * logger = createLogger("EntryPoint");
 
-	// Check for output file argument
+	// Parse command line arguments
 	const char* outputFile = NULL;
+	int svgWidth = 1000;  // Default width
+	int svgHeight = 1000; // Default height
+	
 	for (int i = 1; i < count; i++) {
 		if (strcmp(arguments[i], "-o") == 0 && i + 1 < count) {
 			outputFile = arguments[i + 1];
 			logDebugging(logger, "Output file specified: %s", outputFile);
-			break;
+			i++; // Skip the next argument as it's the filename
+		} else if (strcmp(arguments[i], "-w") == 0 && i + 1 < count) {
+			svgWidth = atoi(arguments[i + 1]);
+			if (svgWidth <= 0) {
+				logError(logger, "Invalid width specified: %s. Using default 1000.", arguments[i + 1]);
+				svgWidth = 1000;
+			} else {
+				logDebugging(logger, "SVG width specified: %d", svgWidth);
+			}
+			i++; // Skip the next argument as it's the width value
+		} else if (strcmp(arguments[i], "-h") == 0 && i + 1 < count) {
+			svgHeight = atoi(arguments[i + 1]);
+			if (svgHeight <= 0) {
+				logError(logger, "Invalid height specified: %s. Using default 1000.", arguments[i + 1]);
+				svgHeight = 1000;
+			} else {
+				logDebugging(logger, "SVG height specified: %d", svgHeight);
+			}
+			i++; // Skip the next argument as it's the height value
+		} else if (strcmp(arguments[i], "--width") == 0 && i + 1 < count) {
+			svgWidth = atoi(arguments[i + 1]);
+			if (svgWidth <= 0) {
+				logError(logger, "Invalid width specified: %s. Using default 1000.", arguments[i + 1]);
+				svgWidth = 1000;
+			} else {
+				logDebugging(logger, "SVG width specified: %d", svgWidth);
+			}
+			i++; // Skip the next argument as it's the width value
+		} else if (strcmp(arguments[i], "--height") == 0 && i + 1 < count) {
+			svgHeight = atoi(arguments[i + 1]);
+			if (svgHeight <= 0) {
+				logError(logger, "Invalid height specified: %s. Using default 1000.", arguments[i + 1]);
+				svgHeight = 1000;
+			} else {
+				logDebugging(logger, "SVG height specified: %d", svgHeight);
+			}
+			i++; // Skip the next argument as it's the height value
 		}
 	}
 
@@ -34,6 +73,9 @@ const int main(const int count, const char ** arguments) {
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
 	initializeGeneratorModule();
+
+	// Set SVG dimensions
+	setSVGDimensions(svgWidth, svgHeight);
 
 	// Logs the arguments of the application.
 	for (int k = 0; k < count; ++k) {
