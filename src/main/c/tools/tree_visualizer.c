@@ -409,7 +409,6 @@ int main(int argc, char** argv) {
     };
     addNewScope(compilerState.scopesStack);
 	const int initialScope = currentScope(compilerState.scopesStack);
-    // TODO: Initialize scopes stack properly
     setDefaultFunctions(compilerState.symbolTable, initialScope);
     const SyntacticAnalysisStatus status = parse(&compilerState);
     
@@ -424,10 +423,12 @@ int main(int argc, char** argv) {
     }
     freeSymbolTable(compilerState.symbolTable);
     releaseProgram(compilerState.abstractSyntaxtTree);
+    // Add cleanup for scopesStack
+    freeScopesStack(compilerState.scopesStack);
     shutdownAbstractSyntaxTreeModule();
     shutdownSyntacticAnalyzerModule();
     shutdownBisonActionsModule();
     shutdownFlexActionsModule();
 
     return status == ACCEPT ? 0 : 1;
-} 
+}
