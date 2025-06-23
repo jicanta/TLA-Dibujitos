@@ -25,7 +25,6 @@ typedef struct CompilerState {
 	boolean succeed;
 
 	struct SymbolTable* symbolTable;
-	int scopeLevel;
 	ScopesStack* scopesStack;
 
 	// The computed value of the entire program (only for the calculator).

@@ -592,12 +592,10 @@ SymbolType typeOfExpression(Expression* expression) {
             if (resultType1 != VECTOR_TYPE) {
                 return INVALID_TYPE; 
             } 
-            return FLOAT_TYPE; // TODO: Return the type of the vector
+            return FLOAT_TYPE; // Assumes that vector has two floats
 
-            break;
         case FACTOR:
             return typeOfFactor(expression->factor);
-            break;
         case ARRAY_ACCESS:
             resultType2 = typeOfExpression(expression->indexExpression);
             SymbolEntry arrayEntry = getSymbolEntry(currentCompilerState()->symbolTable, expression->array->identifier); // Get the symbol entry for the array            
@@ -607,19 +605,16 @@ SymbolType typeOfExpression(Expression* expression) {
         
             return arrayEntry.value.arrayData.elements[0].type; // Return the type of the array
 
-            break;
         case FUNCTION_EXPRESSION:
-            if (expression->functionArguments) {
-                // TODO chequear argumentos
-            }
+            // Types of function arguments are not checked here, they are checked in the semantic analysis phase
 
             SymbolEntry functionEntry = getSymbolEntry(currentCompilerState()->symbolTable, expression->functionIdentifier);
             return functionEntry.value.functionData.returnType; // Return the type of the function
    
-            break;
     }
     return INVALID_TYPE;
 }
+
 
 int boolExpressionIsValid(BoolExpression* expression) {
     if (!expression) return 0; // NULL expression is invalid

@@ -123,6 +123,15 @@ static float _evaluateExpressionAsFloat(Expression * expression) {
             logError(_logger, "DIVISION BY ZERO");
             return 0.0f;
         }
+        case MODULUS: {
+            float right = _evaluateExpressionAsFloat(expression->rightExpression);
+            if (right != 0.0f) {
+                return  (float) ( (int) _evaluateExpressionAsFloat(expression->leftExpression) % (int) right);
+            } // Do not question this operation
+            currentCompilerState()->succeed = false;
+            logError(_logger, "DIVISION BY ZERO");
+            return 0.0f;
+        }
         case GET_X: {
             VectorData vec = _evaluateExpressionAsVector(expression->expression);
             return vec.x;

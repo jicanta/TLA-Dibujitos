@@ -24,3 +24,8 @@ FlexScanner.c
 /enunciado/*
 *.svg
 ./*/*.svg
+
+# cLion/
+/.idea/
+editor.xml
+vcs.xml

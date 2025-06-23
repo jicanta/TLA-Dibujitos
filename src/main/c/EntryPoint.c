@@ -46,7 +46,6 @@ const int main(const int count, const char ** arguments) {
 		.succeed = false,
 		.symbolTable = createSymbolTable(),
 		.value = 0,
-		.scopeLevel = 1, // TODO: remove
 		.scopesStack = initializeScopesStack()
 	};
 
@@ -60,7 +59,6 @@ const int main(const int count, const char ** arguments) {
 	Program * program = compilerState.abstractSyntaxtTree;
 	if (syntacticAnalysisStatus == ACCEPT) {
 
-		printSymbolTable(compilerState.symbolTable);
 		compilerState.succeed = true;
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend...-------------------------------------------------------------

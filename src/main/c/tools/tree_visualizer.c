@@ -405,7 +405,6 @@ int main(int argc, char** argv) {
         .succeed = false,
         .symbolTable = createSymbolTable(),
         .value = 0,
-        .scopeLevel = 1, // TODO: remove
 		.scopesStack = initializeScopesStack()
     };
     addNewScope(compilerState.scopesStack);

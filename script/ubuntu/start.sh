@@ -11,4 +11,5 @@ shift 1
 
 echo "Compiling $INPUT to $OUTPUT_FILE..."
 cat "$INPUT" | build/Compiler -o "$OUTPUT_FILE" "$@"
+echo ""
 echo "SVG generated: $OUTPUT_FILE"
