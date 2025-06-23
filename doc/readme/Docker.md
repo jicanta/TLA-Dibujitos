@@ -37,23 +37,4 @@ Then, run an ephemeral container with:
 script/ubuntu/docker-run.sh
 ```
 
-```bash
-chmod u+x --recursive script/ubuntu
-script/ubuntu/install.sh
-```
-
-
-```bash
-script/ubuntu/build.sh
-```
-
-
-```bash
-script/ubuntu/test.sh
-```
-
-
-```bash
-script/ubuntu/start.sh <program>
-
 After that, you can develop outside the container and execute any commands available for [Ubuntu](../../doc/readme/Ubuntu.md) inside.
