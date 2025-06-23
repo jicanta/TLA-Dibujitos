@@ -423,7 +423,6 @@ int main(int argc, char** argv) {
     }
     freeSymbolTable(compilerState.symbolTable);
     releaseProgram(compilerState.abstractSyntaxtTree);
-    // Add cleanup for scopesStack
     freeScopesStack(compilerState.scopesStack);
     shutdownAbstractSyntaxTreeModule();
     shutdownSyntacticAnalyzerModule();
